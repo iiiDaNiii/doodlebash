@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Covered+By+Your+Grace&family=Fira+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <title>Doodle Bash - Deck Builder</title>
+  <style>
+    html, body {
+      height: 100dvh;
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Fira Sans', system-ui, sans-serif;
+      background: #ffffff !important;
+      color: #2d3436;
+    }
+    body { display: flex; flex-direction: column; background: #ffffff !important; }
+
+    header {
+  width: 100%;
+  padding: 1.5dvh 0;
+  background: #ffffff !important;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+    .btn {
+      padding: 1.2dvh 3dvw;
+      font-size: clamp(0.95rem, 3.5dvw, 1.1rem);
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #6c5ce7; color: white; }
+    .btn-primary:hover { transform: scale(1.05); background: #5649c0; }
+    .btn-secondary { background: #636e72; color: white; }
+
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(4dvw, 8dvw, 80px);
+      padding: clamp(2dvh, 5dvh, 50px) 4dvw clamp(12dvh, 18dvh, 120px);
+      background: #ffffff !important;
+    }
+
+    .pile {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(1.8dvh, 3.5dvh, 35px);
+      transition: transform 0.45s ease;
+      will-change: transform;
+    }
+
+    .pile .card {
+      width: clamp(70px, 11dvw, 110px);
+      height: clamp(70px, 11dvw, 110px);
+      border: none !important;
+      border-radius: 0;
+      box-shadow: none !important;
+      background: transparent !important;
+      overflow: visible;
+    }
+    .pile .card:hover { transform: scale(1.08); }
+    .pile .card img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: transparent;
+    }
+
+    .center-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2dvh;
+    }
+    #roll-btn {
+      font-size: clamp(1.8rem, 6dvw, 2.4rem);
+      padding: clamp(1.8dvh, 4dvh, 28px) clamp(4dvw, 8dvw, 70px);
+      border-radius: 9999px;
+    }
+    .deck-info {
+      font-size: clamp(0.9rem, 3dvw, 1.1rem);
+      color: #636e72;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 1.5dvh;
+      text-align: center;
+      background: #ffffff !important;
+      box-shadow: 0 -1px 6px rgba(0,0,0,0.06);
+      z-index: 99;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #ffffff !important;
+      border-radius: 16px;
+      width: 94%;
+      max-width: 1200px;
+      height: clamp(68dvh, 82dvh, 92dvh);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .modal.show .modal-content { transform: translateY(0) !important; opacity: 1 !important; }
+    .modal.top .modal-content { transform: translateY(-10dvh); opacity: 0; }
+    .modal.bottom .modal-content { transform: translateY(8dvh); opacity: 0; }
+
+    .modal-header {
+      padding: 1.5dvh 3dvw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      flex-shrink: 0;
+      background: #ffffff !important;
+    }
+    .modal-header h2 { margin: 0; font-size: clamp(1.2rem, 4dvw, 1.5rem); }
+
+    .grid-container {
+      flex: 1;
+      padding: 2.5dvh 3dvw;
+      overflow: hidden;
+    }
+    .grid {
+      display: grid;
+      gap: clamp(8px, 1.2dvh, 14px);
+      height: 100%;
+    }
+    .grid-item {
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid transparent;
+      border-radius: 12px;
+    }
+    .grid-item:hover { transform: scale(1.08); }
+    .grid-item.selected {
+      border-color: #6c5ce7;
+    }
+    .grid-item img {
+      width: 92%;
+      height: 92%;
+      object-fit: contain;
+    }
+
+/* Updated Color Scheme */
+.btn-primary {
+  background: #7f2a8f;
+  color: white;
+}
+.btn-primary:hover {
+  background: #6a2478;
+  transform: scale(1.05);
+}
+
+#roll-btn {
+  background: #4dbde5;
+  color: white;
+}
+#roll-btn:hover {
+  background: #3aa8d0;
+  transform: scale(1.05);
+}
+
+#doodles-btn {
+  background: #fbb065;
+  color: #000000;
+}
+#doodles-btn:hover {
+  background: #f9a14f;
+  transform: scale(1.05);
+}
+
+/* Covered By Your Grace font - regular weight */
+#learn-btn,
+#roll-btn,
+#doodles-btn,
+.modal-header h2 {
+  font-family: 'Covered By Your Grace', cursive;
+  font-weight: 400;           /* Regular weight */
+}
+
+/* Force Fira Sans on remaining buttons */
+#close-learn,
+#close-deck,
+#learn-confirm,
+#reset-btn {
+  font-family: 'Fira Sans', system-ui, sans-serif;
+}
+
+/* Tooltip */
+.tooltip {
+  position: fixed;
+  background: #cdecf9;
+  color: #2d3436;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  padding: 10px 14px;
+  border-radius: 10px;
+  max-width: 260px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  z-index: 1200;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.22s cubic-bezier(0.23, 1, 0.32, 1);
+  display: none;
+  border: none;
+}
+
+.inline-doodle {
+  display: inline-block;
+  height: 1.25em;
+  width: auto;                    /* let it adjust naturally */
+  vertical-align: middle;
+  margin: 0 3px;
+  object-fit: contain;            /* preserves original aspect ratio */
+  image-rendering: crisp-edges;
+}
+
+    /* Roll Animations */
+    @keyframes slideInLeft  { from { opacity: 0; transform: translateX(-400%); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(400%); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideOutLeft  { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-400%); } }
+    @keyframes slideOutRight { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(400%); } }
+
+    .slide-in-left   { animation: slideInLeft  0.25s forwards ease-out; }
+    .slide-in-right  { animation: slideInRight 0.25s forwards ease-out; }
+    .slide-out-left  { animation: slideOutLeft  0.25s forwards ease-in; }
+    .slide-out-right { animation: slideOutRight 0.25s forwards ease-in; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button id="learn-btn" class="btn btn-primary">Learn</button>
+  </header>
+
+  <main>
+    <div class="pile" id="left-pile"></div>
+    <div class="center-area">
+      <button id="roll-btn" class="btn btn-primary">ROLL</button>
+      <div class="deck-info">Deck: <span id="total-count">10</span> doodles</div>
+      <button id="reset-btn" class="btn btn-secondary" style="font-size:0.9rem; padding:8px 16px;">Reset Deck</button>
+    </div>
+    <div class="pile" id="right-pile"></div>
+  </main>
+
+  <footer>
+    <button id="doodles-btn" class="btn btn-secondary">Doodles</button>
+  </footer>
+
+  <!-- Learn Modal -->
+  <div class="modal top" id="learn-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Learn a new doodle</h2>
+        <div>
+          <button id="learn-confirm" class="btn btn-primary" style="display:none; margin-right:12px;">LEARN</button>
+          <button id="close-learn" class="btn btn-secondary">Close</button>
+        </div>
+      </div>
+      <div class="grid-container">
+        <div class="grid" id="learn-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Doodles Modal -->
+  <div class="modal bottom" id="deck-modal">
+    <div class="modal-content">
+     <div class="modal-header">
+  <h2>Your Deck (<span id="deck-size">10</span>)</h2>
+  <div>
+    <button id="remove-confirm" class="btn btn-primary" style="display:none; margin-right:12px;">REMOVE</button>
+    <button id="close-deck" class="btn btn-secondary">Close</button>
+  </div>
+</div>
+      <div class="grid-container">
+        <div class="grid" id="deck-grid"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Tooltip -->
+<div id="tooltip" class="tooltip"></div>
+
+
+  <script>
+    const allDoodles = ["circle","square","triangle","dot","line","boat","butterfly","cat","chest","cloud","coin","crown","cube","cylinder","diamond","die","drop","fish","flower","halfcircle","heart","house","icecream","lens","letter","mug","music","piano","pizza","planet","present","pyramid","rocket","smiley","star","sword","teeth","toiletpaper","turd","umbrella","wireless"];
+const doodleInfo = {
+  // ───── Basic Shapes ─────
+  circle: "{circle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+  square: "{square} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+  triangle: "{triangle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+  dot: "{dot} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+  line: "{line} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+
+  // ───── Intermediate Shapes ─────
+  drop: "{drop} is an intermediate shape that can merge to create {heart}, {flower}, and {turd}. It also contributes to scoring for {mug}, {umbrella}, and {cloud}.",
+  teeth: "{teeth} is an intermediate shape that can merge to create {cat}, {rocket}, and {crown}.",
+  lens: "{lens} is an intermediate shape that can merge to create {rocket}, {planet}, and {fish}.",
+  halfcircle: "{halfcircle} is an intermediate shape that can merge to create {chest}, {butterfly}, and {umbrella}.",
+
+  // ───── Other Doodles ─────
+  boat: "{boat} scores {2pt} per {fish} <i><b>below</b></i> on <i><b>same page</b></i>.",
+  butterfly: "{butterfly} scores {1pt} per {flower} in largest {flower} <i><b>group</b></i>.",
+  cat: "{cat} scores {3pt} (+{2pt} per <i><b>surrounding</b></i> {fish}/{turd})",
+  chest: "{chest} scores {2pt} per surrounding {coin}/{diamond}/ {crown}.",
+  cloud: "{cloud} scores {1pt} per {drop} below on same page.",
+  coin: "{coin} scores {2pt}.",
+  crown: "{crown} scores {3pt} (+{4pt} if {smiley} is directly-below).",
+  cube: "{Cube} is an intermediate shape that can merge to create {chest} or {present}. Also score {10pt} per set of {cube}+{cylinder}+{pyramid}.",
+  cylinder: "{cylinder} is an intermediate shape that can merge to create {mug} or {toiletpaper}. Also score {10pt} per set of {cube}+{cylinder}+{pyramid}.",
+  diamond: "{diamond} scores {4pt}.",
+  die: "{die} copies the value of a surrounding doodle.",
+  flower: "{flower} scores {2pt}.",
+  heart: "{heart} scores {2pt}.",
+  house: "{house} scores {1pt} (+{1pt} per surrounding {smiley}/{wireless}).",
+  icecream: "{icecream} scores {4pt}.",
+  letter: "{letter} scores {1pt} (+{5pt} if {heart} is directly-above).",
+  mug: "{mug} scores {2pt} (+{2pt} if {drop} is directly-above).",
+  music: "{music} scores {1pt}.",
+  piano: "{piano} scores {1pt} per column with {music} on any page.",
+  pizza: "{pizza} ",
+  planet: "{planet} ",
+  present: "{present} ",
+  pyramid: "{pyramid} is an intermediate shape that can merge to create {diamond} or {icecream}. Also score {10pt} per set of {cube}+{cylinder}+{pyramid}.",
+  rocket: "{rocket} ",
+  smiley: "{smiley} ",
+  star: "{star} ",
+  sword: "{sword} ",
+  toiletpaper: "{toiletpaper} ",
+  turd: "{turd} ",
+  umbrella: "{umbrella} ",
+  wireless: "{wireless} "
+};
+
+    let deck = { circle: 2, square: 2, triangle: 2, dot: 2, line: 2 };
+    let selectedDoodle = null;
+
+    function getTotalDeckSize() { return Object.values(deck).reduce((a,b)=>a+b,0); }
+    function updateDeckCount() {
+      const total = getTotalDeckSize();
+      document.getElementById('total-count').textContent = total;
+      document.getElementById('deck-size').textContent = total;
+    }
+
+    function getDeckAsArray() {
+      let arr = [];
+      for (let [doodle, count] of Object.entries(deck)) {
+        for (let i = 0; i < count; i++) arr.push(doodle);
+      }
+      return arr;
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function drawSix() {
+      const deckArray = getDeckAsArray();
+      if (deckArray.length < 6) {
+        alert("You need at least 6 doodles in your deck to roll!");
+        return null;
+      }
+      return shuffle([...deckArray]).slice(0, 6);
+    }
+
+    function renderPileWithStagger(pileElement, doodles, direction, isExit = false) {
+      pileElement.innerHTML = '';
+      doodles.forEach((name, i) => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        const delay = i * 30 + 10;
+
+        if (isExit) {
+          setTimeout(() => {
+            div.classList.add(direction === 'left' ? 'slide-out-left' : 'slide-out-right');
+          }, delay);
+        } else {
+          if (direction === 'left') {
+            div.style.transform = 'translateX(-400%)';
+            div.style.opacity = '0';
+          } else {
+            div.style.transform = 'translateX(400%)';
+            div.style.opacity = '0';
+          }
+          setTimeout(() => {
+            div.classList.add(direction === 'left' ? 'slide-in-left' : 'slide-in-right');
+            div.style.transform = '';
+            div.style.opacity = '1';
+          }, delay);
+        }
+        div.innerHTML = `<img src="images/${name}.png" alt="${name}" >`;
+        pileElement.appendChild(div);
+      });
+    }
+
+    document.getElementById('roll-btn').addEventListener('click', async () => {
+      const leftPile = document.getElementById('left-pile');
+      const rightPile = document.getElementById('right-pile');
+
+      const currentLeft = Array.from(leftPile.querySelectorAll('img')).map(img => img.src.split('/').pop().replace('.png',''));
+      const currentRight = Array.from(rightPile.querySelectorAll('img')).map(img => img.src.split('/').pop().replace('.png',''));
+
+      renderPileWithStagger(leftPile, currentLeft, 'left', true);
+      renderPileWithStagger(rightPile, currentRight, 'right', true);
+      
+
+      await new Promise(r => setTimeout(r, 520));
+
+      leftPile.innerHTML = '';
+      rightPile.innerHTML = '';
+
+      leftPile.style.transition = 'none';
+      rightPile.style.transition = 'none';
+      leftPile.style.transform = 'translateX(0)';
+      rightPile.style.transform = 'translateX(0)';
+
+      void leftPile.offsetWidth;
+      void rightPile.offsetWidth;
+
+      leftPile.style.transition = 'transform 0.45s ease';
+      rightPile.style.transition = 'transform 0.45s ease';
+
+      await new Promise(r => setTimeout(r, 40));
+
+      const drawn = drawSix();
+      if (!drawn) return;
+
+      renderPileWithStagger(leftPile, drawn.slice(0,3), 'left');
+      renderPileWithStagger(rightPile, drawn.slice(3), 'right');
+      attachTooltipListeners();
+    });
+
+    function optimizeGrid(gridElement, itemCount) {
+      if (!gridElement || itemCount === 0) return;
+      const container = gridElement.parentElement;
+      const availW = container.clientWidth - 40;
+      const availH = container.clientHeight - 40;
+
+      let bestCols = 6;
+      let bestSize = 0;
+
+      for (let cols = 4; cols <= 16; cols++) {
+        const rows = Math.ceil(itemCount / cols);
+        const size = Math.min(availW / cols, availH / rows);
+        if (size > bestSize) {
+          bestSize = size;
+          bestCols = cols;
+        }
+      }
+
+      const finalSize = Math.floor(bestSize * 0.92);
+      gridElement.style.gridTemplateColumns = `repeat(${bestCols}, 1fr)`;
+      gridElement.style.gridAutoRows = `${finalSize}px`;
+    }
+
+    const learnModal = document.getElementById('learn-modal');
+    const learnGrid = document.getElementById('learn-grid');
+    const learnConfirmBtn = document.getElementById('learn-confirm');
+
+    function populateLearnGrid() {
+      learnGrid.innerHTML = '';
+      selectedDoodle = null;
+      learnConfirmBtn.style.display = 'none';
+
+      allDoodles.forEach(name => {
+        const div = document.createElement('div');
+        div.className = 'grid-item';
+        div.innerHTML = `<img src="images/${name}.png" alt="${name}" >`;
+
+        div.addEventListener('click', () => {
+          if (selectedDoodle === name) {
+            selectedDoodle = null;
+            div.classList.remove('selected');
+            learnConfirmBtn.style.display = 'none';
+          } else {
+            document.querySelectorAll('#learn-grid .grid-item').forEach(item => item.classList.remove('selected'));
+            selectedDoodle = name;
+            div.classList.add('selected');
+            learnConfirmBtn.style.display = 'inline-block';
+          }
+        });
+
+        learnGrid.appendChild(div);
+      });
+
+      setTimeout(() => optimizeGrid(learnGrid, allDoodles.length), 50);
+    attachTooltipListeners();
+    }
+
+    learnConfirmBtn.addEventListener('click', () => {
+      if (selectedDoodle) {
+        deck[selectedDoodle] = (deck[selectedDoodle] || 0) + 1;
+        updateDeckCount();
+        learnModal.classList.remove('show');
+        setTimeout(() => learnModal.style.display = 'none', 220);
+      }
+    });
+
+    document.getElementById('learn-btn').addEventListener('click', () => {
+      populateLearnGrid();
+      learnModal.style.display = 'flex';
+      requestAnimationFrame(() => learnModal.classList.add('show'));
+    });
+
+    document.getElementById('close-learn').addEventListener('click', () => {
+      learnModal.classList.remove('show');
+      setTimeout(() => learnModal.style.display = 'none', 220);
+    });
+
+   const deckModal = document.getElementById('deck-modal');
+const deckGrid = document.getElementById('deck-grid');
+const removeConfirmBtn = document.getElementById('remove-confirm');
+let selectedToRemove = null;
+
+/* Tooltip System */
+const tooltip = document.getElementById('tooltip');
+let tooltipTimeout = null;
+
+function positionTooltip(e) {
+  const rect = tooltip.getBoundingClientRect();
+  let x = e.clientX + 20;
+  let y = e.clientY - rect.height - 18;   // Try above cursor first
+
+  // Flip below if there's not enough space at the top
+  if (y < 15) {
+    y = e.clientY + 18;
+  }
+
+  // Keep it inside the viewport horizontally
+  if (x + rect.width > window.innerWidth - 15) {
+    x = window.innerWidth - rect.width - 15;
+  }
+  if (x < 15) {
+    x = 15;
+  }
+
+  tooltip.style.left = `${x}px`;
+  tooltip.style.top = `${y}px`;
+}
+
+function showTooltip(e, name) {
+  clearTimeout(tooltipTimeout);
+  
+  tooltipTimeout = setTimeout(() => {
+    // Get description or fallback
+    let description = doodleInfo[name] || 
+      `The "${name}" doodle.\n\nPlaceholder description. Each doodle will have its own unique information here later.`;
+    
+    // Replace {doodleName} with actual inline images
+    description = description.replace(/\{(\w+)\}/g, (match, doodle) => {
+      return `<img src="images/${doodle}.png" class="inline-doodle" alt="${doodle}">`;
+    });
+    
+    tooltip.innerHTML = description;
+    
+    tooltip.style.display = 'block';
+    tooltip.style.opacity = '0';
+    tooltip.style.transform = 'translateY(10px)';
+    
+    positionTooltip(e);
+    
+    requestAnimationFrame(() => {
+      tooltip.style.opacity = '1';
+      tooltip.style.transform = 'translateY(0)';
+    });
+  }, 500);
+}
+function hideTooltip() {
+  clearTimeout(tooltipTimeout);
+  tooltip.style.opacity = '0';
+  tooltip.style.transform = 'translateY(10px)';
+  setTimeout(() => {
+    tooltip.style.display = 'none';
+  }, 250);
+}
+
+function attachTooltipListeners() {
+  document.querySelectorAll('.card, .grid-item').forEach(el => {
+    const img = el.querySelector('img');
+    if (!img) return;
+    const name = img.alt || img.title;
+    
+    el.addEventListener('mouseenter', (e) => showTooltip(e, name));
+    el.addEventListener('mouseleave', hideTooltip);
+  });
+}
+
+function populateDeckGrid() {
+  deckGrid.innerHTML = '';
+  selectedToRemove = null;
+  removeConfirmBtn.style.display = 'none';
+
+  for (let [name, qty] of Object.entries(deck)) {
+    for (let i = 0; i < qty; i++) {
+      const div = document.createElement('div');
+      div.className = 'grid-item';
+      div.innerHTML = `<img src="images/${name}.png" alt="${name}">`;
+      
+      div.addEventListener('click', () => {
+        // Toggle selection
+        if (selectedToRemove === name) {
+          selectedToRemove = null;
+          div.classList.remove('selected');
+          removeConfirmBtn.style.display = 'none';
+        } else {
+          document.querySelectorAll('#deck-grid .grid-item').forEach(item => item.classList.remove('selected'));
+          selectedToRemove = name;
+          div.classList.add('selected');
+          removeConfirmBtn.style.display = 'inline-block';
+        }
+      });
+      
+      deckGrid.appendChild(div);
+    }
+  }
+  setTimeout(() => optimizeGrid(deckGrid, deckGrid.children.length), 50);
+attachTooltipListeners();
+}
+
+// Remove button handler
+removeConfirmBtn.addEventListener('click', () => {
+  if (selectedToRemove && deck[selectedToRemove] > 0) {
+    deck[selectedToRemove]--;
+    if (deck[selectedToRemove] === 0) delete deck[selectedToRemove];
+    
+    updateDeckCount();
+    populateDeckGrid();        // Refresh grid + clear selection
+  }
+});
+
+document.getElementById('doodles-btn').addEventListener('click', () => {
+  populateDeckGrid();
+  deckModal.style.display = 'flex';
+  requestAnimationFrame(() => deckModal.classList.add('show'));
+});
+
+document.getElementById('close-deck').addEventListener('click', () => {
+  deckModal.classList.remove('show');
+  setTimeout(() => deckModal.style.display = 'none', 220);
+});
+
+    window.addEventListener('resize', () => {
+      if (learnModal.style.display === 'flex') optimizeGrid(learnGrid, allDoodles.length);
+      if (deckModal.style.display === 'flex') optimizeGrid(deckGrid, deckGrid.children.length);
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      if (confirm("Reset deck to starting 10 basic shapes?")) {
+        deck = { circle: 2, square: 2, triangle: 2, dot: 2, line: 2 };
+        updateDeckCount();
+        document.getElementById('left-pile').innerHTML = '';
+        document.getElementById('right-pile').innerHTML = '';
+      }
+    });
+
+    updateDeckCount();
+  </script>
+
+</body>
+</html>
