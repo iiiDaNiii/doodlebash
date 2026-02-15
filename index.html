@@ -1,377 +1,1091 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Covered+By+Your+Grace&family=Fira+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <title>Doodle Bash - Deck Builder</title>
+  <title>Doodle Bash</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Covered+By+Your+Grace&family=Fira+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
   <style>
-    html, body {
-      height: 100dvh;
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    #game-container {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 56.25dvh;
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: 1fr 3fr 1fr;
       overflow: hidden;
-      font-family: 'Fira Sans', system-ui, sans-serif;
-      background: #ffffff !important;
-      color: #2d3436;
+      container-type: inline-size;
     }
-    body { display: flex; flex-direction: column; background: #ffffff !important; }
 
-    header {
-  width: 100%;
-  padding: 1.5dvh 0;
-  background: #ffffff !important;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-    .btn {
-      padding: 1.2dvh 3dvw;
-      font-size: clamp(0.95rem, 3.5dvw, 1.1rem);
-      border: none;
-      border-radius: 999px;
-      cursor: pointer;
-      transition: all 0.2s;
+    @media (max-aspect-ratio: 9/16) {
+      #game-container {
+        width: 100vw;
+        height: calc(100vw * 16 / 9);
+      }
     }
-    .btn-primary { background: #6c5ce7; color: white; }
-    .btn-primary:hover { transform: scale(1.05); background: #5649c0; }
-    .btn-secondary { background: #636e72; color: white; }
 
-    main {
-      flex: 1;
+    #header,
+    #footer {
+      container-type: inline-size;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: clamp(4dvw, 8dvw, 80px);
-      padding: clamp(2dvh, 5dvh, 50px) 4dvw clamp(12dvh, 18dvh, 120px);
-      background: #ffffff !important;
+      background: #f5f5f5;
+      gap: 4cqi;
     }
 
-    .pile {
-      display: flex;
-      flex-direction: column;
-      gap: clamp(1.8dvh, 3.5dvh, 35px);
-      transition: transform 0.45s ease;
-      will-change: transform;
-    }
-
-    .pile .card {
-      width: clamp(70px, 11dvw, 110px);
-      height: clamp(70px, 11dvw, 110px);
-      border: none !important;
-      border-radius: 0;
-      box-shadow: none !important;
-      background: transparent !important;
-      overflow: visible;
-    }
-    .pile .card:hover { transform: scale(1.08); }
-    .pile .card img {
-      width: 100%;
+    #shuffle-zone {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(5, 1fr);
       height: 100%;
-      object-fit: contain;
+      width: 100%;
+      container-type: inline-size;
+      overflow: hidden;
+    }
+
+    #doodle-l1 {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    #doodle-l2 {
+      grid-column: 1;
+      grid-row: 3;
+    }
+
+    #doodle-l3 {
+      grid-column: 1;
+      grid-row: 4;
+    }
+
+    #doodle-r1 {
+      grid-column: 3;
+      grid-row: 2;
+    }
+
+    #doodle-r2 {
+      grid-column: 3;
+      grid-row: 3;
+    }
+
+    #doodle-r3 {
+      grid-column: 3;
+      grid-row: 4;
+    }
+
+    #doodle-l1,
+    #doodle-l2,
+    #doodle-l3,
+    #doodle-r1,
+    #doodle-r2,
+    #doodle-r3 {
+      background-size: auto 75%;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: 20;
+      transition: transform 0.35s ease-out;
+      transform: translateY(100dvh) rotate(0deg);
+      cursor: pointer;
+    }
+
+    button {
+      border: none;
+      font-family: 'Covered By Your Grace', cursive;
+      font-weight: 400;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    #header button,
+    #footer button {
+      font-size: 6.5cqi;
+      padding: 3cqi 9cqi;
+      border-radius: 9999px;
+    }
+
+    #header button {
+      background: #7f2a8f;
+      color: white;
+    }
+
+    #footer button {
+      background: #fbb065;
+      color: #000;
+    }
+
+    #shuffle-btn {
+      grid-column: 2;
+      grid-row: 3;
+      background: #4dbde5;
+      color: white;
+      font-size: 6.5cqi;
+      width: 100%;
+      border-radius: 9999px;
+    }
+
+    /* MODALS */
+    .modal {
+      position: absolute;
+      inset: 0;
+      background: #fff;
+      display: none;
+      flex-direction: column;
+      z-index: 100;
+      container-type: inline-size;
+      transform: translateY(0);
+      transition: transform 0.4s ease-out;
+    }
+
+    .modal.learn {
+      transform: translateY(-100%);
+    }
+
+    .modal.portfolio {
+      transform: translateY(100%);
+    }
+
+    .modal.guide {
+      transform: translateX(-100%);
+    }
+
+    .modal.active {
+      display: flex;
+      transform: translate(0);
+    }
+
+    .modal-top {
+      flex: 0 0 18%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4cqi;
+      color: white;
+    }
+
+    .modal-top.learn {
+      background: #7f2a8f;
+    }
+
+    .modal-top.portfolio {
+      background: #fbb065;
+      color: #000;
+    }
+
+    .modal-top.guide {
+      background: #4dbde5;
+    }
+
+    .modal-top .title {
+      font-family: 'Fira Sans', sans-serif;
+      font-weight: 600;
+      font-size: 5cqi;
+    }
+
+    .modal-top .buttons {
+      display: flex;
+      align-items: center;
+      gap: 10.5cqi;
+    }
+
+    .close-btn,
+    .action-btn {
+      height: 9cqi;
+      line-height: 9cqi;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7cqi;
+    }
+
+    .close-btn {
+      width: 9cqi;
+      border-radius: 2cqi;
+      background: rgba(255, 255, 255, 0.25);
+      color: white;
+    }
+
+    .modal-top.portfolio .close-btn,
+    .modal-top.guide .close-btn {
+      background: rgba(0, 0, 0, 0.15);
+      color: #000;
+    }
+
+    .action-btn {
+      padding: 0 6cqi;
+      font-size: 6cqi;
+      min-width: 14cqi;
+      border-radius: 9999px;
+      display: none;
+    }
+
+    .action-btn.learn {
+      background: #fbb065;
+      color: #000000;
+    }
+
+    .action-btn.remove {
+      background: #7f2a8f;
+      color: white;
+    }
+
+    .modal-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(7, 1fr);
+      gap: 1.4cqi;
+      padding: 1.8cqi;
+      overflow: hidden;
+    }
+
+    .modal-bottom-spacer {
+      flex: 0 0 2.25%;
       background: transparent;
     }
 
-    .center-area {
+    .doodle-cell {
+      min-height: 0;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2dvh;
-    }
-    #roll-btn {
-      font-size: clamp(1.8rem, 6dvw, 2.4rem);
-      padding: clamp(1.8dvh, 4dvh, 28px) clamp(4dvw, 8dvw, 70px);
-      border-radius: 9999px;
-    }
-    .deck-info {
-      font-size: clamp(0.9rem, 3dvw, 1.1rem);
-      color: #636e72;
-    }
-
-    footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 1.5dvh;
-      text-align: center;
-      background: #ffffff !important;
-      box-shadow: 0 -1px 6px rgba(0,0,0,0.06);
-      z-index: 99;
-    }
-
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.75);
-      display: none;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: #ffffff !important;
-      border-radius: 16px;
-      width: 94%;
-      max-width: 1200px;
-      height: clamp(68dvh, 82dvh, 92dvh);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.25);
-      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .modal.show .modal-content { transform: translateY(0) !important; opacity: 1 !important; }
-    .modal.top .modal-content { transform: translateY(-10dvh); opacity: 0; }
-    .modal.bottom .modal-content { transform: translateY(8dvh); opacity: 0; }
-
-    .modal-header {
-      padding: 1.5dvh 3dvw;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #eee;
-      flex-shrink: 0;
-      background: #ffffff !important;
-    }
-    .modal-header h2 { margin: 0; font-size: clamp(1.2rem, 4dvw, 1.5rem); }
-
-    .grid-container {
-      flex: 1;
-      padding: 2.5dvh 3dvw;
-      overflow: hidden;
-    }
-    .grid {
-      display: grid;
-      gap: clamp(8px, 1.2dvh, 14px);
-      height: 100%;
-    }
-    .grid-item {
-      text-align: center;
+      padding: 1cqi;
+      border-radius: 18px;
+      transition: all 0.3s ease;
       cursor: pointer;
-      transition: all 0.2s;
+      position: relative;
+    }
+
+    .doodle-cell:hover:not(.selected) {
+      background: rgba(255, 255, 255, 0.4);
+      transform: scale(1.1);
+    }
+
+    .doodle-cell.selected {
+      transform: scale(1.5);
+      z-index: 10;
+      opacity: 1 !important;
+    }
+
+    .modal-grid .doodle-cell:not(.selected) {
+      opacity: 0.5;
+    }
+
+    .modal-grid:not(:has(.selected)) .doodle-cell {
+      opacity: 1;
+    }
+
+    .doodle-img {
+      width: 92%;
+      aspect-ratio: 1 / 1;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      border-radius: 14px;
+      transition: all 0.6s ease-out;
+    }
+
+    .doodle-cell.animate-learn .doodle-img {
+      animation: learnSpinShrink 0.6s ease-in-out forwards;
+    }
+
+    @keyframes learnSpinShrink {
+      0% {
+        transform: scale(1) rotate(0deg);
+      }
+
+      40% {
+        transform: scale(0.1) rotate(720deg);
+      }
+
+      100% {
+        transform: scale(1) rotate(720deg);
+      }
+    }
+
+    .doodle-cell.animate-remove {
+      animation: removeSlideDown 0.6s ease-in-out forwards;
+    }
+
+    @keyframes removeSlideDown {
+      0% {
+        transform: translateY(0);
+      }
+
+      100% {
+        transform: translateY(200%);
+      }
+    }
+
+    .doodle-cell.animate-remove .doodle-img {
+      animation: spinFadeScale 0.6s ease-in-out forwards;
+    }
+
+    @keyframes spinFadeScale {
+      0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(0.1) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* GUIDE MODAL */
+    #guide-content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 3cqi 4cqi;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2cqi;
+    }
+
+    .merge-row {
       display: flex;
       align-items: center;
-      justify-content: center;
-      border: 3px solid transparent;
+      justify-content: space-between;
+      /* border-bottom removed — let group dividers do the work */
+    }
+
+    .inputs {
+      display: flex;
+      gap: 1.6cqi;
+      flex-shrink: 0;
+    }
+
+    .arrow-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      height: 10cqi;
+      margin: 0 4cqi;
+    }
+
+    .arrow-line {
+      flex: 1;
+      height: 0.5cqi;
+      background: #222;
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .arrow-line::after {
+      content: '';
+      position: absolute;
+      right: 1.1cqi;
+      top: 50%;
+      transform: translateY(-50%) rotate(45deg);
+      width: 5.2cqi;
+      height: 5.2cqi;
+      border-top: 0.5cqi solid #222;
+      border-right: 0.5cqi solid #222;
+      border-bottom: none;
+      border-left: none;
+    }
+
+    .result {
+      flex-shrink: 0;
+    }
+
+    .guide-doodle {
+      width: 8.7cqi;
+      height: auto;
+    }
+
+    /* TOOLTIP */
+    #tooltip {
+      position: absolute;
+      background: #ccecf8;
       border-radius: 12px;
+      padding: 16px 20px;
+      max-width: 260px;
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 4.2cqi;
+      line-height: 1.5;
+      z-index: 250;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+      transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+      pointer-events: none;
     }
-    .grid-item:hover { transform: scale(1.08); }
-    .grid-item.selected {
-      border-color: #6c5ce7;
-    }
-    .grid-item img {
-      width: 92%;
-      height: 92%;
-      object-fit: contain;
+
+    #tooltip.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
     }
 
-/* Updated Color Scheme */
-.btn-primary {
-  background: #7f2a8f;
-  color: white;
-}
-.btn-primary:hover {
-  background: #6a2478;
-  transform: scale(1.05);
+    #tooltip .tooltip-desc {
+      color: #222;
+    }
+
+    .inline-doodle {
+      display: inline-block;
+      width: 1.3em;
+      height: auto;
+      vertical-align: middle;
+      margin: 0 0.15em -0.2em;
+      background: none;
+      box-shadow: none;
+      border: none;
+      padding: 0;
+    }
+
+    /* TOAST */
+    #toast {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(251, 176, 101, 0.95);
+      color: #000;
+      font-family: 'Fira Sans', sans-serif;
+      font-weight: 600;
+      font-size: 5cqi;
+      padding: 2cqi 5cqi;
+      border-radius: 9999px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      z-index: 300;
+      white-space: nowrap;
+      max-width: 80cqi;
+      text-align: center;
+    }
+
+    #toast.show {
+      opacity: 1;
+    }
+
+    .group-divider {
+  min-height: .6cqi;
+  background: #dbdbdb;
+  margin: 2.5cqi 0;
+  border-radius: 0.125rem;
+  width: 100%;
+  flex-shrink: 0;  /* Prevents flex from compressing it */
+  align-self: stretch;  /* Ensures it spans the full container width */
 }
 
-#roll-btn {
-  background: #4dbde5;
-  color: white;
-}
-#roll-btn:hover {
-  background: #3aa8d0;
-  transform: scale(1.05);
+/* GUIDE FILTERING */
+.modal-top.guide .action-btn {
+  background: #ffffff;
+  color: #5fbae9;
+  border: none;  /* Flush like LEARN/REMOVE – no outline */
 }
 
-#doodles-btn {
-  background: #fbb065;
-  color: #000000;
-}
-#doodles-btn:hover {
-  background: #f9a14f;
-  transform: scale(1.05);
+.guide-doodle {
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-/* Covered By Your Grace font - regular weight */
-#learn-btn,
-#roll-btn,
-#doodles-btn,
-.modal-header h2 {
-  font-family: 'Covered By Your Grace', cursive;
-  font-weight: 400;           /* Regular weight */
+.guide-doodle:hover,
+.guide-doodle.selected {
+  transform: scale(1.25);
+  box-shadow: 0 0 0 0.5cqi #4dbde5;
+  z-index: 10;
 }
 
-/* Force Fira Sans on remaining buttons */
-#close-learn,
-#close-deck,
-#learn-confirm,
-#reset-btn {
-  font-family: 'Fira Sans', system-ui, sans-serif;
-}
-
-/* Tooltip */
-.tooltip {
-  position: fixed;
-  background: #cdecf9;
-  color: #2d3436;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  padding: 10px 14px;
-  border-radius: 10px;
-  max-width: 260px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-  pointer-events: none;
-  z-index: 1200;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.22s cubic-bezier(0.23, 1, 0.32, 1);
+#guide-content.filtered .group-divider {
   display: none;
-  border: none;
 }
 
-.inline-doodle {
-  display: inline-block;
-  height: 1.25em;
-  width: auto;                    /* let it adjust naturally */
-  vertical-align: middle;
-  margin: 0 3px;
-  object-fit: contain;            /* preserves original aspect ratio */
-  image-rendering: crisp-edges;
+/* GUIDE HIGHLIGHTING – ROCKING ANIMATION */
+.guide-doodle {
+  cursor: pointer;
+  box-shadow: none !important;   /* Permanent blue outline killer */
+  border: none !important;
+  /* No transitions here – avoids clashing with animation */
 }
 
-    /* Roll Animations */
-    @keyframes slideInLeft  { from { opacity: 0; transform: translateX(-400%); } to { opacity: 1; transform: translateX(0); } }
-    @keyframes slideInRight { from { opacity: 0; transform: translateX(400%); } to { opacity: 1; transform: translateX(0); } }
-    @keyframes slideOutLeft  { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-400%); } }
-    @keyframes slideOutRight { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(400%); } }
+.guide-doodle:hover {
+  transform: scale(1.1);
+  transition: transform 0.25s ease;  /* Isolated to hover only */
+}
 
-    .slide-in-left   { animation: slideInLeft  0.25s forwards ease-out; }
-    .slide-in-right  { animation: slideInRight 0.25s forwards ease-out; }
-    .slide-out-left  { animation: slideOutLeft  0.25s forwards ease-in; }
-    .slide-out-right { animation: slideOutRight 0.25s forwards ease-in; }
+.guide-doodle.selected {
+    transform-origin: center;      /* Pivots from image center */
+  animation: rock 1s ease-in-out infinite;
+  rotate: 0deg;
+}
+
+@keyframes rock {
+  0%, 100% {
+    transform: scale(1.1);
+    rotate:5deg;
+  }
+  50% {
+    transform: scale(1.1);
+    rotate:-5deg;
+  }
+  100% {
+    transform: scale(1.1);
+    rotate:5deg;
+  }
+}
   </style>
 </head>
+
 <body>
 
-  <header>
-    <button id="learn-btn" class="btn btn-primary">Learn</button>
-  </header>
-
-  <main>
-    <div class="pile" id="left-pile"></div>
-    <div class="center-area">
-      <button id="roll-btn" class="btn btn-primary">ROLL</button>
-      <div class="deck-info">Deck: <span id="total-count">10</span> doodles</div>
-      <button id="reset-btn" class="btn btn-secondary" style="font-size:0.9rem; padding:8px 16px;">Reset Deck</button>
+  <div id="game-container">
+    <div id="header">
+      <button id="guide-btn">GUIDE</button>
+      <button id="learn-btn">LEARN</button>
     </div>
-    <div class="pile" id="right-pile"></div>
-  </main>
 
-  <footer>
-    <button id="doodles-btn" class="btn btn-secondary">Doodles</button>
-  </footer>
+    <div id="shuffle-zone">
+      <div id="doodle-l1"></div>
+      <div id="doodle-l2"></div>
+      <div id="doodle-l3"></div>
+      <div id="doodle-r1"></div>
+      <div id="doodle-r2"></div>
+      <div id="doodle-r3"></div>
+      <button id="shuffle-btn">SHUFFLE</button>
+    </div>
 
-  <!-- Learn Modal -->
-  <div class="modal top" id="learn-modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Learn a new doodle</h2>
-        <div>
-          <button id="learn-confirm" class="btn btn-primary" style="display:none; margin-right:12px;">LEARN</button>
-          <button id="close-learn" class="btn btn-secondary">Close</button>
+    <div id="footer">
+      <button id="portfolio-btn">PORTFOLIO</button>
+    </div>
+
+    <!-- LEARN MODAL -->
+    <div id="learn-modal" class="modal learn">
+      <div class="modal-top learn">
+        <div class="title">Learn a Doodle</div>
+        <div class="buttons">
+          <button class="action-btn learn" id="modal-learn-btn">LEARN</button>
+          <button class="close-btn" id="close-learn">✕</button>
         </div>
       </div>
-      <div class="grid-container">
-        <div class="grid" id="learn-grid"></div>
-      </div>
+      <div id="learn-grid" class="modal-grid"></div>
+      <div class="modal-bottom-spacer"></div>
     </div>
-  </div>
 
-  <!-- Doodles Modal -->
-  <div class="modal bottom" id="deck-modal">
-    <div class="modal-content">
-     <div class="modal-header">
-  <h2>Your Deck (<span id="deck-size">10</span>)</h2>
-  <div>
-    <button id="remove-confirm" class="btn btn-primary" style="display:none; margin-right:12px;">REMOVE</button>
-    <button id="close-deck" class="btn btn-secondary">Close</button>
-  </div>
-</div>
-      <div class="grid-container">
-        <div class="grid" id="deck-grid"></div>
+    <!-- PORTFOLIO MODAL -->
+    <div id="portfolio-modal" class="modal portfolio">
+      <div class="modal-top portfolio">
+        <div class="title">Portfolio</div>
+        <div class="buttons">
+          <button class="action-btn remove" id="modal-remove-btn">REMOVE</button>
+          <button class="close-btn" id="close-portfolio">✕</button>
+        </div>
       </div>
+      <div id="portfolio-grid" class="modal-grid"></div>
+      <div class="modal-bottom-spacer"></div>
     </div>
-  </div>
-  <!-- Tooltip -->
-<div id="tooltip" class="tooltip"></div>
 
+    <!-- GUIDE MODAL -->
+    <div id="guide-modal" class="modal guide">
+      <div class="modal-top guide">
+        <div class="title">Doodle Guide</div>
+        <div class="buttons">
+          <button class="action-btn" id="full-guide-btn" style="display:none;">FULL GUIDE</button>
+          <button class="close-btn" id="close-guide">✕</button>
+        </div>
+      </div>
+      <div id="guide-content"></div>
+      <div class="modal-bottom-spacer"></div>
+    </div>
+
+    <!-- TOOLTIP -->
+    <div id="tooltip">
+      <div class="tooltip-desc" id="tooltip-desc"></div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
+  </div>
 
   <script>
-    const allDoodles = ["circle","square","triangle","dot","line","boat","butterfly","cat","chest","cloud","coin","crown","cube","cylinder","diamond","die","drop","fish","flower","halfcircle","heart","house","icecream","lens","letter","mug","music","piano","pizza","planet","present","pyramid","rocket","smiley","star","sword","teeth","toiletpaper","turd","umbrella","wireless"];
-const doodleInfo = {
-  // ───── Basic Shapes ─────
-  circle: "{circle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
-  square: "{square} is a basic shape that can merge to create many doodles (see Doodle Guide).",
-  triangle: "{triangle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
-  dot: "{dot} is a basic shape that can merge to create many doodles (see Doodle Guide).",
-  line: "{line} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+    let deck = {
+      circle: 2,
+      square: 2,
+      triangle: 2,
+      dot: 2,
+      line: 2
+    };
 
-  // ───── Intermediate Shapes ─────
-  drop: "{drop} is an intermediate shape that can merge to create {heart}, {flower}, and {turd}. It also contributes to scoring for {mug}, {umbrella}, and {cloud}.",
-  teeth: "{teeth} is an intermediate shape that can merge to create {cat}, {rocket}, and {crown}.",
-  lens: "{lens} is an intermediate shape that can merge to create {rocket}, {planet}, and {fish}.",
-  halfcircle: "{halfcircle} is an intermediate shape that can merge to create {chest}, {butterfly}, and {umbrella}.",
+    const allPossibleDoodles = [
+      "circle", "square", "triangle", "line", "dot",
+      "lens", "halfcircle", "drop", "teeth", "cylinder",
+      "cube", "pyramid", "cloud", "coin", "smiley",
+      "letter", "house", "die", "piano", "pizza",
+      "star", "wireless", "music", "planet", "sword",
+      "fish", "umbrella", "boat", "butterfly", "heart",
+      "turd", "flower", "crown", "cat", "rocket",
+      "mug", "toiletpaper", "chest", "present", "diamond",
+      "icecream"
+    ];
 
-  // ───── Other Doodles ─────
-  boat: "{boat} scores {2pt} per {fish} <i><b>below</b></i> on <i><b>same page</b></i>.",
-  butterfly: "{butterfly} scores {1pt} per {flower} in largest {flower} <i><b>group</b></i>.",
-  cat: "{cat} scores {3pt} (+{2pt} per <i><b>surrounding</b></i> {fish}/{turd})",
-  chest: "{chest} scores {2pt} per surrounding {coin}/{diamond}/ {crown}.",
-  cloud: "{cloud} scores {1pt} per {drop} below on same page.",
-  coin: "{coin} scores {2pt}.",
-  crown: "{crown} scores {3pt} (+{4pt} if {smiley} is directly-below).",
-  cube: "{Cube} is an intermediate shape that can merge to create {chest} or {present}. Also score {10pt} per set of {cube}+{cylinder}+{pyramid}.",
-  cylinder: "{cylinder} is an intermediate shape that can merge to create {mug} or {toiletpaper}. Also score {10pt} per set of {cube}+{cylinder}+{pyramid}.",
-  diamond: "{diamond} scores {4pt}.",
-  die: "{die} copies the value of a surrounding doodle.",
-  flower: "{flower} scores {2pt}.",
-  heart: "{heart} scores {2pt}.",
-  house: "{house} scores {1pt} (+{1pt} per surrounding {smiley}/{wireless}).",
-  icecream: "{icecream} scores {4pt}.",
-  letter: "{letter} scores {1pt} (+{5pt} if {heart} is directly-above).",
-  mug: "{mug} scores {2pt} (+{2pt} if {drop} is directly-above).",
-  music: "{music} scores {1pt}.",
-  piano: "{piano} scores {1pt} per column with {music} on any page.",
-  pizza: "{pizza} ",
-  planet: "{planet} ",
-  present: "{present} ",
-  pyramid: "{pyramid} is an intermediate shape that can merge to create {diamond} or {icecream}. Also score {10pt} per set of {cube}+{cylinder}+{pyramid}.",
-  rocket: "{rocket} ",
-  smiley: "{smiley} ",
-  star: "{star} ",
-  sword: "{sword} ",
-  toiletpaper: "{toiletpaper} ",
-  turd: "{turd} ",
-  umbrella: "{umbrella} ",
-  wireless: "{wireless} "
-};
+    const doodleDescriptions = {
+      circle: "{circle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+      square: "{square} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+      triangle: "{triangle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+      dot: "{dot} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+      line: "{line} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+      drop: "{drop} is an intermediate shape that can merge to create {heart}, {flower}, and {turd}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {mug}, {umbrella}, and {cloud}.",
+      teeth: "{teeth} is an intermediate shape that can merge to create {cat}, {rocket}, and {crown}.",
+      lens: "{lens} is an intermediate shape that can merge to create {rocket}, {planet}, and {fish}.",
+      halfcircle: "{halfcircle} is an intermediate shape that can merge to create {chest}, {butterfly}, and {umbrella}.",
+      boat: "{boat} scores {2pt} per {fish} <i><b>below</b></i> on <i><b>same page</b></i>.",
+      butterfly: "{butterfly} scores {1pt} per {flower} in largest <i><b>group</b></i>.",
+      cat: "{cat} scores {3pt} (+{2pt} per <i><b>surrounding</b></i> {fish}/{turd})",
+      chest: "{chest} scores {2pt} per <i><b>surrounding</b></i> {coin}/{diamond}/{crown}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
+      cloud: "{cloud} scores {1pt} per {drop} <i><b>below</b></i> on <i><b>same page</b></i>.",
+      coin: "{coin} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
+      crown: "{crown} scores {3pt} (+{4pt} if {smiley} is <i><b>directly-below</b></i>).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
+      cube: "{cube} is an intermediate shape that can merge to create {chest} or {present}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} per set of {cube}{cylinder}{pyramid}.",
+      cylinder: "{cylinder} is an intermediate shape that can merge to create {mug} or {toiletpaper}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} per set of {cube}{cylinder}{pyramid}.",
+      diamond: "{diamond} scores {4pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
+      die: "{die} copies the value of a <i><b>surrounding</b></i> doodle.",
+      flower: "{flower} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {butterfly}.",
+      heart: "{heart} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {letter}.",
+      house: "{house} scores {1pt} (+{1pt} per <i><b>surrounding</b></i> {smiley}/{wireless}).",
+      icecream: "{icecream} scores {4pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {smiley}.",
+      letter: "{letter} scores {1pt} (+{5pt} if {heart} is <i><b>directly-above</b></i>).",
+      mug: "{mug} scores {2pt} (+{2pt} if {drop} is <i><b>directly-above</b></i>).",
+      music: "{music} scores {1pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {piano}.",
+      piano: "{piano} scores {1pt} per <i><b>column</b></i> with {music} on <i><b>any page</b></i>.",
+      pizza: "{pizza} scores {3pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {smiley}.",
+      planet: "{planet} scores {1pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {rocket}.",
+      present: "{present} scores {6pt}.",
+      pyramid: "{pyramid} is an intermediate shape that can merge to create {diamond} or {icecream}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} per set of {cube}{cylinder}{pyramid}.",
+      rocket: "{rocket} scores {3pt} per {planet}/{star}.",
+      smiley: "{smiley} scores {1pt} (+{1pt} per <i><b>surrounding</b></i> {pizza}/{icecream}).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
+      star: "{star} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {rocket}.",
+      sword: "{sword} scores {5pt}.",
+      toiletpaper: "{toiletpaper} scores {1pt} (+{1pt} per <i><b>surrounding</b></i> {turd}).",
+      turd: "{turd} scores {minus2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {turd}.",
+      umbrella: "{umbrella} scores {1pt} per {drop} <i><b>above</b></i> on the <i><b>same page</b></i>",
+      wireless: "{wireless} is used to merge non-adjacent doodles. Circle a {wireless} to use it, then individually circle any doodles you'd like to merge.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
+      fish: "{fish} scores {1pt} per <i><b>surrounding</b></i> {fish}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {boat}."
+    };
 
-    let deck = { circle: 2, square: 2, triangle: 2, dot: 2, line: 2 };
-    let selectedDoodle = null;
+    const doodleMerges = [
+      { inputs: ["circle", "square"], output: "cylinder" },
+      { inputs: ["circle", "circle"], output: "lens" },
+      { inputs: ["circle", "line"], output: "halfcircle" },
+      { inputs: ["circle", "circle", "line"], output: "cloud" },
+      { inputs: ["circle", "line", "line"], output: "coin" },
+      { inputs: ["circle", "line", "dot", "dot"], output: "smiley" },
+      { inputs: ["square", "square"], output: "cube" },
+      { inputs: ["square", "line"], output: "letter" },
+      { inputs: ["square", "triangle", "dot"], output: "house" },
+      { inputs: ["square", "dot", "dot"], output: "die" },
+      { inputs: ["square", "square", "line", "line"], output: "piano" },
+      { inputs: ["triangle", "square"], output: "pyramid" },
+      { inputs: ["triangle", "circle"], output: "drop" },
+      { inputs: ["triangle", "triangle"], output: "teeth" },
+      { inputs: ["triangle", "line", "dot", "dot"], output: "pizza" },
+      { inputs: ["line", "line", "line"], output: "star" },
+      { inputs: ["dot", "line", "line"], output: "wireless" },
+      { inputs: ["dot", "dot", "line"], output: "music" },
+      { inputs: ["lens", "circle"], output: "planet" },
+      { inputs: ["lens", "dot", "line"], output: "sword" },
+      { inputs: ["lens", "triangle", "dot"], output: "fish" },
+      { inputs: ["halfcircle", "line"], output: "umbrella" },
+      { inputs: ["halfcircle", "line", "triangle"], output: "boat" },
+      { inputs: ["halfcircle", "halfcircle", "line"], output: "butterfly" },
+      { inputs: ["drop", "drop"], output: "heart" },
+      { inputs: ["drop", "circle"], output: "turd" },
+      { inputs: ["drop", "drop", "dot"], output: "flower" },
+      { inputs: ["teeth", "triangle", "dot"], output: "crown" },
+      { inputs: ["teeth", "smiley", "line"], output: "cat" },
+      { inputs: ["teeth", "lens", "dot", "line"], output: "rocket" },
+      { inputs: ["cylinder", "line"], output: "mug" },
+      { inputs: ["cylinder", "square", "dot"], output: "toiletpaper" },
+      { inputs: ["cube", "halfcircle", "dot"], output: "chest" },
+      { inputs: ["cube", "line", "heart"], output: "present" },
+      { inputs: ["pyramid", "line", "line"], output: "diamond" },
+      { inputs: ["pyramid", "line", "cloud"], output: "icecream" }
+    ];
 
-    function getTotalDeckSize() { return Object.values(deck).reduce((a,b)=>a+b,0); }
-    function updateDeckCount() {
-      const total = getTotalDeckSize();
-      document.getElementById('total-count').textContent = total;
-      document.getElementById('deck-size').textContent = total;
+    function formatName(name) {
+      return name.charAt(0).toUpperCase() + name.slice(1);
     }
+
+    function renderDescription(text) {
+      return text.replace(/\{(\w+)\}/gi, (match, key) => {
+        const lower = key.toLowerCase();
+        if (allPossibleDoodles.includes(lower)) {
+          return `<img src="images/${lower}.png" class="inline-doodle" alt="${formatName(lower)}">`;
+        }
+        if (/^\d+pt$/.test(lower) || lower === 'minus2pt') {
+          const ptFile = lower === 'minus2pt' ? 'minus2pt' : lower;
+          return `<img src="images/${ptFile}.png" class="inline-doodle" alt="${key}">`;
+        }
+        return key;
+      });
+    }
+
+    let currentFilter = null;   // ← add this near the top with your other lets
+
+    function applyGuideFilter() {
+  const content = document.getElementById('guide-content');
+  const rows = content.querySelectorAll('.merge-row');
+  const fullBtn = document.getElementById('full-guide-btn');
+
+  // Reset everything
+  if (!currentFilter) {
+    rows.forEach(row => row.style.display = 'flex');
+    content.classList.remove('filtered');
+    fullBtn.style.display = 'none';
+    content.querySelectorAll('.guide-doodle').forEach(d => d.classList.remove('selected'));
+    return;
+  }
+
+  // Filter rows
+  rows.forEach(row => {
+    const inputImgs = row.querySelectorAll('.inputs .guide-doodle');
+    const outputImg = row.querySelector('.result .guide-doodle');
+
+    const usesIt = Array.from(inputImgs).some(img => img.dataset.doodle === currentFilter);
+    const producesIt = outputImg.dataset.doodle === currentFilter;
+
+    row.style.display = (usesIt || producesIt) ? 'flex' : 'none';
+  });
+
+  content.classList.add('filtered');
+  fullBtn.style.display = 'block';
+
+  // Highlight every instance of the filtered doodle
+  content.querySelectorAll('.guide-doodle').forEach(d => {
+    d.classList.toggle('selected', d.dataset.doodle === currentFilter);
+  });
+}
+
+function populateGuide() {
+  const content = document.getElementById('guide-content');
+  content.innerHTML = '';
+
+  const groupBreaks = [6, 11, 15, 18, 21, 24, 27, 30, 32, 34, 36];
+
+  doodleMerges.forEach((merge, index) => {
+    const row = document.createElement('div');
+    row.className = 'merge-row';
+
+    // Inputs
+    const inputsDiv = document.createElement('div');
+    inputsDiv.className = 'inputs';
+    merge.inputs.forEach(d => {
+      const img = document.createElement('img');
+      img.src = `images/${d}.png`;
+      img.className = 'guide-doodle';
+      img.dataset.doodle = d;
+      inputsDiv.appendChild(img);
+      addHoverListeners(img);  // ← Tooltip magic here
+    });
+    row.appendChild(inputsDiv);
+
+    // Arrow
+    const arrowContainer = document.createElement('div');
+    arrowContainer.className = 'arrow-container';
+    arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
+    row.appendChild(arrowContainer);
+
+    // Result
+    const resultDiv = document.createElement('div');
+    resultDiv.className = 'result';
+    const resultImg = document.createElement('img');
+    resultImg.src = `images/${merge.output}.png`;
+    resultImg.className = 'guide-doodle';
+    resultImg.dataset.doodle = merge.output;
+    resultDiv.appendChild(resultImg);
+    addHoverListeners(resultImg);  // ← Tooltip magic here too
+    row.appendChild(resultDiv);
+
+    content.appendChild(row);
+
+    // Divider
+    if (groupBreaks.includes(index + 1)) {
+      const divider = document.createElement('div');
+      divider.className = 'group-divider';
+      content.appendChild(divider);
+    }
+  });
+
+  // Make every doodle clickable
+  const doodleImages = content.querySelectorAll('.guide-doodle');
+  doodleImages.forEach(img => {
+    img.addEventListener('click', () => {
+      // Clear previous selections
+      content.querySelectorAll('.guide-doodle').forEach(d => d.classList.remove('selected'));
+      
+      // Select this one
+      img.classList.add('selected');
+      
+      currentFilter = img.dataset.doodle;
+      applyGuideFilter();
+    });
+  });
+
+  // Start in full-view mode
+  applyGuideFilter();
+}
+
+let hoverTimeout = null;
+
+function addHoverListeners(element) {
+  if (element.dataset.hasTooltip) return;
+  element.dataset.hasTooltip = 'true';
+
+  let mouseX, mouseY;  // Capture coords on enter
+
+  element.addEventListener('mouseenter', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    clearTimeout(hoverTimeout);
+    hoverTimeout = setTimeout(() => showTooltip(element, mouseX, mouseY), 500);
+  });
+
+  element.addEventListener('mouseleave', () => {
+    clearTimeout(hoverTimeout);
+    hideTooltip();
+  });
+}
+
+function showTooltip(element, x, y) {
+  const doodle = element.dataset.doodle;
+  if (!doodle || !doodleDescriptions[doodle]) return;
+
+  document.getElementById('tooltip-desc').innerHTML = renderDescription(doodleDescriptions[doodle]);
+
+  const tooltip = document.getElementById('tooltip');
+  tooltip.offsetHeight;  // Force reflow for accurate sizing
+
+  let tooltipWidth = tooltip.offsetWidth || 260;
+  let tooltipHeight = tooltip.offsetHeight || 140;
+
+  // Position near mouse, centered horizontally, prefer above
+  let left = x - (tooltipWidth / 2);
+  let top = y - tooltipHeight - 16;
+
+  // Clamp to game-container bounds
+  const container = document.getElementById('game-container');
+  const containerRect = container.getBoundingClientRect();
+  left = Math.max(containerRect.left + 10, Math.min(left, containerRect.right - tooltipWidth - 10));
+  if (top < containerRect.top + 10) {
+    top = y + 16;  // Flip below if no room above
+  }
+  top = Math.min(top, window.innerHeight - tooltipHeight - 10);
+
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
+  tooltip.classList.add('show');
+}
+
+function hideTooltip() {
+  document.getElementById('tooltip').classList.remove('show');
+}
+
+    function hideTooltip() {
+      document.getElementById('tooltip').classList.remove('show');
+    }
+
+    function attachMainDoodleTooltips() {
+      const ids = ['doodle-l1', 'doodle-l2', 'doodle-l3', 'doodle-r1', 'doodle-r2', 'doodle-r3'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) addHoverListeners(el);
+      });
+    }
+
+    function attachCellTooltips(grid) {
+      grid.querySelectorAll('.doodle-cell').forEach(cell => addHoverListeners(cell));
+    }
+
+    function populateLearnGrid() {
+      const grid = document.getElementById('learn-grid');
+      grid.innerHTML = '';
+      allPossibleDoodles.forEach(doodle => {
+        const cell = document.createElement('div');
+        cell.className = 'doodle-cell';
+        cell.dataset.doodle = doodle;
+        cell.innerHTML = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
+        cell.addEventListener('click', () => toggleSelection(cell, grid, 'learn'));
+        grid.appendChild(cell);
+      });
+      attachCellTooltips(grid);
+    }
+
+    function populatePortfolioGrid() {
+      const grid = document.getElementById('portfolio-grid');
+      grid.innerHTML = '';
+
+      const doodlesInDeck = [];
+      for (let [doodle, count] of Object.entries(deck)) {
+        if (count > 0) {
+          for (let i = 0; i < count; i++) {
+            doodlesInDeck.push(doodle);
+          }
+        }
+      }
+
+      doodlesInDeck.forEach((doodle, index) => {
+        const cell = document.createElement('div');
+        cell.className = 'doodle-cell';
+        cell.dataset.doodle = doodle;
+        cell.dataset.index = index;
+        cell.innerHTML = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
+        cell.addEventListener('click', () => toggleSelection(cell, grid, 'portfolio'));
+        grid.appendChild(cell);
+      });
+      attachCellTooltips(grid);
+    }
+
+    function toggleSelection(cell, grid, modalType) {
+      const isSelected = cell.classList.contains('selected');
+      const actionBtn = modalType === 'learn'
+        ? document.getElementById('modal-learn-btn')
+        : document.getElementById('modal-remove-btn');
+
+      grid.querySelectorAll('.doodle-cell').forEach(c => c.classList.remove('selected'));
+
+      if (!isSelected) {
+        cell.classList.add('selected');
+        actionBtn.style.display = 'block';
+      } else {
+        actionBtn.style.display = 'none';
+      }
+    }
+
+    document.getElementById('modal-learn-btn').addEventListener('click', () => {
+      const selected = document.querySelector('#learn-grid .doodle-cell.selected');
+      if (selected) {
+        const doodle = selected.dataset.doodle;
+        deck[doodle] = (deck[doodle] || 0) + 1;
+
+        selected.classList.add('animate-learn');
+
+        const toast = document.getElementById('toast');
+        toast.textContent = `${formatName(doodle)} added to your portfolio`;
+        toast.classList.add('show');
+
+        setTimeout(() => {
+          selected.classList.remove('animate-learn');
+          selected.classList.remove('selected');
+          document.getElementById('modal-learn-btn').style.display = 'none';
+          toast.classList.remove('show');
+        }, 1200);
+      }
+    });
+
+    document.getElementById('modal-remove-btn').addEventListener('click', () => {
+      const selected = document.querySelector('#portfolio-grid .doodle-cell.selected');
+      if (selected) {
+        const doodle = selected.dataset.doodle;
+        if (deck[doodle] > 0) {
+          deck[doodle]--;
+
+          selected.classList.add('animate-remove');
+
+          setTimeout(() => {
+            populatePortfolioGrid();
+            document.getElementById('modal-remove-btn').style.display = 'none';
+          }, 600);
+        }
+      }
+    });
+
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.style.display = 'flex';
+      modal.offsetHeight;
+      modal.classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.classList.remove('active');
+      setTimeout(() => {
+        modal.style.display = 'none';
+        document.querySelectorAll('.doodle-cell.selected').forEach(c => c.classList.remove('selected'));
+        document.querySelectorAll('.action-btn').forEach(btn => btn.style.display = 'none');
+      }, 400);
+    }
+
+    document.getElementById('learn-btn').addEventListener('click', () => {
+      populateLearnGrid();
+      openModal('learn-modal');
+    });
+
+    document.getElementById('close-learn').addEventListener('click', () => closeModal('learn-modal'));
+
+    document.getElementById('portfolio-btn').addEventListener('click', () => {
+      populatePortfolioGrid();
+      openModal('portfolio-modal');
+    });
+
+    document.getElementById('close-portfolio').addEventListener('click', () => closeModal('portfolio-modal'));
+
+    document.getElementById('guide-btn').addEventListener('click', () => {
+      populateGuide();
+      openModal('guide-modal');
+    });
+
+    document.getElementById('close-guide').addEventListener('click', () => closeModal('guide-modal'));
+
+    document.getElementById('shuffle-btn').addEventListener('click', () => {
+      const drawn = drawSix();
+      if (!drawn) return;
+
+      const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
+
+      order.forEach((id, i) => {
+        const div = document.getElementById(id);
+        if (div && div.style.backgroundImage) {
+          setTimeout(() => {
+            div.style.transition = 'transform 0.175s ease-in';
+            div.style.transform = 'translateY(120dvh) rotate(-720deg)';
+          }, i * 50);
+        }
+      });
+
+      setTimeout(() => {
+        order.forEach((id, i) => {
+          const div = document.getElementById(id);
+          if (!div) return;
+
+          div.style.transition = 'none';
+          div.style.transform = 'translateY(100dvh) rotate(720deg)';
+          div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
+          div.dataset.doodle = drawn[i];
+
+          void div.offsetWidth;
+
+          setTimeout(() => {
+            div.style.transition = 'transform 0.175s ease-out';
+            div.style.transform = 'translateY(0) rotate(0deg)';
+          }, i * 50);
+        });
+      }, 325);
+    });
+
+document.getElementById('full-guide-btn').addEventListener('click', () => {
+  currentFilter = null;
+  applyGuideFilter();
+});
 
     function getDeckAsArray() {
       let arr = [];
@@ -392,304 +1106,15 @@ const doodleInfo = {
     function drawSix() {
       const deckArray = getDeckAsArray();
       if (deckArray.length < 6) {
-        alert("You need at least 6 doodles in your deck to roll!");
+        alert("You need at least 6 doodles in your deck to shuffle!");
         return null;
       }
       return shuffle([...deckArray]).slice(0, 6);
     }
 
-    function renderPileWithStagger(pileElement, doodles, direction, isExit = false) {
-      pileElement.innerHTML = '';
-      doodles.forEach((name, i) => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        const delay = i * 30 + 10;
-
-        if (isExit) {
-          setTimeout(() => {
-            div.classList.add(direction === 'left' ? 'slide-out-left' : 'slide-out-right');
-          }, delay);
-        } else {
-          if (direction === 'left') {
-            div.style.transform = 'translateX(-400%)';
-            div.style.opacity = '0';
-          } else {
-            div.style.transform = 'translateX(400%)';
-            div.style.opacity = '0';
-          }
-          setTimeout(() => {
-            div.classList.add(direction === 'left' ? 'slide-in-left' : 'slide-in-right');
-            div.style.transform = '';
-            div.style.opacity = '1';
-          }, delay);
-        }
-        div.innerHTML = `<img src="images/${name}.png" alt="${name}" >`;
-        pileElement.appendChild(div);
-      });
-    }
-
-    document.getElementById('roll-btn').addEventListener('click', async () => {
-      const leftPile = document.getElementById('left-pile');
-      const rightPile = document.getElementById('right-pile');
-
-      const currentLeft = Array.from(leftPile.querySelectorAll('img')).map(img => img.src.split('/').pop().replace('.png',''));
-      const currentRight = Array.from(rightPile.querySelectorAll('img')).map(img => img.src.split('/').pop().replace('.png',''));
-
-      renderPileWithStagger(leftPile, currentLeft, 'left', true);
-      renderPileWithStagger(rightPile, currentRight, 'right', true);
-      
-
-      await new Promise(r => setTimeout(r, 520));
-
-      leftPile.innerHTML = '';
-      rightPile.innerHTML = '';
-
-      leftPile.style.transition = 'none';
-      rightPile.style.transition = 'none';
-      leftPile.style.transform = 'translateX(0)';
-      rightPile.style.transform = 'translateX(0)';
-
-      void leftPile.offsetWidth;
-      void rightPile.offsetWidth;
-
-      leftPile.style.transition = 'transform 0.45s ease';
-      rightPile.style.transition = 'transform 0.45s ease';
-
-      await new Promise(r => setTimeout(r, 40));
-
-      const drawn = drawSix();
-      if (!drawn) return;
-
-      renderPileWithStagger(leftPile, drawn.slice(0,3), 'left');
-      renderPileWithStagger(rightPile, drawn.slice(3), 'right');
-      attachTooltipListeners();
-    });
-
-    function optimizeGrid(gridElement, itemCount) {
-      if (!gridElement || itemCount === 0) return;
-      const container = gridElement.parentElement;
-      const availW = container.clientWidth - 40;
-      const availH = container.clientHeight - 40;
-
-      let bestCols = 6;
-      let bestSize = 0;
-
-      for (let cols = 4; cols <= 16; cols++) {
-        const rows = Math.ceil(itemCount / cols);
-        const size = Math.min(availW / cols, availH / rows);
-        if (size > bestSize) {
-          bestSize = size;
-          bestCols = cols;
-        }
-      }
-
-      const finalSize = Math.floor(bestSize * 0.92);
-      gridElement.style.gridTemplateColumns = `repeat(${bestCols}, 1fr)`;
-      gridElement.style.gridAutoRows = `${finalSize}px`;
-    }
-
-    const learnModal = document.getElementById('learn-modal');
-    const learnGrid = document.getElementById('learn-grid');
-    const learnConfirmBtn = document.getElementById('learn-confirm');
-
-    function populateLearnGrid() {
-      learnGrid.innerHTML = '';
-      selectedDoodle = null;
-      learnConfirmBtn.style.display = 'none';
-
-      allDoodles.forEach(name => {
-        const div = document.createElement('div');
-        div.className = 'grid-item';
-        div.innerHTML = `<img src="images/${name}.png" alt="${name}" >`;
-
-        div.addEventListener('click', () => {
-          if (selectedDoodle === name) {
-            selectedDoodle = null;
-            div.classList.remove('selected');
-            learnConfirmBtn.style.display = 'none';
-          } else {
-            document.querySelectorAll('#learn-grid .grid-item').forEach(item => item.classList.remove('selected'));
-            selectedDoodle = name;
-            div.classList.add('selected');
-            learnConfirmBtn.style.display = 'inline-block';
-          }
-        });
-
-        learnGrid.appendChild(div);
-      });
-
-      setTimeout(() => optimizeGrid(learnGrid, allDoodles.length), 50);
-    attachTooltipListeners();
-    }
-
-    learnConfirmBtn.addEventListener('click', () => {
-      if (selectedDoodle) {
-        deck[selectedDoodle] = (deck[selectedDoodle] || 0) + 1;
-        updateDeckCount();
-        learnModal.classList.remove('show');
-        setTimeout(() => learnModal.style.display = 'none', 220);
-      }
-    });
-
-    document.getElementById('learn-btn').addEventListener('click', () => {
-      populateLearnGrid();
-      learnModal.style.display = 'flex';
-      requestAnimationFrame(() => learnModal.classList.add('show'));
-    });
-
-    document.getElementById('close-learn').addEventListener('click', () => {
-      learnModal.classList.remove('show');
-      setTimeout(() => learnModal.style.display = 'none', 220);
-    });
-
-   const deckModal = document.getElementById('deck-modal');
-const deckGrid = document.getElementById('deck-grid');
-const removeConfirmBtn = document.getElementById('remove-confirm');
-let selectedToRemove = null;
-
-/* Tooltip System */
-const tooltip = document.getElementById('tooltip');
-let tooltipTimeout = null;
-
-function positionTooltip(e) {
-  const rect = tooltip.getBoundingClientRect();
-  let x = e.clientX + 20;
-  let y = e.clientY - rect.height - 18;   // Try above cursor first
-
-  // Flip below if there's not enough space at the top
-  if (y < 15) {
-    y = e.clientY + 18;
-  }
-
-  // Keep it inside the viewport horizontally
-  if (x + rect.width > window.innerWidth - 15) {
-    x = window.innerWidth - rect.width - 15;
-  }
-  if (x < 15) {
-    x = 15;
-  }
-
-  tooltip.style.left = `${x}px`;
-  tooltip.style.top = `${y}px`;
-}
-
-function showTooltip(e, name) {
-  clearTimeout(tooltipTimeout);
-  
-  tooltipTimeout = setTimeout(() => {
-    // Get description or fallback
-    let description = doodleInfo[name] || 
-      `The "${name}" doodle.\n\nPlaceholder description. Each doodle will have its own unique information here later.`;
-    
-    // Replace {doodleName} with actual inline images
-    description = description.replace(/\{(\w+)\}/g, (match, doodle) => {
-      return `<img src="images/${doodle}.png" class="inline-doodle" alt="${doodle}">`;
-    });
-    
-    tooltip.innerHTML = description;
-    
-    tooltip.style.display = 'block';
-    tooltip.style.opacity = '0';
-    tooltip.style.transform = 'translateY(10px)';
-    
-    positionTooltip(e);
-    
-    requestAnimationFrame(() => {
-      tooltip.style.opacity = '1';
-      tooltip.style.transform = 'translateY(0)';
-    });
-  }, 500);
-}
-function hideTooltip() {
-  clearTimeout(tooltipTimeout);
-  tooltip.style.opacity = '0';
-  tooltip.style.transform = 'translateY(10px)';
-  setTimeout(() => {
-    tooltip.style.display = 'none';
-  }, 250);
-}
-
-function attachTooltipListeners() {
-  document.querySelectorAll('.card, .grid-item').forEach(el => {
-    const img = el.querySelector('img');
-    if (!img) return;
-    const name = img.alt || img.title;
-    
-    el.addEventListener('mouseenter', (e) => showTooltip(e, name));
-    el.addEventListener('mouseleave', hideTooltip);
-  });
-}
-
-function populateDeckGrid() {
-  deckGrid.innerHTML = '';
-  selectedToRemove = null;
-  removeConfirmBtn.style.display = 'none';
-
-  for (let [name, qty] of Object.entries(deck)) {
-    for (let i = 0; i < qty; i++) {
-      const div = document.createElement('div');
-      div.className = 'grid-item';
-      div.innerHTML = `<img src="images/${name}.png" alt="${name}">`;
-      
-      div.addEventListener('click', () => {
-        // Toggle selection
-        if (selectedToRemove === name) {
-          selectedToRemove = null;
-          div.classList.remove('selected');
-          removeConfirmBtn.style.display = 'none';
-        } else {
-          document.querySelectorAll('#deck-grid .grid-item').forEach(item => item.classList.remove('selected'));
-          selectedToRemove = name;
-          div.classList.add('selected');
-          removeConfirmBtn.style.display = 'inline-block';
-        }
-      });
-      
-      deckGrid.appendChild(div);
-    }
-  }
-  setTimeout(() => optimizeGrid(deckGrid, deckGrid.children.length), 50);
-attachTooltipListeners();
-}
-
-// Remove button handler
-removeConfirmBtn.addEventListener('click', () => {
-  if (selectedToRemove && deck[selectedToRemove] > 0) {
-    deck[selectedToRemove]--;
-    if (deck[selectedToRemove] === 0) delete deck[selectedToRemove];
-    
-    updateDeckCount();
-    populateDeckGrid();        // Refresh grid + clear selection
-  }
-});
-
-document.getElementById('doodles-btn').addEventListener('click', () => {
-  populateDeckGrid();
-  deckModal.style.display = 'flex';
-  requestAnimationFrame(() => deckModal.classList.add('show'));
-});
-
-document.getElementById('close-deck').addEventListener('click', () => {
-  deckModal.classList.remove('show');
-  setTimeout(() => deckModal.style.display = 'none', 220);
-});
-
-    window.addEventListener('resize', () => {
-      if (learnModal.style.display === 'flex') optimizeGrid(learnGrid, allDoodles.length);
-      if (deckModal.style.display === 'flex') optimizeGrid(deckGrid, deckGrid.children.length);
-    });
-
-    document.getElementById('reset-btn').addEventListener('click', () => {
-      if (confirm("Reset deck to starting 10 basic shapes?")) {
-        deck = { circle: 2, square: 2, triangle: 2, dot: 2, line: 2 };
-        updateDeckCount();
-        document.getElementById('left-pile').innerHTML = '';
-        document.getElementById('right-pile').innerHTML = '';
-      }
-    });
-
-    updateDeckCount();
+    populateLearnGrid();
+    attachMainDoodleTooltips();
   </script>
-
 </body>
+
 </html>
