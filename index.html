@@ -1,3 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doodle Bash</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Covered+By+Your+Grace&family=Fira+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    #game-container {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 56.25dvh;
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: 1fr 3fr 1fr;
+      overflow: hidden;
+      container-type: inline-size;
+    }
+
+    @media (max-aspect-ratio: 9/16) {
+      #game-container {
+        width: 100vw;
+        height: calc(100vw * 16 / 9);
+      }
+    }
+
+    #header,
+    #footer {
+      container-type: inline-size;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f5;
+      gap: 4cqi;
+    }
+
+    #shuffle-zone {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      height: 100%;
+      width: 100%;
+      container-type: inline-size;
+      overflow: hidden;
+    }
+
+    #doodle-l1 {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    #doodle-l2 {
+      grid-column: 1;
+      grid-row: 3;
+    }
+
+    #doodle-l3 {
+      grid-column: 1;
+      grid-row: 4;
+    }
+
+    #doodle-r1 {
+      grid-column: 3;
+      grid-row: 2;
+    }
+
+    #doodle-r2 {
+      grid-column: 3;
+      grid-row: 3;
+    }
+
+    #doodle-r3 {
+      grid-column: 3;
+      grid-row: 4;
+    }
+
+    #doodle-l1,
+    #doodle-l2,
+    #doodle-l3,
+    #doodle-r1,
+    #doodle-r2,
+    #doodle-r3 {
+      background-size: auto 75%;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: 20;
+      transition: transform 0.35s ease-out;
+      transform: translateY(100dvh) rotate(0deg);
+      cursor: pointer;
+    }
+
+    button {
+      border: none;
+      font-family: 'Covered By Your Grace', cursive;
+      font-weight: 400;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    #header button,
+    #footer button {
+      font-size: 6.5cqi;
+      padding: 3cqi 9cqi;
+      border-radius: 9999px;
+    }
+
+    #header button {
+      background: #7f2a8f;
+      color: white;
+    }
+
+    #footer button {
+      background: #fbb065;
+      color: #000;
+    }
+
+    #shuffle-btn {
+      grid-column: 2;
+      grid-row: 3;
+      background: #4dbde5;
+      color: white;
+      font-size: 6.5cqi;
+      width: 100%;
+      border-radius: 9999px;
+    }
+
+    /* MODALS */
+    .modal {
+      position: absolute;
+      inset: 0;
+      background: #fff;
+      display: none;
+      flex-direction: column;
+      z-index: 100;
+      container-type: inline-size;
+      transform: translateY(0);
+      transition: transform 0.4s ease-out;
+    }
+
+    .modal.learn {
+      transform: translateY(-100%);
+    }
+
+    .modal.portfolio {
+      transform: translateY(100%);
+    }
+
+    .modal.guide {
+      transform: translateX(-100%);
+    }
+
+    .modal.score {
+      transform: translateX(100%);  /* Slides in from right */
+    }
+
+    .modal.active {
+      display: flex;
+      transform: translate(0);
+    }
+
+    .modal-top {
+      flex: 0 0 18%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4cqi;
+      color: white;
+    }
+
+    .modal-top.learn {
+      background: #7f2a8f;
+    }
+
+    .modal-top.portfolio {
+      background: #fbb065;
+      color: #000;
+    }
+
+    .modal-top.guide {
+      background: #4dbde5;
+    }
+
+    .modal-top.score {
+      background: #7f2a8f;  /* Purple to match Learn/Portfolio vibe */
+      color: white;
+    }
+
+    .modal-top .title {
+      font-family: 'Fira Sans', sans-serif;
+      font-weight: 600;
+      font-size: 5cqi;
+    }
+
+    .modal-top .buttons {
+      display: flex;
+      align-items: center;
+      gap: 10.5cqi;
+    }
+
+    .close-btn,
+    .action-btn {
+      height: 9cqi;
+      line-height: 9cqi;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7cqi;
+    }
+
+    .close-btn {
+      width: 9cqi;
+      border-radius: 2cqi;
+      background: rgba(255, 255, 255, 0.25);
+      color: white;
+    }
+
+    .modal-top.portfolio .close-btn,
+    .modal-top.guide .close-btn {
+      background: rgba(0, 0, 0, 0.15);
+      color: #000;
+    }
+
+    .action-btn {
+      padding: 0 6cqi;
+      font-size: 6cqi;
+      min-width: 14cqi;
+      border-radius: 9999px;
+      display: none;
+    }
+
+    .action-btn.learn {
+      background: #fbb065;
+      color: #000000;
+    }
+
+    .action-btn.remove {
+      background: #7f2a8f;
+      color: white;
+    }
+
+    .modal-top.guide .action-btn {
+      background: #4dbde5;
+      color: white;
+      border: none;  /* Flush like LEARN/REMOVE – no outline */
+    }
+
+    .modal-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(7, 1fr);
+      gap: 1.4cqi;
+      padding: 1.8cqi;
+      overflow: hidden;
+    }
+
+    .modal-bottom-spacer {
+      flex: 0 0 2.25%;
+      background: transparent;
+    }
+
+    .doodle-cell {
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1cqi;
+      border-radius: 18px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .doodle-cell:hover:not(.selected) {
+      background: rgba(255, 255, 255, 0.4);
+      transform: scale(1.1);
+    }
+
+    .doodle-cell.selected {
+      transform: scale(1.5);
+      z-index: 10;
+      opacity: 1 !important;
+    }
+
+    .modal-grid .doodle-cell:not(.selected) {
+      opacity: 0.5;
+    }
+
+    .modal-grid:not(:has(.selected)) .doodle-cell {
+      opacity: 1;
+    }
+
+    .doodle-img {
+      width: 92%;
+      aspect-ratio: 1 / 1;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      border-radius: 14px;
+      transition: all 0.6s ease-out;
+    }
+
+    .doodle-cell.animate-learn .doodle-img {
+      animation: learnSpinShrink 0.6s ease-in-out forwards;
+    }
+
+    @keyframes learnSpinShrink {
+      0% {
+        transform: scale(1) rotate(0deg);
+      }
+
+      40% {
+        transform: scale(0.1) rotate(720deg);
+      }
+
+      100% {
+        transform: scale(1) rotate(720deg);
+      }
+    }
+
+    .doodle-cell.animate-remove {
+      animation: removeSlideDown 0.6s ease-in-out forwards;
+    }
+
+    @keyframes removeSlideDown {
+      0% {
+        transform: translateY(0);
+      }
+
+      100% {
+        transform: translateY(200%);
+      }
+    }
+
+    .doodle-cell.animate-remove .doodle-img {
+      animation: spinFadeScale 0.6s ease-in-out forwards;
+    }
+
+    @keyframes spinFadeScale {
+      0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(0.1) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* GUIDE MODAL */
+    #guide-content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 3cqi 4cqi;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2cqi;
+    }
+
+    .merge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      /* border-bottom removed — let group dividers do the work */
+    }
+
+    .inputs {
+      display: flex;
+      gap: 1.6cqi;
+      flex-shrink: 0;
+    }
+
+    .arrow-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      height: 10cqi;
+      margin: 0 4cqi;
+    }
+
+    .arrow-line {
+      flex: 1;
+      height: 0.5cqi;
+      background: #222;
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .arrow-line::after {
+      content: '';
+      position: absolute;
+      right: 1.1cqi;
+      top: 50%;
+      transform: translateY(-50%) rotate(45deg);
+      width: 5.2cqi;
+      height: 5.2cqi;
+      border-top: 0.5cqi solid #222;
+      border-right: 0.5cqi solid #222;
+      border-bottom: none;
+      border-left: none;
+    }
+
+    .result {
+      flex-shrink: 0;
+    }
+
+    .guide-doodle {
+      width: 8.7cqi;
+      height: auto;
+      cursor: pointer;
+      box-shadow: none !important;   /* Permanent blue outline killer */
+      border: none !important;
+      /* No transitions here – avoids clashing with animation */
+    }
+
+    .guide-doodle:hover {
+      transform: scale(1.1);
+      transition: transform 0.25s ease;  /* Isolated to hover only */
+    }
+
+    .guide-doodle.selected {
+      transform-origin: center;      /* Pivots from image center */
+      animation: rock 1s ease-in-out infinite;
+      rotate: 0deg;
+    }
+
+    @keyframes rock {
+      0%, 100% {
+        transform: scale(1.1);
+        rotate:5deg;
+      }
+      50% {
+        transform: scale(1.1);
+        rotate:-5deg;
+      }
+      100% {
+        transform: scale(1.1);
+        rotate:5deg;
+      }
+    }
+
+    #guide-content.filtered .group-divider {
+      display: none;
+    }
+
+    /* TOOLTIP */
+    #tooltip {
+      position: absolute;
+      background: #ccecf8;
+      border-radius: 2cqi;
+      padding: 2cqi 2cqi;
+      max-width: 90cqw;
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 4.2cqi;
+      line-height: 1.5;
+      z-index: 250;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+      transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+      pointer-events: none;
+    }
+
+    #tooltip.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    #tooltip .tooltip-desc {
+      color: #222;
+    }
+
+    .inline-doodle {
+      display: inline-block;
+      width: 1.3em;
+      height: auto;
+      vertical-align: middle;
+      margin: 0 0.15em -0.2em;
+      background: none;
+      box-shadow: none;
+      border: none;
+      padding: 0;
+    }
+
+    /* TOAST */
+    #toast {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(251, 176, 101, 0.95);
+      color: #000;
+      font-family: 'Fira Sans', sans-serif;
+      font-weight: 600;
+      font-size: 5cqi;
+      padding: 2cqi 5cqi;
+      border-radius: 9999px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      z-index: 300;
+      white-space: nowrap;
+      max-width: 80cqi;
+      text-align: center;
+    }
+
+    #toast.show {
+      opacity: 1;
+    }
+
+    .group-divider {
+      min-height: .6cqi;
+      background: #dbdbdb;
+      margin: 2.5cqi 0;
+      border-radius: 0.125rem;
+      width: 100%;
+      flex-shrink: 0;  /* Prevents flex from compressing it */
+      align-self: stretch;  /* Ensures it spans the full container width */
+    }
+
+    #score-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2cqi;
+      padding: 2cqi;
+      overflow: hidden;
+    }
+
+    .take-photo-btn {
+      background: #4dbde5;  /* Blue for action */
+      color: white;
+      font-size: 5cqi;
+      padding: 2cqi 6cqi;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .take-photo-btn:hover {
+      transform: scale(1.05);
+    }
+
+    #photo-canvas {
+      max-width: 80%;
+      max-height: 60%;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      display: none;  /* Hidden until photo taken */
+    }
+
+    #detected-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 1cqi;
+      width: 60cqi;
+      height: 60cqi;
+      margin: 2cqi 0;
+      display: none;  /* Hidden until detection */
+    }
+
+    .grid-cell {
+      aspect-ratio: 1;
+      background: #f0f0f0;
+      border: 2px solid #ccc;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3cqi;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .grid-cell:hover {
+      background: #e0e0e0;
+    }
+
+    .grid-cell.triangle { background-image: url('images/triangle.png'); background-size: contain; }
+    .grid-cell.circle { background-image: url('images/circle.png'); background-size: contain; }
+    .grid-cell.smiley { background-image: url('images/smiley.png'); background-size: contain; }
+    .grid-cell.unknown { background: #ffeb3b; color: #333; }  /* Yellow for manual fix */
+
+    .tweak-prompt {
+      text-align: center;
+      font-size: 3.5cqi;
+      color: #666;
+      max-width: 80cqi;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="game-container">
+    <div id="header">
+      <button id="guide-btn">GUIDE</button>
+      <button id="learn-btn">LEARN</button>
+    </div>
+
+    <div id="shuffle-zone">
+      <div id="doodle-l1"></div>
+      <div id="doodle-l2"></div>
+      <div id="doodle-l3"></div>
+      <div id="doodle-r1"></div>
+      <div id="doodle-r2"></div>
+      <div id="doodle-r3"></div>
+      <button id="shuffle-btn">SHUFFLE</button>
+    </div>
+
+    <div id="footer">
+      <button id="portfolio-btn">PORTFOLIO</button>
+      <button id="score-btn">SCORE</button>
+    </div>
+
+    <!-- LEARN MODAL -->
+    <div id="learn-modal" class="modal learn">
+      <div class="modal-top learn">
+        <div class="title">Learn a Doodle</div>
+        <div class="buttons">
+          <button class="action-btn learn" id="modal-learn-btn">LEARN</button>
+          <button class="close-btn" id="close-learn">✕</button>
+        </div>
+      </div>
+      <div id="learn-grid" class="modal-grid"></div>
+      <div class="modal-bottom-spacer"></div>
+    </div>
+
+    <!-- PORTFOLIO MODAL -->
+    <div id="portfolio-modal" class="modal portfolio">
+      <div class="modal-top portfolio">
+        <div class="title">Portfolio</div>
+        <div class="buttons">
+          <button class="action-btn remove" id="modal-remove-btn">REMOVE</button>
+          <button class="close-btn" id="close-portfolio">✕</button>
+        </div>
+      </div>
+      <div id="portfolio-grid" class="modal-grid"></div>
+      <div class="modal-bottom-spacer"></div>
+    </div>
+
+    <!-- GUIDE MODAL -->
+    <div id="guide-modal" class="modal guide">
+      <div class="modal-top guide">
+        <div class="title">Doodle Guide</div>
+        <div class="buttons">
+          <button class="action-btn" id="full-guide-btn" style="display:none;">FULL GUIDE</button>
+          <button class="close-btn" id="close-guide">✕</button>
+        </div>
+      </div>
+      <div id="guide-content"></div>
+      <div class="modal-bottom-spacer"></div>
+    </div>
+
+    <!-- SCORE MODAL -->
+    <div id="score-modal" class="modal score">
+      <div class="modal-top score">
+        <div class="title">Score Your Sheet</div>
+        <div class="buttons">
+          <button class="close-btn" id="close-score">✕</button>
+        </div>
+      </div>
+      <div id="score-content"></div>
+      <div class="modal-bottom-spacer"></div>
+    </div>
+
+    <!-- TOOLTIP -->
+    <div id="tooltip">
+      <div class="tooltip-desc" id="tooltip-desc"></div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
+  </div>
+
+  <script>
+    let deck = {
+      circle: 2,
+      square: 2,
+      triangle: 2,
+      dot: 2,
+      line: 2
+    };
+
+    const allPossibleDoodles = [
+      "circle", "square", "triangle", "line", "dot",
+      "lens", "halfcircle", "drop", "teeth", "cylinder",
+      "cube", "pyramid", "cloud", "coin", "smiley",
+      "letter", "house", "die", "piano", "pizza",
+      "star", "wireless", "music", "planet", "sword",
+      "fish", "umbrella", "boat", "butterfly", "heart",
+      "turd", "flower", "crown", "cat", "rocket",
+      "mug", "toiletpaper", "chest", "present", "diamond",
+      "icecream"
+    ];
+
+    const doodleDescriptions = {
+      circle: "{circle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+      square: "{square} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+      triangle: "{triangle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+      dot: "{dot} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+      line: "{line} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+      drop: "{drop} is an intermediate shape that can merge to create {heart}, {flower}, and {turd}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {mug}, {umbrella}, and {cloud}.",
+      teeth: "{teeth} is an intermediate shape that can merge to create {cat}, {rocket}, and {crown}.",
+      lens: "{lens} is an intermediate shape that can merge to create {rocket}, {planet}, and {fish}.",
+      halfcircle: "{halfcircle} is an intermediate shape that can merge to create {chest}, {butterfly}, and {umbrella}.",
+      boat: "{boat} scores {2pt} per {fish} <i><b>below</b></i> on <i><b>same page</b></i>.",
+      butterfly: "{butterfly} scores {1pt} per {flower} in largest <i><b>group</b></i>.",
+      cat: "{cat} scores {3pt} (+{2pt} per <i><b>surrounding</b></i> {fish}/{turd})",
+      chest: "{chest} scores {2pt} per <i><b>surrounding</b></i> {coin}/{diamond}/{crown}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
+      cloud: "{cloud} scores {1pt} per {drop} <i><b>below</b></i> on <i><b>same page</b></i>.",
+      coin: "{coin} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
+      crown: "{crown} scores {3pt} (+{4pt} if {smiley} is <i><b>directly-below</b></i>).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
+      cube: "{cube} is an intermediate shape that can merge to create {chest} or {present}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} per set of {cube}{cylinder}{pyramid}.",
+      cylinder: "{cylinder} is an intermediate shape that can merge to create {mug} or {toiletpaper}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} per set of {cube}{cylinder}{pyramid}.",
+      diamond: "{diamond} scores {4pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
+      die: "{die} copies the value of a <i><b>surrounding</b></i> doodle.",
+      flower: "{flower} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {butterfly}.",
+      heart: "{heart} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {letter}.",
+      house: "{house} scores {1pt} (+{1pt} per <i><b>surrounding</b></i> {smiley}/{wireless}).",
+      icecream: "{icecream} scores {4pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {smiley}.",
+      letter: "{letter} scores {1pt} (+{5pt} if {heart} is <i><b>directly-above</b></i>).",
+      mug: "{mug} scores {2pt} (+{2pt} if {drop} is <i><b>directly-above</b></i>).",
+      music: "{music} scores {1pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {piano}.",
+      piano: "{piano} scores {1pt} per <i><b>column</b></i> with {music} on <i><b>any page</b></i>.",
+      pizza: "{pizza} scores {3pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {smiley}.",
+      planet: "{planet} scores {1pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {rocket}.",
+      present: "{present} scores {6pt}.",
+      pyramid: "{pyramid} is an intermediate shape that can merge to create {diamond} or {icecream}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} per set of {cube}{cylinder}{pyramid}.",
+      rocket: "{rocket} scores {3pt} per {planet}/{star}.",
+      smiley: "{smiley} scores {1pt} (+{1pt} per <i><b>surrounding</b></i> {pizza}/{icecream}).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
+      star: "{star} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {rocket}.",
+      sword: "{sword} scores {5pt}.",
+      toiletpaper: "{toiletpaper} scores {1pt} (+{1pt} per <i><b>surrounding</b></i> {turd}).",
+      turd: "{turd} scores {minus2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {turd}.",
+      umbrella: "{umbrella} scores {1pt} per {drop} <i><b>above</b></i> on the <i><b>same page</b></i>",
+      wireless: "{wireless} is used to merge non-adjacent doodles. Circle a {wireless} to use it, then individually circle any doodles you'd like to merge.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
+      fish: "{fish} scores {1pt} per <i><b>surrounding</b></i> {fish}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {boat}."
+    };
+
+    const doodleMerges = [
+      { inputs: ["circle", "square"], output: "cylinder" },
+      { inputs: ["circle", "circle"], output: "lens" },
+      { inputs: ["circle", "line"], output: "halfcircle" },
+      { inputs: ["circle", "circle", "line"], output: "cloud" },
+      { inputs: ["circle", "line", "line"], output: "coin" },
+      { inputs: ["circle", "line", "dot", "dot"], output: "smiley" },
+      { inputs: ["square", "square"], output: "cube" },
+      { inputs: ["square", "line"], output: "letter" },
+      { inputs: ["square", "triangle", "dot"], output: "house" },
+      { inputs: ["square", "dot", "dot"], output: "die" },
+      { inputs: ["square", "square", "line", "line"], output: "piano" },
+      { inputs: ["triangle", "square"], output: "pyramid" },
+      { inputs: ["triangle", "circle"], output: "drop" },
+      { inputs: ["triangle", "triangle"], output: "teeth" },
+      { inputs: ["triangle", "line", "dot", "dot"], output: "pizza" },
+      { inputs: ["line", "line", "line"], output: "star" },
+      { inputs: ["dot", "line", "line"], output: "wireless" },
+      { inputs: ["dot", "dot", "line"], output: "music" },
+      { inputs: ["lens", "circle"], output: "planet" },
+      { inputs: ["lens", "dot", "line"], output: "sword" },
+      { inputs: ["lens", "triangle", "dot"], output: "fish" },
+      { inputs: ["halfcircle", "line"], output: "umbrella" },
+      { inputs: ["halfcircle", "line", "triangle"], output: "boat" },
+      { inputs: ["halfcircle", "halfcircle", "line"], output: "butterfly" },
+      { inputs: ["drop", "drop"], output: "heart" },
+      { inputs: ["drop", "circle"], output: "turd" },
+      { inputs: ["drop", "drop", "dot"], output: "flower" },
+      { inputs: ["teeth", "triangle", "dot"], output: "crown" },
+      { inputs: ["teeth", "smiley", "line"], output: "cat" },
+      { inputs: ["teeth", "lens", "dot", "line"], output: "rocket" },
+      { inputs: ["cylinder", "line"], output: "mug" },
+      { inputs: ["cylinder", "square", "dot"], output: "toiletpaper" },
+      { inputs: ["cube", "halfcircle", "dot"], output: "chest" },
+      { inputs: ["cube", "line", "heart"], output: "present" },
+      { inputs: ["pyramid", "line", "line"], output: "diamond" },
+      { inputs: ["pyramid", "line", "cloud"], output: "icecream" }
+    ];
+
+    function formatName(name) {
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }
+
+    function renderDescription(text) {
+      return text.replace(/\{(\w+)\}/gi, (match, key) => {
+        const lower = key.toLowerCase();
+        if (allPossibleDoodles.includes(lower)) {
+          return `<img src="images/${lower}.png" class="inline-doodle" alt="${formatName(lower)}">`;
+        }
+        if (/^\d+pt$/.test(lower) || lower === 'minus2pt') {
+          const ptFile = lower === 'minus2pt' ? 'minus2pt' : lower;
+          return `<img src="images/${ptFile}.png" class="inline-doodle" alt="${key}">`;
+        }
+        return key;
+      });
+    }
+
+    let currentFilter = null;
+
+    function applyGuideFilter() {
+      const content = document.getElementById('guide-content');
+      const rows = content.querySelectorAll('.merge-row');
+      const fullBtn = document.getElementById('full-guide-btn');
+
+      // Reset everything
+      if (!currentFilter) {
+        rows.forEach(row => row.style.display = 'flex');
+        content.classList.remove('filtered');
+        fullBtn.style.display = 'none';
+        content.querySelectorAll('.guide-doodle').forEach(d => d.classList.remove('selected'));
+        return;
+      }
+
+      // Filter rows
+      rows.forEach(row => {
+        const inputImgs = row.querySelectorAll('.inputs .guide-doodle');
+        const outputImg = row.querySelector('.result .guide-doodle');
+
+        const usesIt = Array.from(inputImgs).some(img => img.dataset.doodle === currentFilter);
+        const producesIt = outputImg.dataset.doodle === currentFilter;
+
+        row.style.display = (usesIt || producesIt) ? 'flex' : 'none';
+      });
+
+      content.classList.add('filtered');
+      fullBtn.style.display = 'block';
+
+      // Highlight every instance of the filtered doodle
+      content.querySelectorAll('.guide-doodle').forEach(d => {
+        d.classList.toggle('selected', d.dataset.doodle === currentFilter);
+      });
+    }
+
+    function populateGuide() {
+      const content = document.getElementById('guide-content');
+      content.innerHTML = '';
+
+      const groupBreaks = [6, 11, 15, 18, 21, 24, 27, 30, 32, 34, 36];
+
+      doodleMerges.forEach((merge, index) => {
+        const row = document.createElement('div');
+        row.className = 'merge-row';
+
+        // Inputs
+        const inputsDiv = document.createElement('div');
+        inputsDiv.className = 'inputs';
+        merge.inputs.forEach(d => {
+          const img = document.createElement('img');
+          img.src = `images/${d}.png`;
+          img.className = 'guide-doodle';
+          img.dataset.doodle = d;
+          inputsDiv.appendChild(img);
+          addHoverListeners(img);  // ← Tooltip magic here
+        });
+        row.appendChild(inputsDiv);
+
+        // Arrow
+        const arrowContainer = document.createElement('div');
+        arrowContainer.className = 'arrow-container';
+        arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
+        row.appendChild(arrowContainer);
+
+        // Result
+        const resultDiv = document.createElement('div');
+        resultDiv.className = 'result';
+        const resultImg = document.createElement('img');
+        resultImg.src = `images/${merge.output}.png`;
+        resultImg.className = 'guide-doodle';
+        resultImg.dataset.doodle = merge.output;
+        resultDiv.appendChild(resultImg);
+        addHoverListeners(resultImg);  // ← Tooltip magic here too
+        row.appendChild(resultDiv);
+
+        content.appendChild(row);
+
+        // Divider
+        if (groupBreaks.includes(index + 1)) {
+          const divider = document.createElement('div');
+          divider.className = 'group-divider';
+          content.appendChild(divider);
+        }
+      });
+
+      // Make every doodle clickable
+      const doodleImages = content.querySelectorAll('.guide-doodle');
+      doodleImages.forEach(img => {
+        img.addEventListener('click', () => {
+          // Clear previous selections
+          content.querySelectorAll('.guide-doodle').forEach(d => d.classList.remove('selected'));
+          
+          // Select this one
+          img.classList.add('selected');
+          
+          currentFilter = img.dataset.doodle;
+          applyGuideFilter();
+        });
+      });
+
+      // Start in full-view mode
+      applyGuideFilter();
+    }
+
+    let hoverTimeout = null;
+
+    function addHoverListeners(element) {
+      if (element.dataset.hasTooltip) return;
+      element.dataset.hasTooltip = 'true';
+
+      let mouseX, mouseY;  // Capture coords on enter
+
+      element.addEventListener('mouseenter', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        clearTimeout(hoverTimeout);
+        hoverTimeout = setTimeout(() => showTooltip(element, mouseX, mouseY), 500);
+      });
+
+      element.addEventListener('mouseleave', () => {
+        clearTimeout(hoverTimeout);
+        hideTooltip();
+      });
+    }
+
+    function showTooltip(element, x, y) {
+      const doodle = element.dataset.doodle;
+      if (!doodle || !doodleDescriptions[doodle]) return;
+
+      document.getElementById('tooltip-desc').innerHTML = renderDescription(doodleDescriptions[doodle]);
+
+      const tooltip = document.getElementById('tooltip');
+      tooltip.offsetHeight;  // Force reflow for accurate sizing
+
+      let tooltipWidth = tooltip.offsetWidth || 260;
+      let tooltipHeight = tooltip.offsetHeight || 140;
+
+      // Position near mouse, centered horizontally, prefer above
+      let left = x - (tooltipWidth / 2);
+      let top = y - tooltipHeight - 16;
+
+      // Clamp to game-container bounds
+      const container = document.getElementById('game-container');
+      const containerRect = container.getBoundingClientRect();
+      left = Math.max(containerRect.left + 10, Math.min(left, containerRect.right - tooltipWidth - 10));
+      if (top < containerRect.top + 10) {
+        top = y + 16;  // Flip below if no room above
+      }
+      top = Math.min(top, window.innerHeight - tooltipHeight - 10);
+
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+      tooltip.classList.add('show');
+    }
+
+    function hideTooltip() {
+      document.getElementById('tooltip').classList.remove('show');
+    }
+
+    function attachMainDoodleTooltips() {
+      const ids = ['doodle-l1', 'doodle-l2', 'doodle-l3', 'doodle-r1', 'doodle-r2', 'doodle-r3'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) addHoverListeners(el);
+      });
+    }
+
+    function attachCellTooltips(grid) {
+      grid.querySelectorAll('.doodle-cell').forEach(cell => addHoverListeners(cell));
+    }
+
+    function populateLearnGrid() {
+      const grid = document.getElementById('learn-grid');
+      grid.innerHTML = '';
+      allPossibleDoodles.forEach(doodle => {
+        const cell = document.createElement('div');
+        cell.className = 'doodle-cell';
+        cell.dataset.doodle = doodle;
+        cell.innerHTML = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
+        cell.addEventListener('click', () => toggleSelection(cell, grid, 'learn'));
+        grid.appendChild(cell);
+      });
+      attachCellTooltips(grid);
+    }
+
+    function populatePortfolioGrid() {
+      const grid = document.getElementById('portfolio-grid');
+      grid.innerHTML = '';
+
+      const doodlesInDeck = [];
+      for (let [doodle, count] of Object.entries(deck)) {
+        if (count > 0) {
+          for (let i = 0; i < count; i++) {
+            doodlesInDeck.push(doodle);
+          }
+        }
+      }
+
+      doodlesInDeck.forEach((doodle, index) => {
+        const cell = document.createElement('div');
+        cell.className = 'doodle-cell';
+        cell.dataset.doodle = doodle;
+        cell.dataset.index = index;
+        cell.innerHTML = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
+        cell.addEventListener('click', () => toggleSelection(cell, grid, 'portfolio'));
+        grid.appendChild(cell);
+      });
+      attachCellTooltips(grid);
+    }
+
+    function toggleSelection(cell, grid, modalType) {
+      const isSelected = cell.classList.contains('selected');
+      const actionBtn = modalType === 'learn'
+        ? document.getElementById('modal-learn-btn')
+        : document.getElementById('modal-remove-btn');
+
+      grid.querySelectorAll('.doodle-cell').forEach(c => c.classList.remove('selected'));
+
+      if (!isSelected) {
+        cell.classList.add('selected');
+        actionBtn.style.display = 'block';
+      } else {
+        actionBtn.style.display = 'none';
+      }
+    }
+
+    document.getElementById('modal-learn-btn').addEventListener('click', () => {
+      const selected = document.querySelector('#learn-grid .doodle-cell.selected');
+      if (selected) {
+        const doodle = selected.dataset.doodle;
+        deck[doodle] = (deck[doodle] || 0) + 1;
+
+        selected.classList.add('animate-learn');
+
+        const toast = document.getElementById('toast');
+        toast.textContent = `${formatName(doodle)} added to your portfolio`;
+        toast.classList.add('show');
+
+        setTimeout(() => {
+          selected.classList.remove('animate-learn');
+          selected.classList.remove('selected');
+          document.getElementById('modal-learn-btn').style.display = 'none';
+          toast.classList.remove('show');
+        }, 1200);
+      }
+    });
+
+    document.getElementById('modal-remove-btn').addEventListener('click', () => {
+      const selected = document.querySelector('#portfolio-grid .doodle-cell.selected');
+      if (selected) {
+        const doodle = selected.dataset.doodle;
+        if (deck[doodle] > 0) {
+          deck[doodle]--;
+
+          selected.classList.add('animate-remove');
+
+          setTimeout(() => {
+            populatePortfolioGrid();
+            document.getElementById('modal-remove-btn').style.display = 'none';
+          }, 600);
+        }
+      }
+    });
+
+    document.getElementById('learn-btn').addEventListener('click', () => {
+      populateLearnGrid();
+      openModal('learn-modal');
+    });
+
+    document.getElementById('close-learn').addEventListener('click', () => closeModal('learn-modal'));
+
+    document.getElementById('portfolio-btn').addEventListener('click', () => {
+      populatePortfolioGrid();
+      openModal('portfolio-modal');
+    });
+
+    document.getElementById('close-portfolio').addEventListener('click', () => closeModal('portfolio-modal'));
+
+    document.getElementById('guide-btn').addEventListener('click', () => {
+      populateGuide();
+      openModal('guide-modal');
+    });
+
+    document.getElementById('close-guide').addEventListener('click', () => closeModal('guide-modal'));
+
+    document.getElementById('full-guide-btn').addEventListener('click', () => {
+      currentFilter = null;
+      applyGuideFilter();
+    });
+
+    document.getElementById('shuffle-btn').addEventListener('click', () => {
+      const drawn = drawSix();
+      if (!drawn) return;
+
+      const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
+
+      order.forEach((id, i) => {
+        const div = document.getElementById(id);
+        if (div && div.style.backgroundImage) {
+          setTimeout(() => {
+            div.style.transition = 'transform 0.175s ease-in';
+            div.style.transform = 'translateY(120dvh) rotate(-720deg)';
+          }, i * 50);
+        }
+      });
+
+      setTimeout(() => {
+        order.forEach((id, i) => {
+          const div = document.getElementById(id);
+          if (!div) return;
+
+          div.style.transition = 'none';
+          div.style.transform = 'translateY(100dvh) rotate(720deg)';
+          div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
+          div.dataset.doodle = drawn[i];
+
+          void div.offsetWidth;
+
+          setTimeout(() => {
+            div.style.transition = 'transform 0.175s ease-out';
+            div.style.transform = 'translateY(0) rotate(0deg)';
+          }, i * 50);
+        });
+      }, 325);
+    });
+
+    // Score Modal Globals
+    let scoreStream = null;
+    let detectedDoodles = [];  // Will hold ['triangle', 'circle', ...] for 3x3
+
+    // Score Modal Open (direct listener, like others)
+    document.getElementById('score-btn').addEventListener('click', () => {
+      console.log('Score button clicked – opening modal');  // Temp debug
+      openModal('score-modal');
+      populateScoreContent();
+    });
+
+    document.getElementById('close-score').addEventListener('click', () => {
+      console.log('Close score clicked');  // Temp debug
+      closeModal('score-modal');
+    });
+
+    function populateScoreContent() {
+      console.log('Populating score content');  // Temp debug
+      const content = document.getElementById('score-content');
+      content.innerHTML = `
+        <p style="text-align: center; font-size: 4cqi; color: #666;">Snap a photo of your 3x3 test grid!</p>
+        <button class="take-photo-btn" id="take-photo-btn">Take Photo</button>
+        <canvas id="photo-canvas" width="640" height="480"></canvas>
+        <div id="tweak-prompt" class="tweak-prompt" style="display: none;">
+          Detected! Double-check and tap any wrong cell to fix.
+        </div>
+        <div id="detected-grid"></div>
+      `;
+      document.getElementById('take-photo-btn').addEventListener('click', capturePhoto);
+    }
+
+async function capturePhoto() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });  // Back cam on mobile
+    scoreStream = stream;
+    const video = document.createElement('video');
+    video.srcObject = stream;
+    video.play();
+
+    // Wait for video ready, then snap
+    video.onloadedmetadata = () => {
+      const canvas = document.getElementById('photo-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      canvas.style.display = 'block';
+      document.getElementById('take-photo-btn').style.display = 'none';
+
+      // Stop stream
+      stream.getTracks().forEach(track => track.stop());
+
+      // Real detection!
+      detectedDoodles = detectDoodlesFromCanvas(canvas);  // Now calls the heuristics
+      renderDetectedGrid();
+      document.getElementById('tweak-prompt').style.display = 'block';
+    };
+  } catch (err) {
+    alert('Camera access denied—check permissions! ' + err.message);
+  }
+}
+
+// Real Detection: Heuristics for circle/triangle/smiley
+function detectDoodlesFromCanvas(canvas) {
+  const ctx = canvas.getContext('2d');
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const gridSize = 3;
+  const cellWidth = canvas.width / gridSize;
+  const cellHeight = canvas.height / gridSize;
+  const results = [];
+
+  for (let row = 0; row < gridSize; row++) {
+    for (let col = 0; col < gridSize; col++) {
+      const cellX = col * cellWidth;
+      const cellY = row * cellHeight;
+      
+      // Extract cell pixels
+      const cellCanvas = document.createElement('canvas');
+      cellCanvas.width = cellWidth;
+      cellCanvas.height = cellHeight;
+      const cellCtx = cellCanvas.getContext('2d');
+      cellCtx.drawImage(canvas, cellX, cellY, cellWidth, cellHeight, 0, 0, cellWidth, cellHeight);
+      const cellData = cellCtx.getImageData(0, 0, cellWidth, cellHeight);
+      
+      // Preprocess: Grayscale + threshold (simple edge detection)
+      const grayData = grayscaleAndThreshold(cellData.data, cellWidth * cellHeight);
+      
+      // Classify
+      const circleScore = calculateCircleScore(grayData, cellWidth, cellHeight);
+      const triangleScore = calculateTriangleScore(grayData, cellWidth, cellHeight);
+      const smileyScore = calculateSmileyScore(grayData, cellWidth, cellHeight);
+      
+      const maxScore = Math.max(circleScore, triangleScore, smileyScore);
+      if (maxScore < 0.5) {
+        results.push('unknown');
+      } else if (maxScore === circleScore) {
+        results.push('circle');
+      } else if (maxScore === triangleScore) {
+        results.push('triangle');
+      } else {
+        results.push('smiley');
+      }
+    }
+  }
+  return results;
+}
+
+// Helper: Grayscale + binary threshold (0-255 to 0/1)
+function grayscaleAndThreshold(data, length) {
+  const gray = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    const idx = i * 4;
+    const avg = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+    gray[i] = avg > 128 ? 255 : 0;  // Threshold for edges
+  }
+  return gray;
+}
+
+// Helper: Circle score (low variance in distances from center)
+function calculateCircleScore(grayData, w, h) {
+  let totalVar = 0;
+  let count = 0;
+  const centerX = w / 2;
+  const centerY = h / 2;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = y * w + x;
+      if (grayData[idx] === 255) {  // Edge pixel
+        const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+        totalVar += (dist - (w / 2)) ** 2;  // Variance from expected radius
+        count++;
+      }
+    }
+  }
+  return count > (w * h * 0.1) ? 1 - (totalVar / (count * (w / 2) ** 2 || 1)) : 0;  // Normalized score
+}
+
+// Helper: Triangle score (3 peaks in horizontal/vertical projections)
+function calculateTriangleScore(grayData, w, h) {
+  // Horizontal projections (row sums)
+  const hProjs = new Array(h).fill(0);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      hProjs[y] += grayData[y * w + x] === 255 ? 1 : 0;
+    }
+  }
+  // Count peaks (local maxima > threshold)
+  let peaks = 0;
+  const thresh = Math.max(...hProjs) * 0.3;
+  for (let y = 1; y < h - 1; y++) {
+    if (hProjs[y] > thresh && hProjs[y] > hProjs[y-1] && hProjs[y] > hProjs[y+1]) peaks++;
+  }
+  return peaks >= 3 ? 0.8 : 0;  // High confidence for ~3 peaks
+}
+
+// Helper: Smiley score (bottom arc variance + 2 top blobs)
+function calculateSmileyScore(grayData, w, h) {
+  const midY = h / 2;
+  const bottomHalf = grayData.slice(midY * w);  // Lower half for arc
+  const topHalf = grayData.slice(0, midY * w);  // Upper for dots
+  
+  // Arc: High curvature in bottom (variance in row sums)
+  let arcVar = 0;
+  const bottomRows = Math.floor(h / 2);
+  const rowSums = [];
+  for (let i = 0; i < bottomRows; i++) {
+    let sum = 0;
+    for (let x = 0; x < w; x++) {
+      sum += bottomHalf[i * w + x] === 255 ? 1 : 0;
+    }
+    rowSums.push(sum);
+  }
+  const avgSum = rowSums.reduce((a, b) => a + b, 0) / rowSums.length;
+  rowSums.forEach(sum => arcVar += (sum - avgSum) ** 2);
+  const arcScore = arcVar > (avgSum ** 2 * 0.5) ? 0.6 : 0;  // Curvy = high variance
+  
+  // Dots: 2 small clusters in top half
+  let blobCount = 0;
+  let visited = new Set();
+  for (let y = 0; y < midY; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = y * w + x;
+      if (topHalf[idx] === 255 && !visited.has(idx)) {
+        const size = floodFillSize(topHalf, w, midY, x, y, visited);  // Simple blob size
+        if (size > 5 && size < 50) blobCount++;  // Small dot-like
+      }
+    }
+  }
+  const dotScore = blobCount === 2 ? 0.4 : 0;
+  
+  return arcScore + dotScore;
+}
+
+// Flood fill for blob size (simple 4-connected)
+function floodFillSize(data, w, h, startX, startY, visited) {
+  const stack = [[startX, startY]];
+  let size = 0;
+  while (stack.length) {
+    const [x, y] = stack.pop();
+    const idx = y * w + x;
+    const key = `${x},${y}`;
+    if (visited.has(key) || x < 0 || x >= w || y < 0 || y >= h || data[idx] !== 255) continue;
+    visited.add(key);
+    size++;
+    stack.push([x+1, y], [x-1, y], [x, y+1], [x, y-1]);
+  }
+  return size;
+}
+
 function renderDetectedGrid() {
   const grid = document.getElementById('detected-grid');
   grid.innerHTML = '';
@@ -35,3 +1390,67 @@ function tweakCell(cell) {
   detectedDoodles[cell.dataset.index] = nextDoodle;
   // TODO: Re-score or save on changes
 }
+
+    // Consolidated openModal (single version – no duplicates)
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (!modal) {
+        console.error('Modal not found:', modalId);  // Debug if missing
+        return;
+      }
+      modal.style.display = 'flex';
+      modal.offsetHeight;  // Trigger reflow
+      modal.classList.add('active');
+    }
+
+    // Consolidated closeModal (single version with score cleanup)
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (!modal) return;
+      modal.classList.remove('active');
+      setTimeout(() => {
+        modal.style.display = 'none';
+        document.querySelectorAll('.doodle-cell.selected').forEach(c => c.classList.remove('selected'));
+        document.querySelectorAll('.action-btn').forEach(btn => btn.style.display = 'none');
+        // Score-specific cleanup
+        if (scoreStream) {
+          scoreStream.getTracks().forEach(track => track.stop());
+          scoreStream = null;
+        }
+        detectedDoodles = [];
+        // Hide any lingering tooltip
+        hideTooltip();
+      }, 400);
+    }
+
+    function getDeckAsArray() {
+      let arr = [];
+      for (let [doodle, count] of Object.entries(deck)) {
+        for (let i = 0; i < count; i++) arr.push(doodle);
+      }
+      return arr;
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function drawSix() {
+      const deckArray = getDeckAsArray();
+      if (deckArray.length < 6) {
+        alert("You need at least 6 doodles in your deck to shuffle!");
+        return null;
+      }
+      return shuffle([...deckArray]).slice(0, 6);
+    }
+
+    populateLearnGrid();
+    attachMainDoodleTooltips();
+  </script>
+</body>
+
+</html>
