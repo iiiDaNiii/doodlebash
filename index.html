@@ -164,6 +164,10 @@
       transform: translateX(-100%);
     }
 
+    .modal.score {
+      transform: translateX(100%);  /* Slides in from right */
+    }
+
     .modal.active {
       display: flex;
       transform: translate(0);
@@ -189,6 +193,11 @@
 
     .modal-top.guide {
       background: #4dbde5;
+    }
+
+    .modal-top.score {
+      background: #7f2a8f;  /* Purple to match Learn/Portfolio vibe */
+      color: white;
     }
 
     .modal-top .title {
@@ -242,6 +251,12 @@
     .action-btn.remove {
       background: #7f2a8f;
       color: white;
+    }
+
+    .modal-top.guide .action-btn {
+      background: #4dbde5;
+      color: white;
+      border: none;  /* Flush like LEARN/REMOVE – no outline */
     }
 
     .modal-grid {
@@ -409,6 +424,40 @@
     .guide-doodle {
       width: 8.7cqi;
       height: auto;
+      cursor: pointer;
+      box-shadow: none !important;   /* Permanent blue outline killer */
+      border: none !important;
+      /* No transitions here – avoids clashing with animation */
+    }
+
+    .guide-doodle:hover {
+      transform: scale(1.1);
+      transition: transform 0.25s ease;  /* Isolated to hover only */
+    }
+
+    .guide-doodle.selected {
+      transform-origin: center;      /* Pivots from image center */
+      animation: rock 1s ease-in-out infinite;
+      rotate: 0deg;
+    }
+
+    @keyframes rock {
+      0%, 100% {
+        transform: scale(1.1);
+        rotate:5deg;
+      }
+      50% {
+        transform: scale(1.1);
+        rotate:-5deg;
+      }
+      100% {
+        transform: scale(1.1);
+        rotate:5deg;
+      }
+    }
+
+    #guide-content.filtered .group-divider {
+      display: none;
     }
 
     /* TOOLTIP */
@@ -479,71 +528,87 @@
     }
 
     .group-divider {
-  min-height: .6cqi;
-  background: #dbdbdb;
-  margin: 2.5cqi 0;
-  border-radius: 0.125rem;
-  width: 100%;
-  flex-shrink: 0;  /* Prevents flex from compressing it */
-  align-self: stretch;  /* Ensures it spans the full container width */
-}
+      min-height: .6cqi;
+      background: #dbdbdb;
+      margin: 2.5cqi 0;
+      border-radius: 0.125rem;
+      width: 100%;
+      flex-shrink: 0;  /* Prevents flex from compressing it */
+      align-self: stretch;  /* Ensures it spans the full container width */
+    }
 
-/* GUIDE FILTERING */
-.modal-top.guide .action-btn {
-  background: #ffffff;
-  color: #5fbae9;
-  border: none;  /* Flush like LEARN/REMOVE – no outline */
-}
+    #score-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2cqi;
+      padding: 2cqi;
+      overflow: hidden;
+    }
 
-.guide-doodle {
-  cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
+    .take-photo-btn {
+      background: #4dbde5;  /* Blue for action */
+      color: white;
+      font-size: 5cqi;
+      padding: 2cqi 6cqi;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
 
-.guide-doodle:hover,
-.guide-doodle.selected {
-  transform: scale(1.25);
-  box-shadow: 0 0 0 0.5cqi #4dbde5;
-  z-index: 10;
-}
+    .take-photo-btn:hover {
+      transform: scale(1.05);
+    }
 
-#guide-content.filtered .group-divider {
-  display: none;
-}
+    #photo-canvas {
+      max-width: 80%;
+      max-height: 60%;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      display: none;  /* Hidden until photo taken */
+    }
 
-/* GUIDE HIGHLIGHTING – ROCKING ANIMATION */
-.guide-doodle {
-  cursor: pointer;
-  box-shadow: none !important;   /* Permanent blue outline killer */
-  border: none !important;
-  /* No transitions here – avoids clashing with animation */
-}
+    #detected-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 1cqi;
+      width: 60cqi;
+      height: 60cqi;
+      margin: 2cqi 0;
+      display: none;  /* Hidden until detection */
+    }
 
-.guide-doodle:hover {
-  transform: scale(1.1);
-  transition: transform 0.25s ease;  /* Isolated to hover only */
-}
+    .grid-cell {
+      aspect-ratio: 1;
+      background: #f0f0f0;
+      border: 2px solid #ccc;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3cqi;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
 
-.guide-doodle.selected {
-    transform-origin: center;      /* Pivots from image center */
-  animation: rock 1s ease-in-out infinite;
-  rotate: 0deg;
-}
+    .grid-cell:hover {
+      background: #e0e0e0;
+    }
 
-@keyframes rock {
-  0%, 100% {
-    transform: scale(1.1);
-    rotate:5deg;
-  }
-  50% {
-    transform: scale(1.1);
-    rotate:-5deg;
-  }
-  100% {
-    transform: scale(1.1);
-    rotate:5deg;
-  }
-}
+    .grid-cell.triangle { background-image: url('images/triangle.png'); background-size: contain; }
+    .grid-cell.circle { background-image: url('images/circle.png'); background-size: contain; }
+    .grid-cell.smiley { background-image: url('images/smiley.png'); background-size: contain; }
+    .grid-cell.unknown { background: #ffeb3b; color: #333; }  /* Yellow for manual fix */
+
+    .tweak-prompt {
+      text-align: center;
+      font-size: 3.5cqi;
+      color: #666;
+      max-width: 80cqi;
+    }
   </style>
 </head>
 
@@ -567,6 +632,7 @@
 
     <div id="footer">
       <button id="portfolio-btn">PORTFOLIO</button>
+      <button id="score-btn">SCORE</button>
     </div>
 
     <!-- LEARN MODAL -->
@@ -605,6 +671,18 @@
         </div>
       </div>
       <div id="guide-content"></div>
+      <div class="modal-bottom-spacer"></div>
+    </div>
+
+    <!-- SCORE MODAL -->
+    <div id="score-modal" class="modal score">
+      <div class="modal-top score">
+        <div class="title">Score Your Sheet</div>
+        <div class="buttons">
+          <button class="close-btn" id="close-score">✕</button>
+        </div>
+      </div>
+      <div id="score-content"></div>
       <div class="modal-bottom-spacer"></div>
     </div>
 
@@ -739,165 +817,161 @@
       });
     }
 
-    let currentFilter = null;   // ← add this near the top with your other lets
+    let currentFilter = null;
 
     function applyGuideFilter() {
-  const content = document.getElementById('guide-content');
-  const rows = content.querySelectorAll('.merge-row');
-  const fullBtn = document.getElementById('full-guide-btn');
+      const content = document.getElementById('guide-content');
+      const rows = content.querySelectorAll('.merge-row');
+      const fullBtn = document.getElementById('full-guide-btn');
 
-  // Reset everything
-  if (!currentFilter) {
-    rows.forEach(row => row.style.display = 'flex');
-    content.classList.remove('filtered');
-    fullBtn.style.display = 'none';
-    content.querySelectorAll('.guide-doodle').forEach(d => d.classList.remove('selected'));
-    return;
-  }
+      // Reset everything
+      if (!currentFilter) {
+        rows.forEach(row => row.style.display = 'flex');
+        content.classList.remove('filtered');
+        fullBtn.style.display = 'none';
+        content.querySelectorAll('.guide-doodle').forEach(d => d.classList.remove('selected'));
+        return;
+      }
 
-  // Filter rows
-  rows.forEach(row => {
-    const inputImgs = row.querySelectorAll('.inputs .guide-doodle');
-    const outputImg = row.querySelector('.result .guide-doodle');
+      // Filter rows
+      rows.forEach(row => {
+        const inputImgs = row.querySelectorAll('.inputs .guide-doodle');
+        const outputImg = row.querySelector('.result .guide-doodle');
 
-    const usesIt = Array.from(inputImgs).some(img => img.dataset.doodle === currentFilter);
-    const producesIt = outputImg.dataset.doodle === currentFilter;
+        const usesIt = Array.from(inputImgs).some(img => img.dataset.doodle === currentFilter);
+        const producesIt = outputImg.dataset.doodle === currentFilter;
 
-    row.style.display = (usesIt || producesIt) ? 'flex' : 'none';
-  });
+        row.style.display = (usesIt || producesIt) ? 'flex' : 'none';
+      });
 
-  content.classList.add('filtered');
-  fullBtn.style.display = 'block';
+      content.classList.add('filtered');
+      fullBtn.style.display = 'block';
 
-  // Highlight every instance of the filtered doodle
-  content.querySelectorAll('.guide-doodle').forEach(d => {
-    d.classList.toggle('selected', d.dataset.doodle === currentFilter);
-  });
-}
-
-function populateGuide() {
-  const content = document.getElementById('guide-content');
-  content.innerHTML = '';
-
-  const groupBreaks = [6, 11, 15, 18, 21, 24, 27, 30, 32, 34, 36];
-
-  doodleMerges.forEach((merge, index) => {
-    const row = document.createElement('div');
-    row.className = 'merge-row';
-
-    // Inputs
-    const inputsDiv = document.createElement('div');
-    inputsDiv.className = 'inputs';
-    merge.inputs.forEach(d => {
-      const img = document.createElement('img');
-      img.src = `images/${d}.png`;
-      img.className = 'guide-doodle';
-      img.dataset.doodle = d;
-      inputsDiv.appendChild(img);
-      addHoverListeners(img);  // ← Tooltip magic here
-    });
-    row.appendChild(inputsDiv);
-
-    // Arrow
-    const arrowContainer = document.createElement('div');
-    arrowContainer.className = 'arrow-container';
-    arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
-    row.appendChild(arrowContainer);
-
-    // Result
-    const resultDiv = document.createElement('div');
-    resultDiv.className = 'result';
-    const resultImg = document.createElement('img');
-    resultImg.src = `images/${merge.output}.png`;
-    resultImg.className = 'guide-doodle';
-    resultImg.dataset.doodle = merge.output;
-    resultDiv.appendChild(resultImg);
-    addHoverListeners(resultImg);  // ← Tooltip magic here too
-    row.appendChild(resultDiv);
-
-    content.appendChild(row);
-
-    // Divider
-    if (groupBreaks.includes(index + 1)) {
-      const divider = document.createElement('div');
-      divider.className = 'group-divider';
-      content.appendChild(divider);
+      // Highlight every instance of the filtered doodle
+      content.querySelectorAll('.guide-doodle').forEach(d => {
+        d.classList.toggle('selected', d.dataset.doodle === currentFilter);
+      });
     }
-  });
 
-  // Make every doodle clickable
-  const doodleImages = content.querySelectorAll('.guide-doodle');
-  doodleImages.forEach(img => {
-    img.addEventListener('click', () => {
-      // Clear previous selections
-      content.querySelectorAll('.guide-doodle').forEach(d => d.classList.remove('selected'));
-      
-      // Select this one
-      img.classList.add('selected');
-      
-      currentFilter = img.dataset.doodle;
+    function populateGuide() {
+      const content = document.getElementById('guide-content');
+      content.innerHTML = '';
+
+      const groupBreaks = [6, 11, 15, 18, 21, 24, 27, 30, 32, 34, 36];
+
+      doodleMerges.forEach((merge, index) => {
+        const row = document.createElement('div');
+        row.className = 'merge-row';
+
+        // Inputs
+        const inputsDiv = document.createElement('div');
+        inputsDiv.className = 'inputs';
+        merge.inputs.forEach(d => {
+          const img = document.createElement('img');
+          img.src = `images/${d}.png`;
+          img.className = 'guide-doodle';
+          img.dataset.doodle = d;
+          inputsDiv.appendChild(img);
+          addHoverListeners(img);  // ← Tooltip magic here
+        });
+        row.appendChild(inputsDiv);
+
+        // Arrow
+        const arrowContainer = document.createElement('div');
+        arrowContainer.className = 'arrow-container';
+        arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
+        row.appendChild(arrowContainer);
+
+        // Result
+        const resultDiv = document.createElement('div');
+        resultDiv.className = 'result';
+        const resultImg = document.createElement('img');
+        resultImg.src = `images/${merge.output}.png`;
+        resultImg.className = 'guide-doodle';
+        resultImg.dataset.doodle = merge.output;
+        resultDiv.appendChild(resultImg);
+        addHoverListeners(resultImg);  // ← Tooltip magic here too
+        row.appendChild(resultDiv);
+
+        content.appendChild(row);
+
+        // Divider
+        if (groupBreaks.includes(index + 1)) {
+          const divider = document.createElement('div');
+          divider.className = 'group-divider';
+          content.appendChild(divider);
+        }
+      });
+
+      // Make every doodle clickable
+      const doodleImages = content.querySelectorAll('.guide-doodle');
+      doodleImages.forEach(img => {
+        img.addEventListener('click', () => {
+          // Clear previous selections
+          content.querySelectorAll('.guide-doodle').forEach(d => d.classList.remove('selected'));
+          
+          // Select this one
+          img.classList.add('selected');
+          
+          currentFilter = img.dataset.doodle;
+          applyGuideFilter();
+        });
+      });
+
+      // Start in full-view mode
       applyGuideFilter();
-    });
-  });
+    }
 
-  // Start in full-view mode
-  applyGuideFilter();
-}
+    let hoverTimeout = null;
 
-let hoverTimeout = null;
+    function addHoverListeners(element) {
+      if (element.dataset.hasTooltip) return;
+      element.dataset.hasTooltip = 'true';
 
-function addHoverListeners(element) {
-  if (element.dataset.hasTooltip) return;
-  element.dataset.hasTooltip = 'true';
+      let mouseX, mouseY;  // Capture coords on enter
 
-  let mouseX, mouseY;  // Capture coords on enter
+      element.addEventListener('mouseenter', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        clearTimeout(hoverTimeout);
+        hoverTimeout = setTimeout(() => showTooltip(element, mouseX, mouseY), 500);
+      });
 
-  element.addEventListener('mouseenter', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-    clearTimeout(hoverTimeout);
-    hoverTimeout = setTimeout(() => showTooltip(element, mouseX, mouseY), 500);
-  });
+      element.addEventListener('mouseleave', () => {
+        clearTimeout(hoverTimeout);
+        hideTooltip();
+      });
+    }
 
-  element.addEventListener('mouseleave', () => {
-    clearTimeout(hoverTimeout);
-    hideTooltip();
-  });
-}
+    function showTooltip(element, x, y) {
+      const doodle = element.dataset.doodle;
+      if (!doodle || !doodleDescriptions[doodle]) return;
 
-function showTooltip(element, x, y) {
-  const doodle = element.dataset.doodle;
-  if (!doodle || !doodleDescriptions[doodle]) return;
+      document.getElementById('tooltip-desc').innerHTML = renderDescription(doodleDescriptions[doodle]);
 
-  document.getElementById('tooltip-desc').innerHTML = renderDescription(doodleDescriptions[doodle]);
+      const tooltip = document.getElementById('tooltip');
+      tooltip.offsetHeight;  // Force reflow for accurate sizing
 
-  const tooltip = document.getElementById('tooltip');
-  tooltip.offsetHeight;  // Force reflow for accurate sizing
+      let tooltipWidth = tooltip.offsetWidth || 260;
+      let tooltipHeight = tooltip.offsetHeight || 140;
 
-  let tooltipWidth = tooltip.offsetWidth || 260;
-  let tooltipHeight = tooltip.offsetHeight || 140;
+      // Position near mouse, centered horizontally, prefer above
+      let left = x - (tooltipWidth / 2);
+      let top = y - tooltipHeight - 16;
 
-  // Position near mouse, centered horizontally, prefer above
-  let left = x - (tooltipWidth / 2);
-  let top = y - tooltipHeight - 16;
+      // Clamp to game-container bounds
+      const container = document.getElementById('game-container');
+      const containerRect = container.getBoundingClientRect();
+      left = Math.max(containerRect.left + 10, Math.min(left, containerRect.right - tooltipWidth - 10));
+      if (top < containerRect.top + 10) {
+        top = y + 16;  // Flip below if no room above
+      }
+      top = Math.min(top, window.innerHeight - tooltipHeight - 10);
 
-  // Clamp to game-container bounds
-  const container = document.getElementById('game-container');
-  const containerRect = container.getBoundingClientRect();
-  left = Math.max(containerRect.left + 10, Math.min(left, containerRect.right - tooltipWidth - 10));
-  if (top < containerRect.top + 10) {
-    top = y + 16;  // Flip below if no room above
-  }
-  top = Math.min(top, window.innerHeight - tooltipHeight - 10);
-
-  tooltip.style.left = `${left}px`;
-  tooltip.style.top = `${top}px`;
-  tooltip.classList.add('show');
-}
-
-function hideTooltip() {
-  document.getElementById('tooltip').classList.remove('show');
-}
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+      tooltip.classList.add('show');
+    }
 
     function hideTooltip() {
       document.getElementById('tooltip').classList.remove('show');
@@ -1008,23 +1082,6 @@ function hideTooltip() {
       }
     });
 
-    function openModal(modalId) {
-      const modal = document.getElementById(modalId);
-      modal.style.display = 'flex';
-      modal.offsetHeight;
-      modal.classList.add('active');
-    }
-
-    function closeModal(modalId) {
-      const modal = document.getElementById(modalId);
-      modal.classList.remove('active');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        document.querySelectorAll('.doodle-cell.selected').forEach(c => c.classList.remove('selected'));
-        document.querySelectorAll('.action-btn').forEach(btn => btn.style.display = 'none');
-      }, 400);
-    }
-
     document.getElementById('learn-btn').addEventListener('click', () => {
       populateLearnGrid();
       openModal('learn-modal');
@@ -1045,6 +1102,11 @@ function hideTooltip() {
     });
 
     document.getElementById('close-guide').addEventListener('click', () => closeModal('guide-modal'));
+
+    document.getElementById('full-guide-btn').addEventListener('click', () => {
+      currentFilter = null;
+      applyGuideFilter();
+    });
 
     document.getElementById('shuffle-btn').addEventListener('click', () => {
       const drawn = drawSix();
@@ -1082,10 +1144,158 @@ function hideTooltip() {
       }, 325);
     });
 
-document.getElementById('full-guide-btn').addEventListener('click', () => {
-  currentFilter = null;
-  applyGuideFilter();
-});
+    // Score Modal Globals
+    let scoreStream = null;
+    let detectedDoodles = [];  // Will hold ['triangle', 'circle', ...] for 3x3
+
+    // Score Modal Open (direct listener, like others)
+    document.getElementById('score-btn').addEventListener('click', () => {
+      console.log('Score button clicked – opening modal');  // Temp debug
+      openModal('score-modal');
+      populateScoreContent();
+    });
+
+    document.getElementById('close-score').addEventListener('click', () => {
+      console.log('Close score clicked');  // Temp debug
+      closeModal('score-modal');
+    });
+
+    function populateScoreContent() {
+      console.log('Populating score content');  // Temp debug
+      const content = document.getElementById('score-content');
+      content.innerHTML = `
+        <p style="text-align: center; font-size: 4cqi; color: #666;">Snap a photo of your 3x3 test grid!</p>
+        <button class="take-photo-btn" id="take-photo-btn">Take Photo</button>
+        <canvas id="photo-canvas" width="640" height="480"></canvas>
+        <div id="tweak-prompt" class="tweak-prompt" style="display: none;">
+          Detected! Double-check and tap any wrong cell to fix.
+        </div>
+        <div id="detected-grid"></div>
+      `;
+      document.getElementById('take-photo-btn').addEventListener('click', capturePhoto);
+    }
+
+    async function capturePhoto() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });  // Back cam on mobile
+        scoreStream = stream;
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.play();
+
+        // Wait for video ready, then snap
+        video.onloadedmetadata = () => {
+          const canvas = document.getElementById('photo-canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0);
+          canvas.style.display = 'block';
+          document.getElementById('take-photo-btn').style.display = 'none';
+
+          // Stop stream
+          stream.getTracks().forEach(track => track.stop());
+
+          // Stub: Simulate detection (replace with real logic below)
+          detectedDoodles = generateStubDetection(canvas);  // Random 3x3 for test
+          renderDetectedGrid();
+          document.getElementById('tweak-prompt').style.display = 'block';
+        };
+      } catch (err) {
+        alert('Camera access denied—check permissions! ' + err.message);
+      }
+    }
+
+    // Stub Detection: Random for now (9 cells, random triangle/circle/smiley)
+    function generateStubDetection(canvas) {
+      return Array(9).fill().map(() => ['triangle', 'circle', 'smiley'][Math.floor(Math.random() * 3)]);
+    }
+
+    // Real Detection Stub: Placeholder for CV logic
+    function detectDoodlesFromCanvas(canvas) {
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const gridSize = 3;
+      const cellWidth = canvas.width / gridSize;
+      const cellHeight = canvas.height / gridSize;
+      const results = [];
+
+      for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+          const cellX = col * cellWidth;
+          const cellY = row * cellHeight;
+          const cellData = ctx.getImageData(cellX, cellY, cellWidth, cellHeight);
+          
+          // TODO: Process cellData for shape (e.g., count circles/edges)
+          // For now, random
+          results.push(['triangle', 'circle', 'smiley'][Math.floor(Math.random() * 3)]);
+        }
+      }
+      return results;
+    }
+
+    function renderDetectedGrid() {
+      const grid = document.getElementById('detected-grid');
+      grid.innerHTML = '';
+      grid.style.display = 'grid';
+
+      detectedDoodles.forEach((doodle, index) => {
+        const cell = document.createElement('div');
+        cell.className = `grid-cell ${doodle}`;
+        cell.dataset.index = index;
+        cell.dataset.doodle = doodle;
+        cell.textContent = doodle.charAt(0).toUpperCase();  // Fallback label
+        cell.addEventListener('click', () => tweakCell(cell));
+        grid.appendChild(cell);
+      });
+    }
+
+    function tweakCell(cell) {
+      // Cycle through options on tap
+      const current = cell.dataset.doodle;
+      const options = ['triangle', 'circle', 'smiley'];
+      const nextIndex = (options.indexOf(current) + 1) % 3;
+      const nextDoodle = options[nextIndex];
+      
+      cell.className = `grid-cell ${nextDoodle}`;
+      cell.dataset.doodle = nextDoodle;
+      cell.textContent = nextDoodle.charAt(0).toUpperCase();
+      
+      detectedDoodles[cell.dataset.index] = nextDoodle;
+      // TODO: Re-score or save on changes
+    }
+
+    // Consolidated openModal (single version – no duplicates)
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (!modal) {
+        console.error('Modal not found:', modalId);  // Debug if missing
+        return;
+      }
+      modal.style.display = 'flex';
+      modal.offsetHeight;  // Trigger reflow
+      modal.classList.add('active');
+    }
+
+    // Consolidated closeModal (single version with score cleanup)
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (!modal) return;
+      modal.classList.remove('active');
+      setTimeout(() => {
+        modal.style.display = 'none';
+        document.querySelectorAll('.doodle-cell.selected').forEach(c => c.classList.remove('selected'));
+        document.querySelectorAll('.action-btn').forEach(btn => btn.style.display = 'none');
+        // Score-specific cleanup
+        if (scoreStream) {
+          scoreStream.getTracks().forEach(track => track.stop());
+          scoreStream = null;
+        }
+        detectedDoodles = [];
+        // Hide any lingering tooltip
+        hideTooltip();
+      }, 400);
+    }
 
     function getDeckAsArray() {
       let arr = [];
