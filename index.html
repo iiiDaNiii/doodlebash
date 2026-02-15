@@ -1161,49 +1161,66 @@
     });
 
     function populateScoreContent() {
-      console.log('Populating score content');  // Temp debug
-      const content = document.getElementById('score-content');
-      content.innerHTML = `
-        <p style="text-align: center; font-size: 4cqi; color: #666;">Snap a photo of your 3x3 test grid!</p>
-        <button class="take-photo-btn" id="take-photo-btn">Take Photo</button>
-        <canvas id="photo-canvas" width="640" height="480"></canvas>
-        <div id="tweak-prompt" class="tweak-prompt" style="display: none;">
-          Detected! Double-check and tap any wrong cell to fix.
-        </div>
-        <div id="detected-grid"></div>
-      `;
-      document.getElementById('take-photo-btn').addEventListener('click', capturePhoto);
-    }
+  const content = document.getElementById('score-content');
+  content.innerHTML = `
+    <p style="text-align: center; font-size: 4cqi; color: #666;">Frame your 3x3 grid in the preview below, then snap!</p>
+    <video id="camera-preview" autoplay playsinline muted style="max-width: 90%; border: 1px solid #ddd; border-radius: 8px; display: none;"></video>
+    <button class="take-photo-btn" id="snap-now-btn" style="display: none;">Snap Now</button>
+    <canvas id="photo-canvas" width="640" height="480" style="display: none;"></canvas>
+    <div id="tweak-prompt" class="tweak-prompt" style="display: none;">
+      Detected! Double-check and tap any wrong cell to fix.
+    </div>
+    <div id="detected-grid"></div>
+  `;
+  
+  // Start camera on load
+  startCameraPreview();
+}
 
-async function capturePhoto() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });  // Back cam on mobile
-    scoreStream = stream;
-    const video = document.createElement('video');
-    video.srcObject = stream;
-    video.play();
+function startCameraPreview() {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', aspectRatio: 1 } })  // Prefer square-ish if possible
+    .then(stream => {
+      scoreStream = stream;
+      const video = document.getElementById('camera-preview');
+      video.srcObject = stream;
+      video.onloadeddata = () => {
+        video.style.display = 'block';
+        document.getElementById('snap-now-btn').style.display = 'block';
+        document.getElementById('snap-now-btn').addEventListener('click', snapFromPreview);
+      };
+    })
+    .catch(err => alert('Camera access denied—check permissions! ' + err.message));
+}
 
-    // Wait for video ready, then snap
-    video.onloadedmetadata = () => {
-      const canvas = document.getElementById('photo-canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0);
-      canvas.style.display = 'block';
-      document.getElementById('take-photo-btn').style.display = 'none';
-
-      // Stop stream
-      stream.getTracks().forEach(track => track.stop());
-
-      // Real detection!
-      detectedDoodles = detectDoodlesFromCanvas(canvas);  // Now calls the heuristics
-      renderDetectedGrid();
-      document.getElementById('tweak-prompt').style.display = 'block';
-    };
-  } catch (err) {
-    alert('Camera access denied—check permissions! ' + err.message);
+function snapFromPreview() {
+  const video = document.getElementById('camera-preview');
+  const canvas = document.getElementById('photo-canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // Set canvas to square (min of video dims for 1:1 crop)
+  const size = Math.min(video.videoWidth, video.videoHeight);
+  canvas.width = size;
+  canvas.height = size;
+  
+  // Center-crop from video (ignores 16:9 bars)
+  const offsetX = (video.videoWidth - size) / 2;
+  const offsetY = (video.videoHeight - size) / 2;
+  ctx.drawImage(video, offsetX, offsetY, size, size, 0, 0, size, size);
+  
+  canvas.style.display = 'block';
+  document.getElementById('camera-preview').style.display = 'none';
+  document.getElementById('snap-now-btn').style.display = 'none';
+  
+  // Stop stream
+  if (scoreStream) {
+    scoreStream.getTracks().forEach(track => track.stop());
+    scoreStream = null;
   }
+  
+  // Detect & render
+  detectedDoodles = detectDoodlesFromCanvas(canvas);
+  renderDetectedGrid();
+  document.getElementById('tweak-prompt').style.display = 'block';
 }
 
 // Real Detection: Heuristics for circle/triangle/smiley
@@ -1418,6 +1435,11 @@ function tweakCell(cell) {
           scoreStream = null;
         }
         detectedDoodles = [];
+        // Hide preview if open
+const preview = document.getElementById('camera-preview');
+if (preview && preview.srcObject) {
+  preview.srcObject.getTracks().forEach(track => track.stop());
+}
         // Hide any lingering tooltip
         hideTooltip();
       }, 400);
