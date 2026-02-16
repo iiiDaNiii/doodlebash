@@ -3,8 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blue Rectangle Scanner Test 1.7</title>
-  <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
+  <title>Blue Rectangle Scanner Test 1.8</title>
+  
+  <!-- Force fresh load -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
+  <script src="https://docs.opencv.org/4.x/opencv.js?v=1.8" async></script>
+  
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
     .container { height:100dvh; display:flex; flex-direction:column; }
@@ -19,7 +26,7 @@
 <body>
 
   <div class="container">
-    <div class="header">Blue Rectangle Scanner Test 1.7</div>
+    <div class="header">Blue Rectangle Scanner Test 1.8</div>
     <div class="content">
       <p>Point camera at your notebook</p>
       <div class="camera-container">
@@ -32,6 +39,8 @@
   </div>
 
   <script>
+    console.log("=== BLUE SCANNER 1.8 LOADED ===");
+
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
@@ -85,7 +94,6 @@
 
         if (bestRect && maxArea > 40000) {
           status.textContent = `SUCCESS! Found blue rectangle (Area: ${Math.round(maxArea)})`;
-          // No rectangle drawing — just confirming detection works
         } else {
           status.textContent = "No blue rectangle found — try better lighting or angle";
         }
