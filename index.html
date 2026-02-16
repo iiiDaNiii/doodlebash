@@ -50,9 +50,8 @@
       outputCanvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0);
 
-      status.textContent = "Detecting blue rectangle... (this may take 2-4 seconds)";
-      
-      // Run OpenCV in a timeout so UI doesn't freeze
+      status.textContent = "Detecting blue rectangle... (2-4 seconds)";
+
       setTimeout(() => {
         processBlueRectangle(outputCanvas);
       }, 50);
@@ -64,11 +63,13 @@
         let hsv = new cv.Mat();
         let mask = new cv.Mat();
 
-        // Convert to HSV and filter for blue (tuned for your notebook)
+        // Convert to HSV and filter for your notebook blue
         cv.cvtColor(src, hsv, cv.COLOR_RGB2HSV);
-        cv.inRange(hsv, new cv.Mat(1,1,cv.CV_8UC3,[90, 60, 60]), new cv.Mat(1,1,cv.CV_8UC3,[130, 255, 255]), mask);
+        let low = new cv.Mat(1, 1, cv.CV_8UC3, [90, 60, 60]);
+        let high = new cv.Mat(1, 1, cv.CV_8UC3, [130, 255, 255]);
+        cv.inRange(hsv, low, high, mask);
 
-        // Find largest contour
+        // Find contours
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
         cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
@@ -85,11 +86,11 @@
           }
         }
 
-        if (bestRect && maxArea > 50000) {   // ignore tiny noise
+        if (bestRect && maxArea > 50000) {
           status.textContent = `Found blue rectangle! Area: ${Math.round(maxArea)}`;
-          cv.rectangle(src, bestRect, new cv.Scalar(0, 255, 0), 8);
+          cv.rectangle(src, bestRect, new cv.Scalar(0, 255, 0, 255), 8);   // Fixed: added alpha
         } else {
-          status.textContent = "No blue rectangle found — try better lighting or angle";
+          status.textContent = "No blue rectangle found — try better lighting/angle";
         }
 
         cv.imshow('output-canvas', src);
@@ -101,7 +102,7 @@
         hierarchy.delete();
 
       } catch (e) {
-        status.textContent = "Error processing image: " + e.message;
+        status.textContent = "Error: " + e.message;
         console.error(e);
       }
     }
