@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Outline Scanner Test 2.7</title>
+  <title>White Outline Scanner Test 2.8</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -18,9 +18,9 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">White Outline Scanner Test 2.7</div>
+    <div class="header">White Outline Scanner Test 2.8</div>
     <div class="content">
-      <p>Point camera at your notebook (focus on the white border around the artwork!)</p>
+      <p>Point camera at your notebook (white border visible!)</p>
       <div class="camera-container">
         <video id="camera-preview" autoplay playsinline muted></video>
       </div>
@@ -30,7 +30,7 @@
     </div>
   </div>
   <script>
-    console.log("=== WHITE OUTLINE SCANNER 2.7 LOADED ===");
+    console.log("=== WHITE OUTLINE SCANNER 2.8 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
@@ -48,87 +48,167 @@
       outputCanvas.width = video.videoWidth;
       outputCanvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0);
-      status.textContent = "Processing white outline... (2-4 seconds)";
+      status.textContent = "Processing & warping white outline... (3-5 seconds)";
       setTimeout(() => {
         processWhiteOutline(outputCanvas);
       }, 100);
     };
     
+    // Helper to sort 4 points into TL, TR, BR, BL order
+    function orderPoints(pts) {
+      // pts: array of [x, y]
+      let ordered = new Array(4);
+      let minSum = Infinity, maxSum = -Infinity;
+      let minDiff = Infinity, maxDiff = -Infinity;
+      
+      for (let p of pts) {
+        let sum = p[0] + p[1];
+        let diff = p[0] - p[1];
+        if (sum < minSum) { minSum = sum; ordered[0] = p; } // TL
+        if (sum > maxSum) { maxSum = sum; ordered[2] = p; } // BR
+        if (diff < minDiff) { minDiff = diff; ordered[3] = p; } // BL
+        if (diff > maxDiff) { maxDiff = diff; ordered[1] = p; } // TR
+      }
+      return ordered; // [tl, tr, br, bl]
+    }
+    
     function processWhiteOutline(canvas) {
       try {
         let src = cv.imread(canvas);  // RGBA
+        
+        // Grayscale and threshold for white border
         let gray = new cv.Mat();
         let mask = new cv.Mat();
-        
-        // RGBA → GRAY
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-        
-        // Threshold for white (lower to 180 to catch thick borders better; auto-OTSU for lighting)
-        // cv.threshold(gray, mask, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU); // Uncomment for auto if lighting varies
         cv.threshold(gray, mask, 180, 255, cv.THRESH_BINARY);
         
-        // Morphology: open (clean noise), dilate (thicken border for solid contours)
+        // Morphology: clean, thicken to connect border
         let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
         cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 1);
         cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 3);
         
-        // Contours with full hierarchy (RETR_TREE) to detect frames with inner content
+        // Find contours (RETR_TREE for inner/outer)
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
         cv.findContours(mask, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
         
-        let maxArea = 0;
-        let bestRect = null;
+        let bestArea = 0;
+        let bestApprox = null;
         let bestIdx = -1;
         let isFrame = false;
+        let childContour = null;
         
         for (let i = 0; i < contours.size(); i++) {
           let contour = contours.get(i);
           let area = cv.contourArea(contour);
-          if (area < 10000) continue;  // Skip tiny stuff (lowered for outlines)
+          if (area < 10000) continue;
           
-          // Approximate to polygon to check for rectangle (4 sides)
+          // Approx to polygon
           let peri = cv.arcLength(contour, true);
           let approx = new cv.Mat();
-          cv.approxPolyDP(contour, approx, 0.03 * peri, true);  // Slightly looser for printed borders
+          cv.approxPolyDP(contour, approx, 0.03 * peri, true);
           
           if (approx.rows === 4) {
-            // Check hierarchy: has child? (i.e., encloses inner area = frame/outline!)
-            // hierarchy.data32S: for contour i, child at [i*4 + 2]
+            // Check for frame (has child = inner contour)
             let hasChild = hierarchy.data32S[i * 4 + 2] !== -1;
             
-            // Prefer frames (hasChild) or largest area
-            if (hasChild || area > maxArea) {
-              maxArea = area;
-              bestRect = cv.boundingRect(contour);
+            // If frame, use the INNER contour for warp (better crops to content)
+            let warpContour = contour;
+            let warpApprox = approx;
+            if (hasChild) {
+              let childIdx = hierarchy.data32S[i * 4 + 2];
+              warpContour = contours.get(childIdx);
+              peri = cv.arcLength(warpContour, true);
+              warpApprox.delete(); // cleanup old
+              warpApprox = new cv.Mat();
+              cv.approxPolyDP(warpContour, warpApprox, 0.02 * peri, true);
+              
+              if (warpApprox.rows !== 4) {
+                warpApprox.delete();
+                warpApprox = approx; // fallback
+              }
+            }
+            
+            // Prefer frames or largest
+            if ((hasChild || area > bestArea) && warpApprox.rows === 4) {
+              bestArea = area;
+              bestApprox = warpApprox.clone(); // keep for later
               bestIdx = i;
               isFrame = hasChild;
+              childContour = warpContour; // for debug
+            } else {
+              warpApprox.delete();
             }
+            approx.delete();
+          } else {
+            approx.delete();
           }
-          approx.delete();
         }
         
-        console.log(`Detected ${contours.size()} contours | Max area: ${Math.round(maxArea)} | Frame? ${isFrame}`);
+        console.log(`Contours: ${contours.size()} | Best area: ${Math.round(bestArea)} | Frame: ${isFrame}`);
         
-        // Dynamic min area: ~2% of image
+        // Dynamic min area
         let minArea = Math.max(15000, (src.rows * src.cols) * 0.02);
         
-        if (bestRect && maxArea > minArea) {
-          let frameType = isFrame ? "OUTLINE FRAME" : "RECT";
-          status.textContent = `SUCCESS! ${frameType} detected (Area: ${Math.round(maxArea)})`;
+        if (bestApprox && bestArea > minArea) {
+          status.textContent = `SUCCESS! Warped ${isFrame ? 'OUTLINE' : 'RECT'} (Area: ${Math.round(bestArea)})`;
           
-          // Draw thick cyan box around the detected outline
-          let pt1 = new cv.Point(bestRect.x, bestRect.y);
-          let pt2 = new cv.Point(bestRect.x + bestRect.width, bestRect.y + bestRect.height);
-          cv.rectangle(src, pt1, pt2, new cv.Scalar(255, 255, 0, 255), 15);
+          // Get 4 points from approx (inner if frame)
+          let pts = [];
+          for (let j = 0; j < 4; j++) {
+            pts.push([
+              bestApprox.data32F[j * 2],
+              bestApprox.data32F[j * 2 + 1]
+            ]);
+          }
           
-          // Debug: draw the actual contour in magenta
-          // cv.drawContours(src, contours, bestIdx, new cv.Scalar(255, 0, 255, 255), 6);
+          // Order: TL, TR, BR, BL
+          let ordered = orderPoints(pts);
+          
+          // Compute output size from the quad (preserves aspect)
+          let width = Math.max(
+            Math.hypot(ordered[1][0] - ordered[0][0], ordered[1][1] - ordered[0][1]),
+            Math.hypot(ordered[2][0] - ordered[3][0], ordered[2][1] - ordered[3][1])
+          );
+          let height = Math.max(
+            Math.hypot(ordered[1][0] - ordered[2][0], ordered[1][1] - ordered[2][1]),
+            Math.hypot(ordered[0][0] - ordered[3][0], ordered[0][1] - ordered[3][1])
+          );
+          
+          let dstWidth = Math.round(width);
+          let dstHeight = Math.round(height);
+          
+          // Create src/dst point Mats for perspective
+          let srcPoints = new cv.Mat(4, 1, cv.CV_32FC2);
+          let dstPoints = new cv.Mat(4, 1, cv.CV_32FC2);
+          
+          srcPoints.data32F.set([ordered[0][0], ordered[0][1], ordered[1][0], ordered[1][1], 
+                                 ordered[2][0], ordered[2][1], ordered[3][0], ordered[3][1]]);
+          dstPoints.data32F.set([0, 0, dstWidth, 0, dstWidth, dstHeight, 0, dstHeight]);
+          
+          // Get transform matrix
+          let M = cv.getPerspectiveTransform(srcPoints, dstPoints);
+          
+          // Warp the original image!
+          let warped = new cv.Mat();
+          cv.warpPerspective(src, warped, M, new cv.Size(dstWidth, dstHeight), cv.INTER_LINEAR);
+          
+          // Update canvas to new size and show warped
+          outputCanvas.width = dstWidth;
+          outputCanvas.height = dstHeight;
+          cv.imshow('output-canvas', warped);
+          
+          // Optional: draw debug lines on warped for corners
+          // let color = new cv.Scalar(0, 255, 255, 255);
+          // cv.line(warped, new cv.Point(0,0), new cv.Point(dstWidth,0), color, 8); etc. but skip for clean output
+          
+          // Cleanup warp stuff
+          srcPoints.delete(); dstPoints.delete(); M.delete(); warped.delete();
+          bestApprox.delete();
         } else {
-          status.textContent = `No strong outline (max area: ${Math.round(maxArea)}) — adjust lighting/angle?`;
+          status.textContent = `No strong outline (max area: ${Math.round(bestArea)}) — better light/angle?`;
+          cv.imshow('output-canvas', src); // fallback to original
         }
-        
-        cv.imshow('output-canvas', src);
         
         // Cleanup
         src.delete(); gray.delete(); mask.delete(); kernel.delete();
