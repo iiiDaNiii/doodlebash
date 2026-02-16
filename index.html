@@ -205,65 +205,60 @@
     }
 
     async function detectDoodlesFromCanvas(canvas) {
-      const cw = canvas.width / 3;
-      const ch = canvas.height / 3;
-      const results = [];
+  const cw = canvas.width / 3;
+  const ch = canvas.height / 3;
+  const results = [];
 
-      for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < 3; c++) {
-          const cellCanvas = document.createElement('canvas');
-          cellCanvas.width = 224;
-          cellCanvas.height = 224;
-          const cellCtx = cellCanvas.getContext('2d');
-          cellCtx.drawImage(canvas, c*cw, r*ch, cw, ch, 0, 0, 224, 224);
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 3; c++) {
+      const cellCanvas = document.createElement('canvas');
+      cellCanvas.width = 224;
+      cellCanvas.height = 224;
+      const cellCtx = cellCanvas.getContext('2d');
+      cellCtx.drawImage(canvas, c*cw, r*ch, cw, ch, 0, 0, 224, 224);
 
-          const tensor = tf.browser.fromPixels(cellCanvas).expandDims(0).toFloat().div(255);
-          const prediction = model.predict(tensor);
-          const scores = await prediction.array();
+      const tensor = tf.browser.fromPixels(cellCanvas).expandDims(0).toFloat().div(255);
+      const prediction = model.predict(tensor);
+      const scores = await prediction.array();
 
-          const maxIndex = scores[0].indexOf(Math.max(...scores[0]));
-          const confidence = scores[0][maxIndex];
-          const predicted = classNames[maxIndex] || 'unknown';
+      const maxIndex = scores[0].indexOf(Math.max(...scores[0]));
+      const confidence = scores[0][maxIndex];
+      const predicted = classNames[maxIndex];
 
-          log(`Cell [${r},${c}] → ${predicted} (${(confidence*100).toFixed(1)}%)`);
+      log(`Cell [${r},${c}] → ${predicted} (${(confidence*100).toFixed(1)}%)`);
 
-          results.push(predicted);
-        }
-      }
-      return results;
+      results.push(predicted);
     }
+  }
+  return results;
+}
+    
+function renderDetectedGrid() {
+  const grid = document.getElementById('detected-grid');
+  grid.innerHTML = '';
+  grid.style.display = 'grid';
 
-    function renderDetectedGrid() {
-      const grid = document.getElementById('detected-grid');
-      grid.innerHTML = '';
-      grid.style.display = 'grid';
+  detectedDoodles.forEach((d, i) => {
+    const cell = document.createElement('div');
+    cell.className = `grid-cell ${d}`;
+    cell.dataset.index = i;
+    cell.dataset.doodle = d;
 
-      detectedDoodles.forEach((d, i) => {
-        const cell = document.createElement('div');
-        cell.className = `grid-cell ${d}`;
-        cell.dataset.index = i;
-        cell.dataset.doodle = d;
+    cell.style.backgroundImage = `url('images/${d}.png')`;
 
-        if (d === 'unknown') {
-          cell.textContent = '?';
-        } else {
-          cell.style.backgroundImage = `url('images/${d}.png')`;
-        }
-
-        cell.addEventListener('click', () => {
-          const opts = classNames;
-          let idx = opts.indexOf(cell.dataset.doodle);
-          idx = (idx + 1) % opts.length;
-          const next = opts[idx];
-          cell.dataset.doodle = next;
-          cell.className = `grid-cell ${next}`;
-          cell.style.backgroundImage = next === 'unknown' ? '' : `url('images/${next}.png')`;
-          cell.textContent = next === 'unknown' ? '?' : '';
-          detectedDoodles[i] = next;
-        });
-        grid.appendChild(cell);
-      });
-    }
+    cell.addEventListener('click', () => {
+      const opts = classNames.filter(name => name !== 'unknown');  // Remove unknown from cycling
+      let idx = opts.indexOf(cell.dataset.doodle);
+      idx = (idx + 1) % opts.length;
+      const next = opts[idx];
+      cell.dataset.doodle = next;
+      cell.className = `grid-cell ${next}`;
+      cell.style.backgroundImage = `url('images/${next}.png')`;
+      detectedDoodles[i] = next;
+    });
+    grid.appendChild(cell);
+  });
+}
 
     function renderDebugCells(canvas) {
       const container = document.getElementById('debug-cells');
