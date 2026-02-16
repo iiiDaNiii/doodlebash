@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Outline Scanner Test 3.5</title>
+  <title>White Outline Scanner Test 3.6</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -18,7 +18,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">White Outline Scanner Test 3.5</div>
+    <div class="header">White Outline Scanner Test 3.6</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -30,7 +30,7 @@
     </div>
   </div>
   <script>
-    console.log("=== WHITE OUTLINE SCANNER 3.5 LOADED ===");
+    console.log("=== WHITE OUTLINE SCANNER 3.6 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
@@ -73,23 +73,23 @@
       try {
         let src = cv.imread(canvas);  // RGBA
         
-        // Super lenient white detection for thick printed borders
+        // Lenient white detection
         let gray = new cv.Mat();
         let mask = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-        cv.threshold(gray, mask, 150, 255, cv.THRESH_BINARY);  // Even lower
+        cv.threshold(gray, mask, 150, 255, cv.THRESH_BINARY);
         
-        // Aggressive morphology to connect the entire border into one solid shape
+        // Aggressive morphology to make the white border a solid connected shape
         let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(7, 7));
         cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 2);
-        cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 8);  // Thicker to fill gaps
+        cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 8);
         
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
-        cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);  // EXTERNAL for outer only
+        cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
         
         let bestArea = 0;
-        let bestRect = null;
+        let bestContour = null;
         let allAreas = [];
         
         for (let i = 0; i < contours.size(); i++) {
@@ -100,43 +100,30 @@
           
           if (area > bestArea) {
             bestArea = area;
-            bestRect = cv.boundingRect(contour);  // Fallback rect for now
+            bestContour = contour;
           }
         }
         
-        // NEW: Use minAreaRect for precise 4 corners (better for skewed rectangles)
+        // Use minAreaRect for precise rotated box (better corners for warp)
         let boxPoints = null;
-        if (bestArea > 10000) {
-          let bestContour = null;
-          let maxA = 0;
-          for (let i = 0; i < contours.size(); i++) {
-            let area = cv.contourArea(contours.get(i));
-            if (area > maxA) {
-              maxA = area;
-              bestContour = contours.get(i);
-            }
-          }
-          if (bestContour) {
-            let rect = cv.minAreaRect(bestContour);
-            boxPoints = new cv.Mat();
-            cv.boxPoints(rect, boxPoints);  // 4x2 Mat of points
-            console.log(`minAreaRect size: ${rect.size.width}x${rect.size.height}`);
-          }
+        if (bestContour && bestArea > 10000) {
+          let rect = cv.minAreaRect(bestContour);
+          boxPoints = cv.boxPoints(rect);  // FIXED: 1 arg, returns Mat directly
+          console.log(`minAreaRect: ${rect.size.width.toFixed(0)}x${rect.size.height.toFixed(0)} @ ${rect.angle.toFixed(1)}°`);
         }
         
-        // DEBUG
-        console.log(`=== DEBUG 3.5 ===`);
+        // DEBUG - COPY THIS AFTER SNAP
+        console.log(`=== DEBUG 3.6 ===`);
         console.log(`Total contours: ${contours.size()}`);
         console.log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a))}`);
-        console.log(`Best area: ${Math.round(bestArea)}`);
-        console.log(`Box points found: ${boxPoints ? 'YES' : 'NO'}`);
+        console.log(`Best area: ${Math.round(bestArea)} | Box points: ${boxPoints ? 'YES' : 'NO'}`);
         
         let minArea = Math.max(15000, (src.rows * src.cols) * 0.015);
         
         if (boxPoints && bestArea > minArea) {
           status.textContent = `SUCCESS! Warped notebook (Area: ${Math.round(bestArea)})`;
           
-          // Extract 4 points from boxPoints (already in order: TL, TR, BR, BL-ish)
+          // Extract 4 points (boxPoints is 4x2 float Mat)
           let pts = [];
           for (let j = 0; j < 4; j++) {
             pts.push([
@@ -148,7 +135,7 @@
           let ordered = orderPoints(pts);
           console.log(`Ordered corners: ${ordered.map(p => `(${Math.round(p[0])},${Math.round(p[1])})`).join(' → ')}`);
           
-          // Compute output dimensions from quad sides
+          // Compute warp size from quad
           let width = Math.max(
             Math.hypot(ordered[1][0] - ordered[0][0], ordered[1][1] - ordered[0][1]),
             Math.hypot(ordered[2][0] - ordered[3][0], ordered[2][1] - ordered[3][1])
@@ -162,7 +149,7 @@
           let dstHeight = Math.max(400, Math.round(height));
           console.log(`Warp size: ${dstWidth}x${dstHeight}`);
           
-          // Create transform
+          // Perspective warp
           let srcPoints = new cv.Mat(4, 1, cv.CV_32FC2);
           let dstPoints = new cv.Mat(4, 1, cv.CV_32FC2);
           srcPoints.data32F.set([ordered[0][0], ordered[0][1], ordered[1][0], ordered[1][1], 
@@ -171,29 +158,19 @@
           
           let M = cv.getPerspectiveTransform(srcPoints, dstPoints);
           
-          // Warp!
           let warped = new cv.Mat();
           cv.warpPerspective(src, warped, M, new cv.Size(dstWidth, dstHeight), cv.INTER_LINEAR);
           
-          // FORCE RGBA if needed (safety)
-          if (warped.channels() === 3) {
-            let rgba = new cv.Mat();
-            cv.cvtColor(warped, rgba, cv.COLOR_RGB2RGBA);
-            warped.delete();
-            warped = rgba;
-          }
-          
-          // Upscale to nice preview (800px wide)
+          // Upscale to fixed preview size
           let targetWidth = 800;
           let targetHeight = Math.round(targetWidth * (dstHeight / dstWidth));
           let resized = new cv.Mat();
           cv.resize(warped, resized, new cv.Size(targetWidth, targetHeight), 0, 0, cv.INTER_CUBIC);
           
-          // Set canvas and imshow
           outputCanvas.width = targetWidth;
           outputCanvas.height = targetHeight;
           cv.imshow('output-canvas', resized);
-          console.log('✅ Warped preview rendered!');
+          console.log('✅ Preview rendered!');
           
           // Cleanup
           srcPoints.delete(); dstPoints.delete(); M.delete();
