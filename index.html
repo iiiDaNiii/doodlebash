@@ -3,16 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blue Rectangle Scanner Test 2.2</title>
-  
-  <!-- Very aggressive cache busting -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  
-  <!-- Force fresh OpenCV.js with random timestamp -->
-  <script src="https://docs.opencv.org/4.x/opencv.js?v=2.2_<%= Date.now() %>" async></script>
-  
+  <title>Blue Rectangle Scanner Test 2.3</title>
+  <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
     .container { height:100dvh; display:flex; flex-direction:column; }
@@ -27,7 +19,7 @@
 <body>
 
   <div class="container">
-    <div class="header">Blue Rectangle Scanner Test 2.2</div>
+    <div class="header">Blue Rectangle Scanner Test 2.3</div>
     <div class="content">
       <p>Point camera at your notebook</p>
       <div class="camera-container">
@@ -40,7 +32,7 @@
   </div>
 
   <script>
-    console.log("=== BLUE SCANNER 2.2 LOADED ===");
+    console.log("=== BLUE SCANNER 2.3 LOADED ===");
 
     let stream = null;
     let video = document.getElementById('camera-preview');
@@ -60,16 +52,60 @@
       outputCanvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0);
 
-      status.textContent = "Checking OpenCV.js...";
+      status.textContent = "Processing blue rectangle... (2-4 seconds)";
 
       setTimeout(() => {
-        if (typeof cv === "undefined") {
-          status.textContent = "ERROR: OpenCV.js failed to load";
-        } else {
-          status.textContent = "OpenCV.js loaded. Ready.";
-        }
-      }, 800);
+        processBlueRectangle(outputCanvas);
+      }, 100);
     };
+
+    function processBlueRectangle(canvas) {
+      try {
+        let src = cv.imread(canvas);
+        let hsv = new cv.Mat();
+        let mask = new cv.Mat();
+
+        cv.cvtColor(src, hsv, cv.COLOR_RGB2HSV);
+        let low = new cv.Mat(1, 1, cv.CV_8UC3, [80, 40, 40]);
+        let high = new cv.Mat(1, 1, cv.CV_8UC3, [140, 255, 255]);
+        cv.inRange(hsv, low, high, mask);
+
+        let contours = new cv.MatVector();
+        let hierarchy = new cv.Mat();
+        cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+        let maxArea = 0;
+        let bestRect = null;
+
+        for (let i = 0; i < contours.size(); i++) {
+          let area = cv.contourArea(contours.get(i));
+          if (area > maxArea) {
+            maxArea = area;
+            bestRect = cv.boundingRect(contours.get(i));
+          }
+        }
+
+        if (bestRect && maxArea > 40000) {
+          status.textContent = `SUCCESS! Found blue rectangle (Area: ${Math.round(maxArea)})`;
+          
+          // Draw green box
+          let pt1 = new cv.Point(bestRect.x, bestRect.y);
+          let pt2 = new cv.Point(bestRect.x + bestRect.width, bestRect.y + bestRect.height);
+          cv.rectangle(src, pt1, pt2, new cv.Scalar(0, 255, 0, 255), 12);
+
+        } else {
+          status.textContent = "No blue rectangle found — try better lighting or angle";
+        }
+
+        cv.imshow('output-canvas', src);
+
+        src.delete(); hsv.delete(); mask.delete(); contours.delete(); hierarchy.delete();
+
+      } catch (e) {
+        status.textContent = "Error: " + e.message;
+        console.error(e);
+      }
+    }
 
     window.onload = startCamera;
   </script>
