@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Outline Scanner Test 2.9</title>
+  <title>White Outline Scanner Test 3.0</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
     .container { height:100dvh; display:flex; flex-direction:column; }
     .header { background:#7f2a8f; padding:3cqi; text-align:center; font-size:6cqi; }
-    .content { flex:1; display:flex; flex-direction:column; align-items-center; padding:4cqi; gap:3cqi; }
+    .content { flex:1; display:flex; flex-direction:column; align-items:center; padding:4cqi; gap:3cqi; }
     .camera-container { position:relative; width:90vw; max-width:520px; aspect-ratio:5/7; border-radius:16px; overflow:hidden; }
     #camera-preview { width:100%; height:100%; object-fit:cover; }
     #output-canvas { max-width:90vw; border:3px solid #333; border-radius:12px; }
@@ -18,7 +18,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">White Outline Scanner Test 2.9</div>
+    <div class="header">White Outline Scanner Test 3.0</div>
     <div class="content">
       <p>Point camera at your notebook (white border visible!)</p>
       <div class="camera-container">
@@ -30,7 +30,7 @@
     </div>
   </div>
   <script>
-    console.log("=== WHITE OUTLINE SCANNER 2.9 LOADED ===");
+    console.log("=== WHITE OUTLINE SCANNER 3.0 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
@@ -101,7 +101,7 @@
           let area = cv.contourArea(contour);
           if (area < 10000) continue;
           
-          // Approx poly
+          // Approx poly (outer)
           let peri = cv.arcLength(contour, true);
           let approx = new cv.Mat();
           cv.approxPolyDP(contour, approx, 0.03 * peri, true);
@@ -109,54 +109,35 @@
           if (approx.rows === 4) {
             let hasChild = hierarchy.data32S[i * 4 + 2] !== -1;
             
-            // Target: inner for frames (outline), outer otherwise
-            let targetContour = contour;
-            let targetApprox = approx;  // start with outer
-            let targetPeri = peri;
+            // Clone for safety (always outer for warp to INCLUDE white border)
+            let thisApprox = approx.clone();
             
-            if (hasChild) {
-              let childIdx = hierarchy.data32S[i * 4 + 2];
-              targetContour = contours.get(childIdx);
-              targetPeri = cv.arcLength(targetContour, true);
-              targetApprox = new cv.Mat();
-              cv.approxPolyDP(targetContour, targetApprox, 0.02 * targetPeri, true);
-              
-              // Fallback to outer if inner approx fails
-              if (targetApprox.rows !== 4) {
-                targetApprox.delete();
-                targetApprox = approx;  // approx still valid
-              }
-            }
-            
-            // Prefer frames (hasChild) or larger area
-            if (targetApprox.rows === 4 && (hasChild || area > bestArea)) {
+            // Prefer frames (outlines) or largest area
+            if (hasChild || area > bestArea) {
+              if (bestApprox) bestApprox.delete();  // cleanup old best
+              bestApprox = thisApprox;
               bestArea = area;
-              bestApprox = targetApprox.clone();
               bestIdx = i;
               isFrame = hasChild;
+            } else {
+              thisApprox.delete();
             }
             
-            // Safe cleanup: delete targetApprox ONLY if it was newly created (inner approx)
-            if (targetApprox !== approx) {
-              targetApprox.delete();
-            }
-            
-            // Always delete the outer approx
             approx.delete();
           } else {
             approx.delete();
           }
         }
         
-        console.log(`Contours: ${contours.size()} | Best area: ${Math.round(bestArea)} | Frame: ${isFrame}`);
+        console.log(`Contours: ${contours.size()} | Best area: ${Math.round(bestArea)} | Frame: ${isFrame} | Best points: ${bestApprox ? bestApprox.rows : 0}`);
         
         // Dynamic min area
         let minArea = Math.max(15000, (src.rows * src.cols) * 0.02);
         
         if (bestApprox && bestArea > minArea) {
-          status.textContent = `SUCCESS! Warped ${isFrame ? 'OUTLINE' : 'RECT'} (Area: ${Math.round(bestArea)})`;
+          status.textContent = `SUCCESS! Warped OUTLINE (incl. white border) — Area: ${Math.round(bestArea)}`;
           
-          // Extract 4 points
+          // Extract 4 points from outer approx
           let pts = [];
           for (let j = 0; j < 4; j++) {
             pts.push([
@@ -165,10 +146,10 @@
             ]);
           }
           
-          // Order points
+          // Order: TL, TR, BR, BL
           let ordered = orderPoints(pts);
           
-          // Compute preserved aspect size
+          // Compute preserved aspect size (from quad distances)
           let width = Math.max(
             Math.hypot(ordered[1][0] - ordered[0][0], ordered[1][1] - ordered[0][1]),
             Math.hypot(ordered[2][0] - ordered[3][0], ordered[2][1] - ordered[3][1])
@@ -178,8 +159,11 @@
             Math.hypot(ordered[0][0] - ordered[3][0], ordered[0][1] - ordered[3][1])
           );
           
-          let dstWidth = Math.round(width);
-          let dstHeight = Math.round(height);
+          // Safety: min size to avoid degenerate warps
+          let dstWidth = Math.max(200, Math.round(width));
+          let dstHeight = Math.max(200, Math.round(height));
+          
+          console.log(`Warped output size: ${dstWidth}x${dstHeight}`);
           
           // Perspective transform
           let srcPoints = new cv.Mat(4, 1, cv.CV_32FC2);
@@ -191,11 +175,15 @@
           
           let M = cv.getPerspectiveTransform(srcPoints, dstPoints);
           
-          // Warp!
+          // Warp the original!
           let warped = new cv.Mat();
           cv.warpPerspective(src, warped, M, new cv.Size(dstWidth, dstHeight), cv.INTER_LINEAR);
           
-          // Resize canvas + show
+          // DEBUG: Draw thick cyan border on warped (confirm it's the new image!)
+          let debugColor = new cv.Scalar(0, 255, 255, 255);
+          cv.rectangle(warped, new cv.Point(15, 15), new cv.Point(dstWidth - 15, dstHeight - 15), debugColor, 25);
+          
+          // Resize canvas + show warped
           outputCanvas.width = dstWidth;
           outputCanvas.height = dstHeight;
           cv.imshow('output-canvas', warped);
@@ -206,7 +194,7 @@
         } else {
           status.textContent = `No strong outline (max area: ${Math.round(bestArea)}) — better light/angle?`;
           cv.imshow('output-canvas', src);
-          if (bestApprox) bestApprox.delete();  // safety
+          if (bestApprox) bestApprox.delete();
         }
         
         // Main cleanup
