@@ -86,8 +86,12 @@
         if (bestRect && maxArea > 40000) {
           status.textContent = `Found blue rectangle! Area: ${Math.round(maxArea)}`;
 
-          // New safer drawing method
-          cv.rectangle(src, bestRect, new cv.Scalar(0, 255, 0, 255), 12);
+          // SAFEST drawing method
+          let pt1 = new cv.Point(bestRect.x, bestRect.y);
+          let pt2 = new cv.Point(bestRect.x + bestRect.width, bestRect.y + bestRect.height);
+          let color = new cv.Scalar(0, 255, 0, 255);   // Green with alpha
+
+          cv.rectangle(src, pt1, pt2, color, 12);
 
         } else {
           status.textContent = "No blue rectangle found — try better lighting or angle";
