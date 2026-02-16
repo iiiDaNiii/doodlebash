@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blue Rectangle Scanner Test</title>
-  <script src="https://cdn.jsdelivr.net/npm/opencv.js@latest/opencv.js"></script>
+  <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
     .container { height:100dvh; display:flex; flex-direction:column; }
@@ -13,7 +13,7 @@
     .camera-container { position:relative; width:90vw; max-width:520px; aspect-ratio:5/7; border-radius:16px; overflow:hidden; }
     #camera-preview { width:100%; height:100%; object-fit:cover; }
     #output-canvas { max-width:90vw; border:3px solid #333; border-radius:12px; }
-    .status { font-size:4cqi; text-align:center; }
+    .status { font-size:4.5cqi; text-align:center; margin:10px 0; }
   </style>
 </head>
 <body>
@@ -44,54 +44,66 @@
     }
 
     document.getElementById('snap-btn').onclick = () => {
+      status.textContent = "Capturing photo...";
       const ctx = outputCanvas.getContext('2d');
       outputCanvas.width = video.videoWidth;
       outputCanvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0);
 
-      status.textContent = "Processing blue rectangle...";
-      processImage(outputCanvas);
+      status.textContent = "Detecting blue rectangle... (this may take 2-4 seconds)";
+      
+      // Run OpenCV in a timeout so UI doesn't freeze
+      setTimeout(() => {
+        processBlueRectangle(outputCanvas);
+      }, 50);
     };
 
-    function processImage(canvas) {
-      const src = cv.imread(canvas);
-      const dst = new cv.Mat();
+    function processBlueRectangle(canvas) {
+      try {
+        let src = cv.imread(canvas);
+        let hsv = new cv.Mat();
+        let mask = new cv.Mat();
 
-      // Convert to HSV and filter for blue
-      cv.cvtColor(src, dst, cv.COLOR_RGB2HSV);
-      const low = new cv.Mat(src.rows, src.cols, cv.CV_8UC3, [90, 50, 50]);
-      const high = new cv.Mat(src.rows, src.cols, cv.CV_8UC3, [130, 255, 255]);
-      cv.inRange(dst, low, high, dst);
+        // Convert to HSV and filter for blue (tuned for your notebook)
+        cv.cvtColor(src, hsv, cv.COLOR_RGB2HSV);
+        cv.inRange(hsv, new cv.Mat(1,1,cv.CV_8UC3,[90, 60, 60]), new cv.Mat(1,1,cv.CV_8UC3,[130, 255, 255]), mask);
 
-      // Find contours
-      const contours = new cv.MatVector();
-      const hierarchy = new cv.Mat();
-      cv.findContours(dst, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+        // Find largest contour
+        let contours = new cv.MatVector();
+        let hierarchy = new cv.Mat();
+        cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
 
-      let maxArea = 0;
-      let bestRect = null;
+        let maxArea = 0;
+        let bestRect = null;
 
-      for (let i = 0; i < contours.size(); i++) {
-        const cnt = contours.get(i);
-        const area = cv.contourArea(cnt);
-        if (area > maxArea) {
-          maxArea = area;
-          bestRect = cv.boundingRect(cnt);
+        for (let i = 0; i < contours.size(); i++) {
+          let cnt = contours.get(i);
+          let area = cv.contourArea(cnt);
+          if (area > maxArea) {
+            maxArea = area;
+            bestRect = cv.boundingRect(cnt);
+          }
         }
-      }
 
-      if (bestRect) {
-        status.textContent = `Found blue rectangle! Area: ${Math.round(maxArea)}`;
-        
-        // Draw the detected rectangle on the output
-        cv.rectangle(src, bestRect, new cv.Scalar(0, 255, 0), 8);
+        if (bestRect && maxArea > 50000) {   // ignore tiny noise
+          status.textContent = `Found blue rectangle! Area: ${Math.round(maxArea)}`;
+          cv.rectangle(src, bestRect, new cv.Scalar(0, 255, 0), 8);
+        } else {
+          status.textContent = "No blue rectangle found — try better lighting or angle";
+        }
+
         cv.imshow('output-canvas', src);
-      } else {
-        status.textContent = "No blue rectangle detected";
-      }
 
-      src.delete();
-      dst.delete();
+        src.delete();
+        hsv.delete();
+        mask.delete();
+        contours.delete();
+        hierarchy.delete();
+
+      } catch (e) {
+        status.textContent = "Error processing image: " + e.message;
+        console.error(e);
+      }
     }
 
     window.onload = startCamera;
