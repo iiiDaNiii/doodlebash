@@ -72,8 +72,36 @@
       line-height: 1.5;
       border-radius: 8px;
       white-space: pre-wrap;
-      max-height: 240px;
+      max-height: 200px;
       overflow-y: auto;
+    }
+
+    #detected-grid {
+      display: none;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2cqi;
+      width: 85cqi;
+      height: 85cqi;
+    }
+    .grid-cell {
+      aspect-ratio: 1;
+      background: #f0f0f0;
+      border: 3px solid #ccc;
+      border-radius: 8px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .grid-cell:hover { transform: scale(1.08); }
+    .grid-cell.unknown {
+      background: #ffeb3b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7cqi;
+      color: #333;
     }
   </style>
 </head>
@@ -109,6 +137,7 @@
   <script>
     let scoreStream = null;
     let model = null;
+    let classNames = [];
     let detectedDoodles = [];
 
     function log(text) {
@@ -121,7 +150,10 @@
       log("Loading ML model...");
       try {
         model = await tf.loadLayersModel('models/doodle/model.json');
-        log("✅ Model loaded successfully!");
+        const metadata = await fetch('models/doodle/metadata.json');
+        const meta = await metadata.json();
+        classNames = meta.labels || meta.classNames || [];
+        log(`✅ Model loaded! ${classNames.length} classes: ${classNames.join(', ')}`);
       } catch (e) {
         log("❌ ERROR loading model: " + e.message);
         console.error(e);
@@ -189,16 +221,48 @@
           const prediction = model.predict(tensor);
           const scores = await prediction.array();
 
-          const classNames = ['circle', 'triangle', 'drop', 'turd', 'pyramid', 'chest', 'cube', 'diamond', 'coin', 'smiley', 'unknown'];
           const maxIndex = scores[0].indexOf(Math.max(...scores[0]));
           const confidence = scores[0][maxIndex];
+          const predicted = classNames[maxIndex] || 'unknown';
 
-          log(`Cell [${r},${c}] → ${classNames[maxIndex]} (${(confidence*100).toFixed(1)}%)`);
+          log(`Cell [${r},${c}] → ${predicted} (${(confidence*100).toFixed(1)}%)`);
 
-          results.push(classNames[maxIndex]);
+          results.push(predicted);
         }
       }
       return results;
+    }
+
+    function renderDetectedGrid() {
+      const grid = document.getElementById('detected-grid');
+      grid.innerHTML = '';
+      grid.style.display = 'grid';
+
+      detectedDoodles.forEach((d, i) => {
+        const cell = document.createElement('div');
+        cell.className = `grid-cell ${d}`;
+        cell.dataset.index = i;
+        cell.dataset.doodle = d;
+
+        if (d === 'unknown') {
+          cell.textContent = '?';
+        } else {
+          cell.style.backgroundImage = `url('images/${d}.png')`;
+        }
+
+        cell.addEventListener('click', () => {
+          const opts = classNames;
+          let idx = opts.indexOf(cell.dataset.doodle);
+          idx = (idx + 1) % opts.length;
+          const next = opts[idx];
+          cell.dataset.doodle = next;
+          cell.className = `grid-cell ${next}`;
+          cell.style.backgroundImage = next === 'unknown' ? '' : `url('images/${next}.png')`;
+          cell.textContent = next === 'unknown' ? '?' : '';
+          detectedDoodles[i] = next;
+        });
+        grid.appendChild(cell);
+      });
     }
 
     function renderDebugCells(canvas) {
@@ -221,35 +285,6 @@
           container.appendChild(div);
         }
       }
-    }
-
-    function renderDetectedGrid() {
-      const grid = document.getElementById('detected-grid');
-      grid.innerHTML = '';
-      grid.style.display = 'grid';
-
-      detectedDoodles.forEach((d, i) => {
-        const cell = document.createElement('div');
-        cell.className = `grid-cell ${d}`;
-        cell.dataset.index = i;
-        cell.dataset.doodle = d;
-
-        if (d === 'unknown') cell.textContent = '?';
-        else cell.style.backgroundImage = `url('images/${d}.png')`;
-
-        cell.addEventListener('click', () => {
-          const opts = ['triangle','circle','smiley','drop','turd','pyramid','chest','cube','diamond','coin','unknown'];
-          let idx = opts.indexOf(cell.dataset.doodle);
-          idx = (idx + 1) % opts.length;
-          const next = opts[idx];
-          cell.dataset.doodle = next;
-          cell.className = `grid-cell ${next}`;
-          cell.style.backgroundImage = next === 'unknown' ? '' : `url('images/${next}.png')`;
-          cell.textContent = next === 'unknown' ? '?' : '';
-          detectedDoodles[i] = next;
-        });
-        grid.appendChild(cell);
-      });
     }
 
     window.onload = async () => {
