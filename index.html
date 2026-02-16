@@ -32,7 +32,7 @@
     }
 
     .snap-btn {
-      background: #4dbde5;
+      background: red;
       color: white;
       font-size: 5.5cqi;
       padding: 3cqi 8cqi;
@@ -182,7 +182,7 @@
           const prediction = model.predict(tensor);
           const scores = await prediction.array();
 
-          const classNames = ['circle', 'triangle', 'drop', 'turd', 'pyramid', 'chest', 'cube', 'diamond', 'coin', 'smiley'];
+          const classNames = ['circle', 'triangle', 'drop', 'turd', 'pyramid', 'chest', 'cube', 'diamond', 'coin', 'smiley', 'unknown'];
           const maxIndex = scores[0].indexOf(Math.max(...scores[0]));
           const confidence = scores[0][maxIndex];
 
