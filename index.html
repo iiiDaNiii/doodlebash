@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Outline Scanner Test 3.1</title>
+  <title>White Outline Scanner Test 3.2</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -18,7 +18,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">White Outline Scanner Test 3.1</div>
+    <div class="header">White Outline Scanner Test 3.2</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -30,7 +30,7 @@
     </div>
   </div>
   <script>
-    console.log("=== WHITE OUTLINE SCANNER 3.1 LOADED ===");
+    console.log("=== WHITE OUTLINE SCANNER 3.2 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
@@ -54,7 +54,6 @@
       }, 100);
     };
     
-    // Helper: sort 4 points to TL, TR, BR, BL
     function orderPoints(pts) {
       let ordered = new Array(4);
       let minSum = Infinity, maxSum = -Infinity;
@@ -62,60 +61,66 @@
       for (let p of pts) {
         let sum = p[0] + p[1];
         let diff = p[0] - p[1];
-        if (sum < minSum) { minSum = sum; ordered[0] = p; } // TL
-        if (sum > maxSum) { maxSum = sum; ordered[2] = p; } // BR
-        if (diff < minDiff) { minDiff = diff; ordered[3] = p; } // BL
-        if (diff > maxDiff) { maxDiff = diff; ordered[1] = p; } // TR
+        if (sum < minSum) { minSum = sum; ordered[0] = p; }
+        if (sum > maxSum) { maxSum = sum; ordered[2] = p; }
+        if (diff < minDiff) { minDiff = diff; ordered[3] = p; }
+        if (diff > maxDiff) { maxDiff = diff; ordered[1] = p; }
       }
       return ordered;
     }
     
     function processWhiteOutline(canvas) {
       try {
-        let src = cv.imread(canvas);  // RGBA (full photo)
+        let src = cv.imread(canvas);
         
-        // Detect white outline
+        // More lenient white detection
         let gray = new cv.Mat();
         let mask = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-        cv.threshold(gray, mask, 180, 255, cv.THRESH_BINARY);
+        cv.threshold(gray, mask, 160, 255, cv.THRESH_BINARY);  // Lowered for stronger detection
         
-        let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
-        cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 1);
-        cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 3);
+        // Stronger morphology to connect thick borders (even if broken)
+        let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
+        cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 2);
+        cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 5);  // Thicker connect
         
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
         cv.findContours(mask, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
         
         let bestArea = 0;
-        let bestApprox = null;  // Will hold OUTER points for warp (incl. border)
+        let bestApprox = null;
         let bestIdx = -1;
         let isFrame = false;
+        let allAreas = [];
+        let max4Sided = 0;
         
         for (let i = 0; i < contours.size(); i++) {
           let contour = contours.get(i);
           let area = cv.contourArea(contour);
-          if (area < 5000) continue;  // Lowered slightly for safety
+          allAreas.push(area);
+          if (area < 1000) continue;  // Very lenient
           
           let peri = cv.arcLength(contour, true);
           let approx = new cv.Mat();
-          cv.approxPolyDP(contour, approx, 0.03 * peri, true);
+          cv.approxPolyDP(contour, approx, 0.05 * peri, true);  // Looser tolerance for real borders
           
           if (approx.rows === 4) {
+            max4Sided = Math.max(max4Sided, area);
             let hasChild = hierarchy.data32S[i * 4 + 2] !== -1;
-            let thisArea = area;  // Default: outer area
-            let thisApprox = approx.clone();  // Default: outer
+            
+            let thisArea = area;  // Always use outer area (larger for frames)
+            let thisApprox = approx.clone();
             
             if (hasChild) {
-              // For frames: use INNER area for selection (large!), but OUTER points for warp
+              // For frames: still use outer points, but confirm inner is large too
               let childIdx = hierarchy.data32S[i * 4 + 2];
-              let childContour = contours.get(childIdx);
-              thisArea = cv.contourArea(childContour);  // This is the big notebook area!
-              thisApprox = approx.clone();  // Keep OUTER for warp
+              let childArea = cv.contourArea(contours.get(childIdx));
+              if (childArea > thisArea * 0.8) {  // Inner should be ~80%+ of outer
+                thisArea = childArea;  // Use inner for bestArea check (more accurate for content)
+              }
             }
             
-            // Prefer largest (inner for frames) or frames
             if (thisArea > bestArea) {
               if (bestApprox) bestApprox.delete();
               bestApprox = thisApprox;
@@ -125,35 +130,33 @@
             } else {
               thisApprox.delete();
             }
-            
             approx.delete();
           } else {
             approx.delete();
           }
         }
         
-        console.log(`Contours: ${contours.size()} | Best area: ${Math.round(bestArea)} | Frame: ${isFrame} | Points: ${bestApprox ? bestApprox.rows : 0}`);
+        // Debug logs - copy these after snap!
+        console.log(`=== DEBUG ===`);
+        console.log(`Total contours: ${contours.size()}`);
+        console.log(`Top 5 areas: ${allAreas.sort((a,b)=>b-a).slice(0,5).map(Math.round)}`);
+        console.log(`Max ALL area: ${Math.round(Math.max(...allAreas))}`);
+        console.log(`Max 4-sided area: ${Math.round(max4Sided)}`);
+        console.log(`Best area: ${Math.round(bestArea)} | Frame: ${isFrame} | Points: ${bestApprox ? bestApprox.rows : 0}`);
         
-        // Dynamic min (uses bestArea = large inner for frames)
-        let minArea = Math.max(20000, (src.rows * src.cols) * 0.02);
+        let minArea = Math.max(10000, (src.rows * src.cols) * 0.01);  // More forgiving ~1%
         
         if (bestApprox && bestArea > minArea) {
           status.textContent = `SUCCESS! Cropped & warped notebook (Area: ${Math.round(bestArea)})`;
           
-          // Get 4 corner points (from OUTER approx)
           let pts = [];
           for (let j = 0; j < 4; j++) {
-            pts.push([
-              bestApprox.data32F[j * 2],
-              bestApprox.data32F[j * 2 + 1]
-            ]);
+            pts.push([bestApprox.data32F[j * 2], bestApprox.data32F[j * 2 + 1]]);
           }
           
-          // Order them properly
           let ordered = orderPoints(pts);
-          console.log("Ordered corners:", ordered.map(p => `(${Math.round(p[0])},${Math.round(p[1])})`).join(' → '));
+          console.log(`Ordered corners: ${ordered.map(p => `(${Math.round(p[0])}, ${Math.round(p[1])})`).join(' → ')}`);
           
-          // Compute real-world size from quad
           let width = Math.max(
             Math.hypot(ordered[1][0] - ordered[0][0], ordered[1][1] - ordered[0][1]),
             Math.hypot(ordered[2][0] - ordered[3][0], ordered[2][1] - ordered[3][1])
@@ -165,51 +168,40 @@
           
           let dstWidth = Math.round(width);
           let dstHeight = Math.round(height);
+          console.log(`Warped size: ${dstWidth}x${dstHeight}`);
           
-          console.log(`Raw warped size: ${dstWidth}x${dstHeight}`);
-          
-          // Create transform
           let srcPoints = new cv.Mat(4, 1, cv.CV_32FC2);
           let dstPoints = new cv.Mat(4, 1, cv.CV_32FC2);
-          
           srcPoints.data32F.set([ordered[0][0], ordered[0][1], ordered[1][0], ordered[1][1], 
                                  ordered[2][0], ordered[2][1], ordered[3][0], ordered[3][1]]);
           dstPoints.data32F.set([0, 0, dstWidth, 0, dstWidth, dstHeight, 0, dstHeight]);
           
           let M = cv.getPerspectiveTransform(srcPoints, dstPoints);
           
-          // Warp the FULL original image to the quad
           let warped = new cv.Mat();
           cv.warpPerspective(src, warped, M, new cv.Size(dstWidth, dstHeight), cv.INTER_LINEAR);
           
-          // DEBUG (remove later): faint cyan border on warped to confirm it's the new image
-          // let debugColor = new cv.Scalar(0, 255, 255, 255);
-          // cv.rectangle(warped, new cv.Point(8, 8), new cv.Point(dstWidth-8, dstHeight-8), debugColor, 12);
-          
-          // UPSCALE to a nice preview size (preserves aspect, fills UI better)
-          let previewWidth = Math.min(520, Math.max(400, dstWidth));  // Nice mobile size
+          // Upscale to preview
+          let previewWidth = Math.min(520, Math.max(400, dstWidth));
           let scale = previewWidth / dstWidth;
           let previewHeight = Math.round(dstHeight * scale);
           
           let resized = new cv.Mat();
           cv.resize(warped, resized, new cv.Size(previewWidth, previewHeight), 0, 0, cv.INTER_CUBIC);
           
-          // Set canvas & show the clean warped preview
           outputCanvas.width = previewWidth;
           outputCanvas.height = previewHeight;
           cv.imshow('output-canvas', resized);
           
-          // Cleanup
           srcPoints.delete(); dstPoints.delete(); M.delete();
           warped.delete(); resized.delete();
           bestApprox.delete();
         } else {
-          status.textContent = `No strong outline (max area: ${Math.round(bestArea)}) — light/angle?`;
+          status.textContent = `No strong outline (max 4-sided: ${Math.round(max4Sided)}) — check console!`;
           cv.imshow('output-canvas', src);
           if (bestApprox) bestApprox.delete();
         }
         
-        // Full cleanup
         src.delete(); gray.delete(); mask.delete(); kernel.delete();
         contours.delete(); hierarchy.delete();
       } catch (e) {
