@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Scanner - 5x7</title>
+  <title>Doodle Scanner - 5×7</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <style>
     body { margin:0; font-family: system-ui, sans-serif; background:#f8f8f8; }
@@ -15,7 +15,7 @@
       position: relative;
       width: 90vw;
       max-width: 520px;
-      aspect-ratio: 5 / 7;           /* ← Changed to 5:7 */
+      aspect-ratio: 5 / 7;
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 4px 25px rgba(0,0,0,0.25);
@@ -26,8 +26,8 @@
       position: absolute;
       inset: 0;
       background: 
-        linear-gradient(to right, rgba(0,0,0,0.85) 2px, transparent 2px) 0 0 / 20% 100%,   /* 5 columns */
-        linear-gradient(to bottom, rgba(0,0,0,0.85) 2px, transparent 2px) 0 0 / 100% 14.2857%; /* 7 rows */
+        linear-gradient(to right, rgba(0,0,0,0.85) 2px, transparent 2px) 0 0 / 20% 100%,
+        linear-gradient(to bottom, rgba(0,0,0,0.85) 2px, transparent 2px) 0 0 / 100% 14.2857%;
       pointer-events: none;
       z-index: 2;
     }
@@ -50,7 +50,7 @@
 
     .debug-cells {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);   /* 5 columns */
+      grid-template-columns: repeat(5, 1fr);
       gap: 6px;
       width: 90vw;
       max-width: 520px;
@@ -79,11 +79,11 @@
 
     #detected-grid {
       display: none;
-      grid-template-columns: repeat(5, 1fr);   /* 5 columns */
-      grid-template-rows: repeat(7, 1fr);      /* 7 rows */
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(7, 1fr);
       gap: 2cqi;
       width: 85cqi;
-      height: 119cqi;   /* 5:7 ratio */
+      height: 119cqi;
     }
     .grid-cell {
       aspect-ratio: 1;
@@ -94,15 +94,9 @@
       background-position: center;
       background-repeat: no-repeat;
       cursor: pointer;
+      transition: transform 0.2s;
     }
-    .grid-cell.unknown {
-      background: #ffeb3b;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 6cqi;
-      color: #333;
-    }
+    .grid-cell:hover { transform: scale(1.08); }
   </style>
 </head>
 <body>
@@ -172,27 +166,24 @@
       const canvas = document.getElementById('photo-canvas');
       const ctx = canvas.getContext('2d');
 
-      // 5:7 crop
-      const targetRatio = 5 / 7;
-      let sizeW = video.videoWidth;
-      let sizeH = video.videoHeight;
+      const size = Math.min(video.videoWidth, video.videoHeight);
+      canvas.width = size;
+      canvas.height = size;
 
-      if (sizeW / sizeH > targetRatio) {
-        sizeW = sizeH * targetRatio;
-      } else {
-        sizeH = sizeW / targetRatio;
-      }
-
-      canvas.width = sizeW;
-      canvas.height = sizeH;
-
-      const ox = (video.videoWidth - sizeW) / 2;
-      const oy = (video.videoHeight - sizeH) / 2;
-      ctx.drawImage(video, ox, oy, sizeW, sizeH, 0, 0, sizeW, sizeH);
+      const ox = (video.videoWidth - size) / 2;
+      const oy = (video.videoHeight - size) / 2;
+      ctx.drawImage(video, ox, oy, size, size, 0, 0, size, size);
 
       document.querySelector('.camera-container').style.display = 'none';
       document.getElementById('snap-now-btn').style.display = 'none';
       canvas.style.display = 'block';
+
+      ctx.strokeStyle = 'red';
+      ctx.lineWidth = 5;
+      for (let i = 1; i < 3; i++) {
+        ctx.beginPath(); ctx.moveTo(i * size/3, 0); ctx.lineTo(i * size/3, size); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i * size/3); ctx.lineTo(size, i * size/3); ctx.stroke();
+      }
 
       if (scoreStream) {
         scoreStream.getTracks().forEach(t => t.stop());
@@ -225,8 +216,15 @@
           const prediction = model.predict(tensor);
           const scores = await prediction.array();
 
-          const maxIndex = scores[0].indexOf(Math.max(...scores[0]));
-          const predicted = classNames[maxIndex] || 'unknown';
+          let maxIndex = scores[0].indexOf(Math.max(...scores[0]));
+          let predicted = classNames[maxIndex];
+
+          // Force best guess — never return "unknown"
+          if (predicted === 'unknown') {
+            scores[0][maxIndex] = -999;
+            maxIndex = scores[0].indexOf(Math.max(...scores[0]));
+            predicted = classNames[maxIndex];
+          }
 
           log(`Cell [${r},${c}] → ${predicted}`);
 
