@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Outline Scanner Test 4.0</title>
+  <title>White Outline Scanner Test 4.1</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -18,7 +18,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">White Outline Scanner Test 4.0</div>
+    <div class="header">White Outline Scanner Test 4.1</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -30,7 +30,7 @@
     </div>
   </div>
   <script>
-    console.log("=== WHITE OUTLINE SCANNER 4.0 LOADED ===");
+    console.log("=== WHITE OUTLINE SCANNER 4.1 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
@@ -78,96 +78,66 @@
         let mask = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
         cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0);
-        cv.threshold(gray, mask, 155, 255, cv.THRESH_BINARY);
+        cv.threshold(gray, mask, 160, 255, cv.THRESH_BINARY);  // Slightly higher for tighter white
         
-        // Connect the outline, then thin slightly for tight corners
+        // Light morphology to connect border without over-expanding
         let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
         cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 1);
-        cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 6);
-        cv.erode(mask, mask, kernel, new cv.Point(-1, -1), 2);  // Tighten for better corner snap
+        cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 4);  // Light dilate for connection
+        cv.erode(mask, mask, kernel, new cv.Point(-1, -1), 2);  // Tighten slightly
         
-        // RETR_TREE for frame detection
+        // Use EXTERNAL for largest outer contour (includes full white border)
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
-        cv.findContours(mask, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+        cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
         
         let bestArea = 0;
-        let bestApprox = null;
+        let bestVertices = null;
         let allAreas = [];
-        let isFrame = false;
         
         for (let i = 0; i < contours.size(); i++) {
           let contour = contours.get(i);
           let area = cv.contourArea(contour);
           allAreas.push(area);
-          if (area < 5000) continue;
+          if (area < 10000) continue;
           
-          let hasChild = hierarchy.data32S[i * 4 + 2] !== -1;
-          
-          let targetContour = contour;  // Default outer
-          let targetArea = area;
-          if (hasChild) {
-            let childIdx = hierarchy.data32S[i * 4 + 2];
-            let child = contours.get(childIdx);
-            targetArea = cv.contourArea(child);  // Use inner area for selection
-            isFrame = true;
-          }
-          
-          if (targetArea > bestArea) {
-            // Approx poly for sharp corners (tighter than minAreaRect)
-            let peri = cv.arcLength(targetContour, true);
-            let approx = new cv.Mat();
-            cv.approxPolyDP(targetContour, approx, 0.015 * peri, true);  // Tighter epsilon for exact corners
-            
-            if (approx.rows === 4) {
-              bestApprox = approx.clone();
-              bestArea = targetArea;
-            } else {
-              approx.delete();
-            }
+          if (area > bestArea) {
+            bestArea = area;
+            let rect = cv.minAreaRect(contour);
+            bestVertices = cv.RotatedRect.points(rect);  // Reliable 4 points
           }
         }
         
         // DEBUG - COPY AFTER SNAP
-        console.log(`=== DEBUG 4.0 ===`);
+        console.log(`=== DEBUG 4.1 ===`);
         console.log(`Total contours: ${contours.size()}`);
         console.log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a))}`);
-        console.log(`Best area: ${Math.round(bestArea)} | Frame: ${isFrame} | Approx points: ${bestApprox ? bestApprox.rows : 0}`);
+        console.log(`Best area: ${Math.round(bestArea)} | Vertices: ${bestVertices ? bestVertices.length : 0}`);
         
-        let minArea = Math.max(15000, (src.rows * src.cols) * 0.015);
+        let minArea = Math.max(20000, (src.rows * src.cols) * 0.02);
         
-        if (bestApprox && bestApprox.rows === 4 && bestArea > minArea) {
-          status.textContent = `SUCCESS! Perfectly aligned warped notebook (Area: ${Math.round(bestArea)})`;
+        if (bestVertices && bestVertices.length === 4 && bestArea > minArea) {
+          status.textContent = `SUCCESS! Aligned warped notebook (Area: ${Math.round(bestArea)})`;
           
-          // Extract 4 points from approx (outer-ish for border inclusion)
+          // Extract points from vertices
           let pts = [];
           for (let j = 0; j < 4; j++) {
-            pts.push([bestApprox.data32F[j * 2], bestApprox.data32F[j * 2 + 1]]);
+            pts.push([bestVertices[j].x, bestVertices[j].y]);
           }
           
           let ordered = orderPoints(pts);
           console.log(`Ordered corners: ${ordered.map(p => `(${Math.round(p[0])},${Math.round(p[1])})`).join(' → ')}`);
           
-          // Compute size from quad, but force exact paper aspect (9.75 x 6.5)
-          let paperWidth = 9.75;
-          let paperHeight = 6.5;
-          let paperRatio = paperWidth / paperHeight;  // 1.5
-          
-          // Use the larger dimension from the quad to set scale
-          let quadWidth = Math.max(
+          // Force exact paper aspect (9.75 x 6.5)
+          let paperRatio = 9.75 / 6.5;  // ~1.5
+          let dstWidth = Math.max(400, Math.round(Math.max(
             Math.hypot(ordered[1][0] - ordered[0][0], ordered[1][1] - ordered[0][1]),
             Math.hypot(ordered[2][0] - ordered[3][0], ordered[2][1] - ordered[3][1])
-          );
-          let quadHeight = Math.max(
-            Math.hypot(ordered[1][0] - ordered[2][0], ordered[1][1] - ordered[2][1]),
-            Math.hypot(ordered[0][0] - ordered[3][0], ordered[0][1] - ordered[3][1])
-          );
-          
-          let dstWidth = Math.round(Math.max(quadWidth, quadHeight * paperRatio));
+          )));
           let dstHeight = Math.round(dstWidth / paperRatio);
-          console.log(`Forced paper aspect warp: ${dstWidth}x${dstHeight}`);
+          console.log(`Paper aspect warp: ${dstWidth}x${dstHeight}`);
           
-          // Perspective warp
+          // Perspective transform
           let srcPoints = new cv.Mat(4, 1, cv.CV_32FC2);
           let dstPoints = new cv.Mat(4, 1, cv.CV_32FC2);
           srcPoints.data32F.set([ordered[0][0], ordered[0][1], ordered[1][0], ordered[1][1], 
@@ -179,7 +149,7 @@
           let warped = new cv.Mat();
           cv.warpPerspective(src, warped, M, new cv.Size(dstWidth, dstHeight), cv.INTER_LINEAR);
           
-          // Upscale to preview
+          // Upscale preview
           let targetWidth = 800;
           let targetHeight = Math.round(targetWidth * (dstHeight / dstWidth));
           let resized = new cv.Mat();
@@ -188,24 +158,28 @@
           outputCanvas.width = targetWidth;
           outputCanvas.height = targetHeight;
           cv.imshow('output-canvas', resized);
-          console.log('✅ Perfect alignment preview rendered!');
+          console.log('✅ Aligned preview rendered!');
           
           // Cleanup
           srcPoints.delete(); dstPoints.delete(); M.delete();
           warped.delete(); resized.delete();
-          bestApprox.delete();
         } else {
           status.textContent = `No strong outline (max area: ${Math.round(bestArea)}) — check console!`;
           cv.imshow('output-canvas', src);
-          if (bestApprox) bestApprox.delete();
         }
         
         // Cleanup
         src.delete(); gray.delete(); mask.delete(); kernel.delete();
         contours.delete(); hierarchy.delete();
       } catch (e) {
-        const errMsg = e ? (e.message || (typeof e === 'string' ? e : JSON.stringify(e) || 'unknown')) : 'unknown';
-        status.textContent = `Error: ${errMsg}`;
+        let errMsg = 'unknown';
+        if (e) {
+          if (typeof e === 'number') errMsg = `OpenCV code: ${e}`;
+          else if (e.message) errMsg = e.message;
+          else if (typeof e === 'string') errMsg = e;
+          else errMsg = e.toString();
+        }
+        status.textContent = `Error: ${errMsg} (check console for details)`;
         console.error('=== FULL ERROR ===', e);
         if (src) cv.imshow('output-canvas', src);
       }
