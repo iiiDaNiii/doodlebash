@@ -203,7 +203,7 @@
           log(`Cell [${r},${c}] → Circle: ${cScore.toFixed(3)} | Triangle: ${tScore.toFixed(3)} | Smiley: ${sScore.toFixed(3)}`);
 
           const max = Math.max(cScore, tScore, sScore);
-          if (max < 0.52) results.push('unknown');
+          if (max < 0.5) results.push('unknown');
           else if (cScore === max) results.push('circle');
           else if (tScore === max) results.push('triangle');
           else results.push('smiley');
@@ -223,63 +223,67 @@
       return gray;
     }
 
+    // ================== NEW SIMPLIFIED SCORING ==================
     function calculateCircleScore(gray, w, h) {
-      let edge = 0, internal = 0;
-      const cx = w/2, cy = h/2, r = w*0.42;
+      let edgeCount = 0;
+      let centerCount = 0;
+      const cx = w/2, cy = h/2;
+      const radius = w * 0.38;
+
       for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
           if (gray[y*w + x] === 255) {
-            const d = Math.sqrt((x-cx)**2 + (y-cy)**2);
-            if (Math.abs(d - r) < r*0.28) edge++;
-          } else if (Math.abs(x-cx) < r*0.75 && Math.abs(y-cy) < r*0.75) {
-            internal++;
+            const dist = Math.sqrt((x-cx)**2 + (y-cy)**2);
+            if (Math.abs(dist - radius) < radius * 0.22) edgeCount++;
+          } else if (Math.abs(x-cx) < radius * 0.6 && Math.abs(y-cy) < radius * 0.6) {
+            centerCount++;
           }
         }
       }
-      const hasInternals = internal > w*h*0.15;
-      const score = edge > w*h*0.18 ? 1 - (hasInternals ? 0.65 : 0) : 0;
-      return score;
+      // Strong penalty if there's lots of white in the center (like smiley eyes/mouth)
+      const isHollow = centerCount < (w*h * 0.08);
+      return (edgeCount > w*h*0.16 && isHollow) ? 0.95 : 0.1;
     }
 
     function calculateTriangleScore(gray, w, h) {
-      let corners = 0;
-      for (let y = 2; y < h-2; y++) {
-        for (let x = 2; x < w-2; x++) {
+      let cornerCount = 0;
+      for (let y = 1; y < h-1; y++) {
+        for (let x = 1; x < w-1; x++) {
           if (gray[y*w + x] === 255) {
             let neighbors = 0;
-            if (gray[(y-1)*w+x] === 255) neighbors++;
-            if (gray[(y+1)*w+x] === 255) neighbors++;
-            if (gray[y*w+x-1] === 255) neighbors++;
-            if (gray[y*w+x+1] === 255) neighbors++;
-            if (neighbors <= 1) corners++;
+            if (gray[(y-1)*w + x] === 255) neighbors++;
+            if (gray[(y+1)*w + x] === 255) neighbors++;
+            if (gray[y*w + x-1] === 255) neighbors++;
+            if (gray[y*w + x+1] === 255) neighbors++;
+            if (neighbors <= 1) cornerCount++;
           }
         }
       }
-      return corners > w*0.22 ? 0.92 : 0;
+      return cornerCount > w * 0.18 ? 0.92 : 0;
     }
 
     function calculateSmileyScore(gray, w, h) {
-      const mid = Math.floor(h * 0.58);
-      let arcDensity = 0;
+      const mid = Math.floor(h * 0.55);
+      let bottomPixels = 0;
       for (let y = mid; y < h; y++) {
         for (let x = 0; x < w; x++) {
-          if (gray[y*w + x] === 255) arcDensity++;
+          if (gray[y*w + x] === 255) bottomPixels++;
         }
       }
-      const arcScore = arcDensity > w*(h-mid)*0.38 ? 0.8 : 0;
+      const arcScore = bottomPixels > w * (h - mid) * 0.32 ? 0.8 : 0;
 
-      let eyes = 0;
+      let eyeCount = 0;
       let visited = new Set();
       for (let y = 0; y < mid; y++) {
         for (let x = 0; x < w; x++) {
           const idx = y*w + x;
           if (gray[idx] === 255 && !visited.has(idx)) {
             const size = floodFill(gray, w, h, x, y, visited);
-            if (size >= 6 && size <= 45) eyes++;
+            if (size >= 5 && size <= 40) eyeCount++;
           }
         }
       }
-      const eyeScore = eyes === 2 ? 0.85 : 0;
+      const eyeScore = eyeCount === 2 ? 0.9 : 0;
       return arcScore + eyeScore > 1.4 ? 0.97 : 0;
     }
 
