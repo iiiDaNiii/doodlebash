@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blue Rectangle Scanner Test 1.2</title>
+  <title>Blue Rectangle Scanner Test 1.3</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -19,7 +19,7 @@
 <body>
 
   <div class="container">
-    <div class="header">Blue Rectangle Scanner Test 1.2</div>
+    <div class="header">Blue Rectangle Scanner Test 1.3</div>
     <div class="content">
       <p>Point camera at your notebook</p>
       <div class="camera-container">
@@ -50,28 +50,22 @@
       outputCanvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0);
 
-      status.textContent = "Processing blue rectangle... (2-4 seconds)";
+      status.textContent = "Detecting blue rectangle... (2-4 seconds)";
 
       setTimeout(() => {
-        try {
-          processBlueRectangle(outputCanvas);
-        } catch (e) {
-          status.textContent = "Error: " + e.message;
-        }
+        processBlueRectangle(outputCanvas);
       }, 100);
     };
 
     function processBlueRectangle(canvas) {
-      let src = cv.imread(canvas);
-      let hsv = new cv.Mat();
-      let mask = new cv.Mat();
-
       try {
-        cv.cvtColor(src, hsv, cv.COLOR_RGB2HSV);
+        let src = cv.imread(canvas);
+        let hsv = new cv.Mat();
+        let mask = new cv.Mat();
 
-        // Blue range (tuned for your notebook)
-        let low = new cv.Mat(1, 1, cv.CV_8UC3, [85, 50, 50]);
-        let high = new cv.Mat(1, 1, cv.CV_8UC3, [135, 255, 255]);
+        cv.cvtColor(src, hsv, cv.COLOR_RGB2HSV);
+        let low = new cv.Mat(1, 1, cv.CV_8UC3, [85, 50, 40]);
+        let high = new cv.Mat(1, 1, cv.CV_8UC3, [140, 255, 255]);
         cv.inRange(hsv, low, high, mask);
 
         let contours = new cv.MatVector();
@@ -89,22 +83,27 @@
           }
         }
 
-        if (bestRect && maxArea > 50000) {
+        if (bestRect && maxArea > 40000) {
           status.textContent = `Found blue rectangle! Area: ${Math.round(maxArea)}`;
-          cv.rectangle(src, bestRect, new cv.Scalar(0, 255, 0, 255), 10);
+          
+          // Safer rectangle drawing
+          cv.rectangle(src, 
+            new cv.Point(bestRect.x, bestRect.y), 
+            new cv.Point(bestRect.x + bestRect.width, bestRect.y + bestRect.height), 
+            new cv.Scalar(0, 255, 0, 255), 
+            12);
         } else {
           status.textContent = "No blue rectangle found — try better lighting or angle";
         }
 
         cv.imshow('output-canvas', src);
 
+        // Cleanup
+        src.delete(); hsv.delete(); mask.delete(); contours.delete(); hierarchy.delete();
+
       } catch (e) {
         status.textContent = "Error: " + e.message;
         console.error(e);
-      } finally {
-        src.delete();
-        hsv.delete();
-        mask.delete();
       }
     }
 
