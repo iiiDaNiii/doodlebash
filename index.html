@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blue Rectangle Scanner Test 2.4</title>
+  <title>Blue Rectangle Scanner Test 2.5</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -18,9 +18,9 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Blue Rectangle Scanner Test 2.4</div>
+    <div class="header">Blue Rectangle Scanner Test 2.5</div>
     <div class="content">
-      <p>Point camera at your notebook</p>
+      <p>Point camera at your notebook (good lighting!)</p>
       <div class="camera-container">
         <video id="camera-preview" autoplay playsinline muted></video>
       </div>
@@ -30,7 +30,7 @@
     </div>
   </div>
   <script>
-    console.log("=== BLUE SCANNER 2.4 LOADED ===");
+    console.log("=== BLUE SCANNER 2.5 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
@@ -56,22 +56,25 @@
     
     function processBlueRectangle(canvas) {
       try {
-        let src = cv.imread(canvas);
+        let src = cv.imread(canvas);  // RGBA from canvas
+        let rgb = new cv.Mat();
         let hsv = new cv.Mat();
         let mask = new cv.Mat();
         
-        // Fixed: Ensure src is treated as RGBA (from canvas) and convert properly to HSV
-        // First, convert RGBA to RGB (drop alpha), then to HSV
-        let rgb = new cv.Mat();
+        // RGBA → RGB (channels: R,G,B)
         cv.cvtColor(src, rgb, cv.COLOR_RGBA2RGB);
         cv.cvtColor(rgb, hsv, cv.COLOR_RGB2HSV);
         
-        // Fixed: Create low/high as 1x1 CV_8UC3 Mats using Scalar (4 elements) to match OpenCV.js Scalar binding
-        // The 4th element (alpha) is ignored for 3-channel HSV but required to avoid the tuple error
-        let low = new cv.Mat(1, 1, cv.CV_8UC3, new cv.Scalar(80, 40, 40, 0));
+        // Updated: Standard blue HSV range (tighter, higher saturation for vivid notebook blue)
+        // Hue 100-140 (blue/cyan-violet), S 100+, V 50+
+        let low = new cv.Mat(1, 1, cv.CV_8UC3, new cv.Scalar(100, 100, 50, 0));
         let high = new cv.Mat(1, 1, cv.CV_8UC3, new cv.Scalar(140, 255, 255, 0));
         
         cv.inRange(hsv, low, high, mask);
+        
+        // Add morphology to clean noise/small blobs (opening: erode then dilate)
+        let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
+        cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel);
         
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
@@ -87,23 +90,26 @@
           }
         }
         
-        if (bestRect && maxArea > 40000) {
-          status.textContent = `SUCCESS! Found blue rectangle (Area: ${Math.round(maxArea)})`;
+        console.log("Max blue area found:", maxArea);  // Debug in console
+        
+        // Lowered threshold + relative check
+        let minArea = Math.max(10000, (src.rows * src.cols) * 0.02);  // ~2% of image
+        if (bestRect && maxArea > minArea) {
+          status.textContent = `SUCCESS! Blue rect (Area: ${Math.round(maxArea)})`;
           
-          // Draw green box (BGR+A for src which is now RGB but drawing works)
+          // Draw green box on RGB src
           let pt1 = new cv.Point(bestRect.x, bestRect.y);
           let pt2 = new cv.Point(bestRect.x + bestRect.width, bestRect.y + bestRect.height);
           cv.rectangle(src, pt1, pt2, new cv.Scalar(0, 255, 0, 255), 12);
         } else {
-          status.textContent = "No blue rectangle found — try better lighting or angle";
+          status.textContent = `No large blue rect (max area: ${Math.round(maxArea)}) — better light/angle?`;
         }
         
         cv.imshow('output-canvas', src);
         
         // Cleanup
-        src.delete(); rgb.delete(); hsv.delete(); mask.delete(); 
-        contours.delete(); hierarchy.delete();
-        low.delete(); high.delete();
+        src.delete(); rgb.delete(); hsv.delete(); mask.delete(); kernel.delete();
+        contours.delete(); hierarchy.delete(); low.delete(); high.delete();
       } catch (e) {
         status.textContent = "Error: " + e.message;
         console.error(e);
