@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Scanner - ML Version</title>
+  <title>Doodle Scanner - 5x7</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <style>
     body { margin:0; font-family: system-ui, sans-serif; background:#f8f8f8; }
@@ -15,7 +15,7 @@
       position: relative;
       width: 90vw;
       max-width: 520px;
-      aspect-ratio: 1 / 1;
+      aspect-ratio: 5 / 7;           /* ← Changed to 5:7 */
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 4px 25px rgba(0,0,0,0.25);
@@ -25,14 +25,15 @@
     .grid-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to right, rgba(0,0,0,0.85) 2px, transparent 2px) 0 0 / 33.333% 100%,
-                  linear-gradient(to bottom, rgba(0,0,0,0.85) 2px, transparent 2px) 0 0 / 100% 33.333%;
+      background: 
+        linear-gradient(to right, rgba(0,0,0,0.85) 2px, transparent 2px) 0 0 / 20% 100%,   /* 5 columns */
+        linear-gradient(to bottom, rgba(0,0,0,0.85) 2px, transparent 2px) 0 0 / 100% 14.2857%; /* 7 rows */
       pointer-events: none;
       z-index: 2;
     }
 
     .snap-btn {
-      background: #c567ff;
+      background: #4dbde5;
       color: white;
       font-size: 5.5cqi;
       padding: 3cqi 8cqi;
@@ -49,8 +50,8 @@
 
     .debug-cells {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+      grid-template-columns: repeat(5, 1fr);   /* 5 columns */
+      gap: 6px;
       width: 90vw;
       max-width: 520px;
     }
@@ -72,16 +73,17 @@
       line-height: 1.5;
       border-radius: 8px;
       white-space: pre-wrap;
-      max-height: 200px;
+      max-height: 260px;
       overflow-y: auto;
     }
 
     #detected-grid {
       display: none;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(5, 1fr);   /* 5 columns */
+      grid-template-rows: repeat(7, 1fr);      /* 7 rows */
       gap: 2cqi;
       width: 85cqi;
-      height: 85cqi;
+      height: 119cqi;   /* 5:7 ratio */
     }
     .grid-cell {
       aspect-ratio: 1;
@@ -92,15 +94,13 @@
       background-position: center;
       background-repeat: no-repeat;
       cursor: pointer;
-      transition: transform 0.2s;
     }
-    .grid-cell:hover { transform: scale(1.08); }
     .grid-cell.unknown {
       background: #ffeb3b;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 7cqi;
+      font-size: 6cqi;
       color: #333;
     }
   </style>
@@ -108,10 +108,10 @@
 <body>
 
   <div class="container">
-    <div class="header">Doodle Scanner - ML Version</div>
+    <div class="header">Doodle Scanner - 5×7</div>
     <div class="content">
 
-      <p style="text-align:center; font-size:4.5cqi;">Line up your 3x3 grid</p>
+      <p style="text-align:center; font-size:4.5cqi;">Line up your 5×7 grid</p>
       
       <div class="camera-container">
         <video id="camera-preview" autoplay playsinline muted></video>
@@ -153,10 +153,9 @@
         const metadata = await fetch('models/doodle/metadata.json');
         const meta = await metadata.json();
         classNames = meta.labels || meta.classNames || [];
-        log(`✅ Model loaded! ${classNames.length} classes: ${classNames.join(', ')}`);
+        log(`✅ Model loaded! ${classNames.length} classes`);
       } catch (e) {
         log("❌ ERROR loading model: " + e.message);
-        console.error(e);
       }
     }
 
@@ -173,24 +172,27 @@
       const canvas = document.getElementById('photo-canvas');
       const ctx = canvas.getContext('2d');
 
-      const size = Math.min(video.videoWidth, video.videoHeight);
-      canvas.width = size;
-      canvas.height = size;
+      // 5:7 crop
+      const targetRatio = 5 / 7;
+      let sizeW = video.videoWidth;
+      let sizeH = video.videoHeight;
 
-      const ox = (video.videoWidth - size) / 2;
-      const oy = (video.videoHeight - size) / 2;
-      ctx.drawImage(video, ox, oy, size, size, 0, 0, size, size);
+      if (sizeW / sizeH > targetRatio) {
+        sizeW = sizeH * targetRatio;
+      } else {
+        sizeH = sizeW / targetRatio;
+      }
+
+      canvas.width = sizeW;
+      canvas.height = sizeH;
+
+      const ox = (video.videoWidth - sizeW) / 2;
+      const oy = (video.videoHeight - sizeH) / 2;
+      ctx.drawImage(video, ox, oy, sizeW, sizeH, 0, 0, sizeW, sizeH);
 
       document.querySelector('.camera-container').style.display = 'none';
       document.getElementById('snap-now-btn').style.display = 'none';
       canvas.style.display = 'block';
-
-      ctx.strokeStyle = 'red';
-      ctx.lineWidth = 5;
-      for (let i = 1; i < 3; i++) {
-        ctx.beginPath(); ctx.moveTo(i * size/3, 0); ctx.lineTo(i * size/3, size); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, i * size/3); ctx.lineTo(size, i * size/3); ctx.stroke();
-      }
 
       if (scoreStream) {
         scoreStream.getTracks().forEach(t => t.stop());
@@ -205,79 +207,45 @@
     }
 
     async function detectDoodlesFromCanvas(canvas) {
-  const cw = canvas.width / 3;
-  const ch = canvas.height / 3;
-  const results = [];
+      const cols = 5;
+      const rows = 7;
+      const cw = canvas.width / cols;
+      const ch = canvas.height / rows;
+      const results = [];
 
-  for (let r = 0; r < 3; r++) {
-    for (let c = 0; c < 3; c++) {
-      const cellCanvas = document.createElement('canvas');
-      cellCanvas.width = 224;
-      cellCanvas.height = 224;
-      const cellCtx = cellCanvas.getContext('2d');
-      cellCtx.drawImage(canvas, c*cw, r*ch, cw, ch, 0, 0, 224, 224);
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const cellCanvas = document.createElement('canvas');
+          cellCanvas.width = 224;
+          cellCanvas.height = 224;
+          const cellCtx = cellCanvas.getContext('2d');
+          cellCtx.drawImage(canvas, c*cw, r*ch, cw, ch, 0, 0, 224, 224);
 
-      const tensor = tf.browser.fromPixels(cellCanvas).expandDims(0).toFloat().div(255);
-      const prediction = model.predict(tensor);
-      const scores = await prediction.array();
+          const tensor = tf.browser.fromPixels(cellCanvas).expandDims(0).toFloat().div(255);
+          const prediction = model.predict(tensor);
+          const scores = await prediction.array();
 
-      // Get the best guess (ignore "unknown" if it exists)
-      let maxIndex = scores[0].indexOf(Math.max(...scores[0]));
-      let predicted = classNames[maxIndex];
+          const maxIndex = scores[0].indexOf(Math.max(...scores[0]));
+          const predicted = classNames[maxIndex] || 'unknown';
 
-      // If it picked "unknown", take the second best guess instead
-      if (predicted === 'unknown') {
-        scores[0][maxIndex] = -999;  // temporarily remove unknown
-        maxIndex = scores[0].indexOf(Math.max(...scores[0]));
-        predicted = classNames[maxIndex];
+          log(`Cell [${r},${c}] → ${predicted}`);
+
+          results.push(predicted);
+        }
       }
-
-      const confidence = scores[0][maxIndex];
-
-      log(`Cell [${r},${c}] → ${predicted} (${(confidence*100).toFixed(1)}%)`);
-
-      results.push(predicted);
+      return results;
     }
-  }
-  return results;
-}
-
-function renderDetectedGrid() {
-  const grid = document.getElementById('detected-grid');
-  grid.innerHTML = '';
-  grid.style.display = 'grid';
-
-  detectedDoodles.forEach((d, i) => {
-    const cell = document.createElement('div');
-    cell.className = `grid-cell ${d}`;
-    cell.dataset.index = i;
-    cell.dataset.doodle = d;
-
-    // Always show the PNG — never yellow "?"
-    cell.style.backgroundImage = `url('images/${d}.png')`;
-
-    cell.addEventListener('click', () => {
-      const opts = classNames.filter(name => name !== 'unknown'); // remove unknown from cycling
-      let idx = opts.indexOf(cell.dataset.doodle);
-      idx = (idx + 1) % opts.length;
-      const next = opts[idx];
-      cell.dataset.doodle = next;
-      cell.className = `grid-cell ${next}`;
-      cell.style.backgroundImage = `url('images/${next}.png')`;
-      detectedDoodles[i] = next;
-    });
-    grid.appendChild(cell);
-  });
-}
 
     function renderDebugCells(canvas) {
       const container = document.getElementById('debug-cells');
       container.innerHTML = '';
-      const cw = canvas.width / 3;
-      const ch = canvas.height / 3;
+      const cols = 5;
+      const rows = 7;
+      const cw = canvas.width / cols;
+      const ch = canvas.height / rows;
 
-      for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < 3; c++) {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
           const cellCanvas = document.createElement('canvas');
           cellCanvas.width = cw;
           cellCanvas.height = ch;
@@ -290,6 +258,33 @@ function renderDetectedGrid() {
           container.appendChild(div);
         }
       }
+    }
+
+    function renderDetectedGrid() {
+      const grid = document.getElementById('detected-grid');
+      grid.innerHTML = '';
+      grid.style.display = 'grid';
+
+      detectedDoodles.forEach((d, i) => {
+        const cell = document.createElement('div');
+        cell.className = `grid-cell ${d}`;
+        cell.dataset.index = i;
+        cell.dataset.doodle = d;
+
+        cell.style.backgroundImage = `url('images/${d}.png')`;
+
+        cell.addEventListener('click', () => {
+          const opts = classNames.filter(name => name !== 'unknown');
+          let idx = opts.indexOf(cell.dataset.doodle);
+          idx = (idx + 1) % opts.length;
+          const next = opts[idx];
+          cell.dataset.doodle = next;
+          cell.className = `grid-cell ${next}`;
+          cell.style.backgroundImage = `url('images/${next}.png')`;
+          detectedDoodles[i] = next;
+        });
+        grid.appendChild(cell);
+      });
     }
 
     window.onload = async () => {
