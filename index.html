@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blue Rectangle Scanner Test 2.3</title>
+  <title>Blue Rectangle Scanner Test 2.4</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -17,9 +17,8 @@
   </style>
 </head>
 <body>
-
   <div class="container">
-    <div class="header">Blue Rectangle Scanner Test 2.3</div>
+    <div class="header">Blue Rectangle Scanner Test 2.4</div>
     <div class="content">
       <p>Point camera at your notebook</p>
       <div class="camera-container">
@@ -30,53 +29,56 @@
       <div id="status" class="status">Waiting for photo...</div>
     </div>
   </div>
-
   <script>
-    console.log("=== BLUE SCANNER 2.3 LOADED ===");
-
+    console.log("=== BLUE SCANNER 2.4 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
     let status = document.getElementById('status');
-
+    
     async function startCamera() {
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       video.srcObject = stream;
       video.onloadeddata = () => document.getElementById('snap-btn').style.display = 'block';
     }
-
+    
     document.getElementById('snap-btn').onclick = () => {
       status.textContent = "Capturing photo...";
       const ctx = outputCanvas.getContext('2d');
       outputCanvas.width = video.videoWidth;
       outputCanvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0);
-
       status.textContent = "Processing blue rectangle... (2-4 seconds)";
-
       setTimeout(() => {
         processBlueRectangle(outputCanvas);
       }, 100);
     };
-
+    
     function processBlueRectangle(canvas) {
       try {
         let src = cv.imread(canvas);
         let hsv = new cv.Mat();
         let mask = new cv.Mat();
-
-        cv.cvtColor(src, hsv, cv.COLOR_RGB2HSV);
-        let low = new cv.Mat(1, 1, cv.CV_8UC3, [80, 40, 40]);
-        let high = new cv.Mat(1, 1, cv.CV_8UC3, [140, 255, 255]);
+        
+        // Fixed: Ensure src is treated as RGBA (from canvas) and convert properly to HSV
+        // First, convert RGBA to RGB (drop alpha), then to HSV
+        let rgb = new cv.Mat();
+        cv.cvtColor(src, rgb, cv.COLOR_RGBA2RGB);
+        cv.cvtColor(rgb, hsv, cv.COLOR_RGB2HSV);
+        
+        // Fixed: Create low/high as 1x1 CV_8UC3 Mats using Scalar (4 elements) to match OpenCV.js Scalar binding
+        // The 4th element (alpha) is ignored for 3-channel HSV but required to avoid the tuple error
+        let low = new cv.Mat(1, 1, cv.CV_8UC3, new cv.Scalar(80, 40, 40, 0));
+        let high = new cv.Mat(1, 1, cv.CV_8UC3, new cv.Scalar(140, 255, 255, 0));
+        
         cv.inRange(hsv, low, high, mask);
-
+        
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
         cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-
+        
         let maxArea = 0;
         let bestRect = null;
-
         for (let i = 0; i < contours.size(); i++) {
           let area = cv.contourArea(contours.get(i));
           if (area > maxArea) {
@@ -84,29 +86,30 @@
             bestRect = cv.boundingRect(contours.get(i));
           }
         }
-
+        
         if (bestRect && maxArea > 40000) {
           status.textContent = `SUCCESS! Found blue rectangle (Area: ${Math.round(maxArea)})`;
           
-          // Draw green box
+          // Draw green box (BGR+A for src which is now RGB but drawing works)
           let pt1 = new cv.Point(bestRect.x, bestRect.y);
           let pt2 = new cv.Point(bestRect.x + bestRect.width, bestRect.y + bestRect.height);
           cv.rectangle(src, pt1, pt2, new cv.Scalar(0, 255, 0, 255), 12);
-
         } else {
           status.textContent = "No blue rectangle found — try better lighting or angle";
         }
-
+        
         cv.imshow('output-canvas', src);
-
-        src.delete(); hsv.delete(); mask.delete(); contours.delete(); hierarchy.delete();
-
+        
+        // Cleanup
+        src.delete(); rgb.delete(); hsv.delete(); mask.delete(); 
+        contours.delete(); hierarchy.delete();
+        low.delete(); high.delete();
       } catch (e) {
         status.textContent = "Error: " + e.message;
         console.error(e);
       }
     }
-
+    
     window.onload = startCamera;
   </script>
 </body>
