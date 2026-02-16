@@ -3,14 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blue Rectangle Scanner Test 1.8</title>
+  <title>Blue Rectangle Scanner Test 1.9</title>
   
-  <!-- Force fresh load -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  
-  <script src="https://docs.opencv.org/4.x/opencv.js?v=1.8" async></script>
+  <!-- Force fresh OpenCV.js with random cache buster -->
+  <script src="https://docs.opencv.org/4.x/opencv.js?v=1.9_<%= Date.now() %>" async></script>
   
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -26,7 +22,7 @@
 <body>
 
   <div class="container">
-    <div class="header">Blue Rectangle Scanner Test 1.8</div>
+    <div class="header">Blue Rectangle Scanner Test 1.9</div>
     <div class="content">
       <p>Point camera at your notebook</p>
       <div class="camera-container">
@@ -39,7 +35,7 @@
   </div>
 
   <script>
-    console.log("=== BLUE SCANNER 1.8 LOADED ===");
+    console.log("=== BLUE SCANNER 1.9 LOADED ===");
 
     let stream = null;
     let video = document.getElementById('camera-preview');
@@ -68,6 +64,13 @@
 
     function processBlueRectangle(canvas) {
       try {
+        if (typeof cv === "undefined") {
+          status.textContent = "Error: OpenCV.js not loaded";
+          return;
+        }
+
+        status.textContent = "OpenCV loaded. Analyzing image...";
+
         let src = cv.imread(canvas);
         let hsv = new cv.Mat();
         let mask = new cv.Mat();
