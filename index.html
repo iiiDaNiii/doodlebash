@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blue Rectangle Scanner Test 1.6</title>
+  <title>Blue Rectangle Scanner Test 1.7</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -19,7 +19,7 @@
 <body>
 
   <div class="container">
-    <div class="header">Blue Rectangle Scanner Test 1.6</div>
+    <div class="header">Blue Rectangle Scanner Test 1.7</div>
     <div class="content">
       <p>Point camera at your notebook</p>
       <div class="camera-container">
@@ -84,15 +84,8 @@
         }
 
         if (bestRect && maxArea > 40000) {
-          status.textContent = `Found blue rectangle! Area: ${Math.round(maxArea)}`;
-
-          // SAFEST drawing method
-          let pt1 = new cv.Point(bestRect.x, bestRect.y);
-          let pt2 = new cv.Point(bestRect.x + bestRect.width, bestRect.y + bestRect.height);
-          let color = new cv.Scalar(0, 255, 0, 255);   // Green with alpha
-
-          cv.rectangle(src, pt1, pt2, color, 12);
-
+          status.textContent = `SUCCESS! Found blue rectangle (Area: ${Math.round(maxArea)})`;
+          // No rectangle drawing — just confirming detection works
         } else {
           status.textContent = "No blue rectangle found — try better lighting or angle";
         }
