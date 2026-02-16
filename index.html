@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Rectangle Scanner Test 2.6</title>
+  <title>White Outline Scanner Test 2.7</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -18,9 +18,9 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">White Rectangle Scanner Test 2.6</div>
+    <div class="header">White Outline Scanner Test 2.7</div>
     <div class="content">
-      <p>Point camera at your notebook (white border visible!)</p>
+      <p>Point camera at your notebook (focus on the white border around the artwork!)</p>
       <div class="camera-container">
         <video id="camera-preview" autoplay playsinline muted></video>
       </div>
@@ -30,7 +30,7 @@
     </div>
   </div>
   <script>
-    console.log("=== WHITE SCANNER 2.6 LOADED ===");
+    console.log("=== WHITE OUTLINE SCANNER 2.7 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
@@ -48,74 +48,84 @@
       outputCanvas.width = video.videoWidth;
       outputCanvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0);
-      status.textContent = "Processing white rectangle... (2-4 seconds)";
+      status.textContent = "Processing white outline... (2-4 seconds)";
       setTimeout(() => {
-        processWhiteRectangle(outputCanvas);
+        processWhiteOutline(outputCanvas);
       }, 100);
     };
     
-    function processWhiteRectangle(canvas) {
+    function processWhiteOutline(canvas) {
       try {
         let src = cv.imread(canvas);  // RGBA
         let gray = new cv.Mat();
         let mask = new cv.Mat();
         
-        // RGBA → GRAY for brightness-based white detection
+        // RGBA → GRAY
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
         
-        // Threshold for white (adjust 180-220 based on lighting; higher = stricter)
-        cv.threshold(gray, mask, 200, 255, cv.THRESH_BINARY);
+        // Threshold for white (lower to 180 to catch thick borders better; auto-OTSU for lighting)
+        // cv.threshold(gray, mask, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU); // Uncomment for auto if lighting varies
+        cv.threshold(gray, mask, 180, 255, cv.THRESH_BINARY);
         
-        // Morphology to clean noise and connect border segments
-        let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
-        cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 2);
-        cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 1);  // Slightly thicken for better contours
+        // Morphology: open (clean noise), dilate (thicken border for solid contours)
+        let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
+        cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 1);
+        cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 3);
         
+        // Contours with full hierarchy (RETR_TREE) to detect frames with inner content
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
-        cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+        cv.findContours(mask, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
         
         let maxArea = 0;
         let bestRect = null;
-        let bestContourIdx = -1;
+        let bestIdx = -1;
+        let isFrame = false;
         
         for (let i = 0; i < contours.size(); i++) {
           let contour = contours.get(i);
           let area = cv.contourArea(contour);
-          if (area < 5000) continue;  // Skip tiny noise
+          if (area < 10000) continue;  // Skip tiny stuff (lowered for outlines)
           
-          // Check if it's a rectangle (approx 4 sides)
+          // Approximate to polygon to check for rectangle (4 sides)
           let peri = cv.arcLength(contour, true);
           let approx = new cv.Mat();
-          cv.approxPolyDP(contour, approx, 0.02 * peri, true);
+          cv.approxPolyDP(contour, approx, 0.03 * peri, true);  // Slightly looser for printed borders
           
-          if (approx.rows === 4) {  // Quadrilateral = likely rectangle
-            if (area > maxArea) {
+          if (approx.rows === 4) {
+            // Check hierarchy: has child? (i.e., encloses inner area = frame/outline!)
+            // hierarchy.data32S: for contour i, child at [i*4 + 2]
+            let hasChild = hierarchy.data32S[i * 4 + 2] !== -1;
+            
+            // Prefer frames (hasChild) or largest area
+            if (hasChild || area > maxArea) {
               maxArea = area;
               bestRect = cv.boundingRect(contour);
-              bestContourIdx = i;
+              bestIdx = i;
+              isFrame = hasChild;
             }
           }
           approx.delete();
         }
         
-        console.log("Max white rect area found:", Math.round(maxArea), "sides checked");
+        console.log(`Detected ${contours.size()} contours | Max area: ${Math.round(maxArea)} | Frame? ${isFrame}`);
         
-        // Dynamic min area: ~1.5% of image or 20k pixels
-        let minArea = Math.max(20000, (src.rows * src.cols) * 0.015);
+        // Dynamic min area: ~2% of image
+        let minArea = Math.max(15000, (src.rows * src.cols) * 0.02);
         
         if (bestRect && maxArea > minArea) {
-          status.textContent = `SUCCESS! White rect found (Area: ${Math.round(maxArea)})`;
+          let frameType = isFrame ? "OUTLINE FRAME" : "RECT";
+          status.textContent = `SUCCESS! ${frameType} detected (Area: ${Math.round(maxArea)})`;
           
-          // Draw red box around detected rectangle
+          // Draw thick cyan box around the detected outline
           let pt1 = new cv.Point(bestRect.x, bestRect.y);
           let pt2 = new cv.Point(bestRect.x + bestRect.width, bestRect.y + bestRect.height);
-          cv.rectangle(src, pt1, pt2, new cv.Scalar(0, 0, 255, 255), 12);
+          cv.rectangle(src, pt1, pt2, new cv.Scalar(255, 255, 0, 255), 15);
           
-          // Optional: draw the actual contour in green for debug
-          // cv.drawContours(src, contours, bestContourIdx, new cv.Scalar(0, 255, 0, 255), 8);
+          // Debug: draw the actual contour in magenta
+          // cv.drawContours(src, contours, bestIdx, new cv.Scalar(255, 0, 255, 255), 6);
         } else {
-          status.textContent = `No white rect (max area: ${Math.round(maxArea)}) — better light/angle?`;
+          status.textContent = `No strong outline (max area: ${Math.round(maxArea)}) — adjust lighting/angle?`;
         }
         
         cv.imshow('output-canvas', src);
