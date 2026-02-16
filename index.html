@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Outline Scanner Test 3.3</title>
+  <title>White Outline Scanner Test 3.4</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -12,13 +12,13 @@
     .content { flex:1; display:flex; flex-direction:column; align-items:center; padding:4cqi; gap:3cqi; }
     .camera-container { position:relative; width:90vw; max-width:520px; aspect-ratio:5/7; border-radius:16px; overflow:hidden; }
     #camera-preview { width:100%; height:100%; object-fit:cover; }
-    #output-canvas { max-width:90vw; border:3px solid #333; border-radius:12px; }
+    #output-canvas { max-width:90vw; border:3px solid #333; border-radius:12px; background:#fff; } /* White bg for clean preview */
     .status { font-size:4.5cqi; text-align:center; margin:10px 0; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">White Outline Scanner Test 3.3</div>
+    <div class="header">White Outline Scanner Test 3.4</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -30,7 +30,7 @@
     </div>
   </div>
   <script>
-    console.log("=== WHITE OUTLINE SCANNER 3.3 LOADED ===");
+    console.log("=== WHITE OUTLINE SCANNER 3.4 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
@@ -73,13 +73,13 @@
       try {
         let src = cv.imread(canvas);
         
-        // Lenient white detection
+        // Lenient white detection for thick borders
         let gray = new cv.Mat();
         let mask = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
         cv.threshold(gray, mask, 160, 255, cv.THRESH_BINARY);
         
-        // Strong morphology for connecting thick/broken borders
+        // Strong morphology to connect borders
         let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
         cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 2);
         cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 5);
@@ -135,11 +135,10 @@
           }
         }
         
-        // DEBUG: Copy this block from console (F12) after snap!
-        console.log(`=== DEBUG 3.3 ===`);
+        // DETAILED DEBUG - COPY THIS AFTER SNAP!
+        console.log(`=== DEBUG 3.4 ===`);
         console.log(`Total contours: ${contours.size()}`);
         console.log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0, 5).map(a => Math.round(a))}`);
-        console.log(`Max ALL area: ${Math.round(Math.max(...allAreas))}`);
         console.log(`Max 4-sided area: ${Math.round(max4Sided)}`);
         console.log(`Best area: ${Math.round(bestArea)} | Frame: ${isFrame} | Points: ${bestApprox ? bestApprox.rows : 0}`);
         
@@ -148,6 +147,7 @@
         if (bestApprox && bestArea > minArea) {
           status.textContent = `SUCCESS! Cropped & warped notebook (Area: ${Math.round(bestArea)})`;
           
+          // Get points from outer approx
           let pts = [];
           for (let j = 0; j < 4; j++) {
             pts.push([bestApprox.data32F[j * 2], bestApprox.data32F[j * 2 + 1]]);
@@ -156,6 +156,7 @@
           let ordered = orderPoints(pts);
           console.log(`Ordered corners: ${ordered.map(p => `(${Math.round(p[0])},${Math.round(p[1])})`).join(' → ')}`);
           
+          // Compute size from quad
           let width = Math.max(
             Math.hypot(ordered[1][0] - ordered[0][0], ordered[1][1] - ordered[0][1]),
             Math.hypot(ordered[2][0] - ordered[3][0], ordered[2][1] - ordered[3][1])
@@ -165,11 +166,11 @@
             Math.hypot(ordered[0][0] - ordered[3][0], ordered[0][1] - ordered[3][1])
           );
           
-          // SAFETY: Prevent zero/negative sizes that cause warp errors
-          let dstWidth = Math.max(200, Math.round(width));
-          let dstHeight = Math.max(200, Math.round(height));
-          console.log(`Warped size: ${dstWidth}x${dstHeight}`);
+          let dstWidth = Math.max(300, Math.round(width));
+          let dstHeight = Math.max(300, Math.round(height));
+          console.log(`Raw warp size: ${dstWidth}x${dstHeight}`);
           
+          // Perspective
           let srcPoints = new cv.Mat(4, 1, cv.CV_32FC2);
           let dstPoints = new cv.Mat(4, 1, cv.CV_32FC2);
           srcPoints.data32F.set([ordered[0][0], ordered[0][1], ordered[1][0], ordered[1][1], 
@@ -180,24 +181,26 @@
           
           let warped = new cv.Mat();
           cv.warpPerspective(src, warped, M, new cv.Size(dstWidth, dstHeight), cv.INTER_LINEAR);
+          console.log(`Warped Mat: ${warped.rows}x${warped.cols}`);
           
-          // Upscale for nice preview
-          let previewWidth = Math.min(520, Math.max(400, dstWidth));
-          let scale = previewWidth / dstWidth;
-          let previewHeight = Math.round(dstHeight * scale);
-          
+          // FIXED: Always upscale to a nice fixed preview size (800px wide) for visibility
+          let targetWidth = 800;
+          let targetHeight = Math.round(targetWidth * (dstHeight / dstWidth));
           let resized = new cv.Mat();
-          cv.resize(warped, resized, new cv.Size(previewWidth, previewHeight), 0, 0, cv.INTER_CUBIC);
+          cv.resize(warped, resized, new cv.Size(targetWidth, targetHeight), 0, 0, cv.INTER_CUBIC);
           
-          outputCanvas.width = previewWidth;
-          outputCanvas.height = previewHeight;
+          // Set canvas and show
+          outputCanvas.width = targetWidth;
+          outputCanvas.height = targetHeight;
           cv.imshow('output-canvas', resized);
+          console.log('✅ Imshow complete - warped preview should be visible!');
           
+          // Cleanup
           srcPoints.delete(); dstPoints.delete(); M.delete();
           warped.delete(); resized.delete();
           bestApprox.delete();
         } else {
-          status.textContent = `No strong outline (max 4-sided: ${Math.round(max4Sided)}) — check console for details!`;
+          status.textContent = `No strong outline (max 4-sided: ${Math.round(max4Sided)}) — check console!`;
           cv.imshow('output-canvas', src);
           if (bestApprox) bestApprox.delete();
         }
@@ -205,14 +208,10 @@
         src.delete(); gray.delete(); mask.delete(); kernel.delete();
         contours.delete(); hierarchy.delete();
       } catch (e) {
-        // IMPROVED error handling to show REAL error (OpenCV.js often throws strings)
-        const errMsg = e ? (e.message || (typeof e === 'string' ? e : e.toString() || 'unknown')) : 'unknown error';
+        const errMsg = e ? (e.message || (typeof e === 'string' ? e : JSON.stringify(e) || 'unknown')) : 'unknown';
         status.textContent = `Error: ${errMsg}`;
-        console.error('=== FULL ERROR ===');
-        console.error(e);
-        if (e && e.stack) console.error('Stack:', e.stack);
-        // Fallback: show original photo
-        cv.imshow('output-canvas', src || new cv.Mat());
+        console.error('=== FULL ERROR ===', e);
+        if (src) cv.imshow('output-canvas', src);
       }
     }
     
