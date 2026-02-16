@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blue Rectangle Scanner Test 2.5</title>
+  <title>White Rectangle Scanner Test 2.6</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -18,9 +18,9 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Blue Rectangle Scanner Test 2.5</div>
+    <div class="header">White Rectangle Scanner Test 2.6</div>
     <div class="content">
-      <p>Point camera at your notebook (good lighting!)</p>
+      <p>Point camera at your notebook (white border visible!)</p>
       <div class="camera-container">
         <video id="camera-preview" autoplay playsinline muted></video>
       </div>
@@ -30,7 +30,7 @@
     </div>
   </div>
   <script>
-    console.log("=== BLUE SCANNER 2.5 LOADED ===");
+    console.log("=== WHITE SCANNER 2.6 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
@@ -48,33 +48,28 @@
       outputCanvas.width = video.videoWidth;
       outputCanvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0);
-      status.textContent = "Processing blue rectangle... (2-4 seconds)";
+      status.textContent = "Processing white rectangle... (2-4 seconds)";
       setTimeout(() => {
-        processBlueRectangle(outputCanvas);
+        processWhiteRectangle(outputCanvas);
       }, 100);
     };
     
-    function processBlueRectangle(canvas) {
+    function processWhiteRectangle(canvas) {
       try {
-        let src = cv.imread(canvas);  // RGBA from canvas
-        let rgb = new cv.Mat();
-        let hsv = new cv.Mat();
+        let src = cv.imread(canvas);  // RGBA
+        let gray = new cv.Mat();
         let mask = new cv.Mat();
         
-        // RGBA → RGB (channels: R,G,B)
-        cv.cvtColor(src, rgb, cv.COLOR_RGBA2RGB);
-        cv.cvtColor(rgb, hsv, cv.COLOR_RGB2HSV);
+        // RGBA → GRAY for brightness-based white detection
+        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
         
-        // Updated: Standard blue HSV range (tighter, higher saturation for vivid notebook blue)
-        // Hue 100-140 (blue/cyan-violet), S 100+, V 50+
-        let low = new cv.Mat(1, 1, cv.CV_8UC3, new cv.Scalar(100, 100, 50, 0));
-        let high = new cv.Mat(1, 1, cv.CV_8UC3, new cv.Scalar(140, 255, 255, 0));
+        // Threshold for white (adjust 180-220 based on lighting; higher = stricter)
+        cv.threshold(gray, mask, 200, 255, cv.THRESH_BINARY);
         
-        cv.inRange(hsv, low, high, mask);
-        
-        // Add morphology to clean noise/small blobs (opening: erode then dilate)
+        // Morphology to clean noise and connect border segments
         let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
-        cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel);
+        cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 2);
+        cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 1);  // Slightly thicken for better contours
         
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
@@ -82,34 +77,52 @@
         
         let maxArea = 0;
         let bestRect = null;
+        let bestContourIdx = -1;
+        
         for (let i = 0; i < contours.size(); i++) {
-          let area = cv.contourArea(contours.get(i));
-          if (area > maxArea) {
-            maxArea = area;
-            bestRect = cv.boundingRect(contours.get(i));
+          let contour = contours.get(i);
+          let area = cv.contourArea(contour);
+          if (area < 5000) continue;  // Skip tiny noise
+          
+          // Check if it's a rectangle (approx 4 sides)
+          let peri = cv.arcLength(contour, true);
+          let approx = new cv.Mat();
+          cv.approxPolyDP(contour, approx, 0.02 * peri, true);
+          
+          if (approx.rows === 4) {  // Quadrilateral = likely rectangle
+            if (area > maxArea) {
+              maxArea = area;
+              bestRect = cv.boundingRect(contour);
+              bestContourIdx = i;
+            }
           }
+          approx.delete();
         }
         
-        console.log("Max blue area found:", maxArea);  // Debug in console
+        console.log("Max white rect area found:", Math.round(maxArea), "sides checked");
         
-        // Lowered threshold + relative check
-        let minArea = Math.max(10000, (src.rows * src.cols) * 0.02);  // ~2% of image
+        // Dynamic min area: ~1.5% of image or 20k pixels
+        let minArea = Math.max(20000, (src.rows * src.cols) * 0.015);
+        
         if (bestRect && maxArea > minArea) {
-          status.textContent = `SUCCESS! Blue rect (Area: ${Math.round(maxArea)})`;
+          status.textContent = `SUCCESS! White rect found (Area: ${Math.round(maxArea)})`;
           
-          // Draw green box on RGB src
+          // Draw red box around detected rectangle
           let pt1 = new cv.Point(bestRect.x, bestRect.y);
           let pt2 = new cv.Point(bestRect.x + bestRect.width, bestRect.y + bestRect.height);
-          cv.rectangle(src, pt1, pt2, new cv.Scalar(0, 255, 0, 255), 12);
+          cv.rectangle(src, pt1, pt2, new cv.Scalar(0, 0, 255, 255), 12);
+          
+          // Optional: draw the actual contour in green for debug
+          // cv.drawContours(src, contours, bestContourIdx, new cv.Scalar(0, 255, 0, 255), 8);
         } else {
-          status.textContent = `No large blue rect (max area: ${Math.round(maxArea)}) — better light/angle?`;
+          status.textContent = `No white rect (max area: ${Math.round(maxArea)}) — better light/angle?`;
         }
         
         cv.imshow('output-canvas', src);
         
         // Cleanup
-        src.delete(); rgb.delete(); hsv.delete(); mask.delete(); kernel.delete();
-        contours.delete(); hierarchy.delete(); low.delete(); high.delete();
+        src.delete(); gray.delete(); mask.delete(); kernel.delete();
+        contours.delete(); hierarchy.delete();
       } catch (e) {
         status.textContent = "Error: " + e.message;
         console.error(e);
