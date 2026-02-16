@@ -3,296 +3,98 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Scanner - 5×7</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <title>Blue Rectangle Scanner Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/opencv.js@latest/opencv.js"></script>
   <style>
-    body { margin:0; font-family: system-ui, sans-serif; background:#f8f8f8; }
+    body { margin:0; background:#000; color:white; font-family:system-ui; }
     .container { height:100dvh; display:flex; flex-direction:column; }
-    .header { background:#7f2a8f; color:white; padding:3cqi; text-align:center; font-size:6cqi; font-weight:600; }
-    .content { flex:1; display:flex; flex-direction:column; align-items:center; padding:4cqi; gap:3cqi; overflow:auto; }
-
-    .camera-container {
-      position: relative;
-      width: 90vw;
-      max-width: 520px;
-      aspect-ratio: 5 / 7;           /* Correct 5:7 ratio */
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 4px 25px rgba(0,0,0,0.25);
-    }
+    .header { background:#7f2a8f; padding:3cqi; text-align:center; font-size:6cqi; }
+    .content { flex:1; display:flex; flex-direction:column; align-items:center; padding:4cqi; gap:3cqi; }
+    .camera-container { position:relative; width:90vw; max-width:520px; aspect-ratio:5/7; border-radius:16px; overflow:hidden; }
     #camera-preview { width:100%; height:100%; object-fit:cover; }
-
-    .grid-overlay {
-      position: absolute;
-      inset: 0;
-      background: 
-        linear-gradient(to right, rgba(0,0,0,0.85) 2px, transparent 2px) 0 0 / 20% 100%,   /* 5 columns */
-        linear-gradient(to bottom, rgba(0,0,0,0.85) 2px, transparent 2px) 0 0 / 100% 14.2857%; /* 7 rows */
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    .snap-btn {
-      background: #4dbde5;
-      color: white;
-      font-size: 5.5cqi;
-      padding: 3cqi 8cqi;
-      border-radius: 9999px;
-      border: none;
-      cursor: pointer;
-    }
-
-    #photo-canvas { 
-      max-width: 90vw; 
-      border: 3px solid #333; 
-      border-radius: 12px;
-    }
-
-    .debug-cells {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-      width: 90vw;
-      max-width: 520px;
-    }
-    .debug-cell {
-  border: 2px solid #666;
-  border-radius: 8px;
-  overflow: hidden;
-  aspect-ratio: 1 / 1;   /* Square thumbnails */
-}
-    .debug-cell canvas { width: 100%; height: 100%; display: block; }
-
-    #console-log {
-      width: 90vw;
-      max-width: 520px;
-      background: #222;
-      color: #0f0;
-      padding: 12px;
-      font-family: monospace;
-      font-size: 3.2cqi;
-      line-height: 1.5;
-      border-radius: 8px;
-      white-space: pre-wrap;
-      max-height: 260px;
-      overflow-y: auto;
-    }
-
-    #detected-grid {
-      display: none;
-      grid-template-columns: repeat(5, 1fr);
-      grid-template-rows: repeat(7, 1fr);
-      gap: 2cqi;
-      width: 85cqi;
-      height: 119cqi;   /* 5:7 ratio */
-    }
-    .grid-cell {
-      aspect-ratio: 1;
-      background: #f0f0f0;
-      border: 3px solid #ccc;
-      border-radius: 8px;
-      background-size: contain;
-      background-position: center;
-      background-repeat: no-repeat;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .grid-cell:hover { transform: scale(1.08); }
+    #output-canvas { max-width:90vw; border:3px solid #333; border-radius:12px; }
+    .status { font-size:4cqi; text-align:center; }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <div class="header">Doodle Scanner - 5×7</div>
+    <div class="header">Blue Rectangle Scanner Test</div>
     <div class="content">
-
-      <p style="text-align:center; font-size:4.5cqi;">Line up your 5×7 grid</p>
-      
+      <p>Point camera at your notebook</p>
       <div class="camera-container">
         <video id="camera-preview" autoplay playsinline muted></video>
-        <div class="grid-overlay"></div>
       </div>
-      
-      <button class="snap-btn" id="snap-now-btn" style="display:none;">SNAP NOW</button>
-      
-      <canvas id="photo-canvas"></canvas>
-
-      <div id="debug-cells" class="debug-cells"></div>
-
-      <div id="console-log">Waiting for photo...</div>
-
-      <div id="tweak-prompt" style="display:none; text-align:center; font-size:4cqi; color:#555;">
-        Detected! Tap any wrong cell to cycle
-      </div>
-      
-      <div id="detected-grid"></div>
+      <button id="snap-btn" style="display:none; padding:3cqi 8cqi; font-size:5.5cqi;">SNAP NOW</button>
+      <canvas id="output-canvas"></canvas>
+      <div id="status" class="status">Waiting for photo...</div>
     </div>
   </div>
 
   <script>
-    let scoreStream = null;
-    let model = null;
-    let classNames = [];
-    let detectedDoodles = [];
-
-    function log(text) {
-      const logEl = document.getElementById('console-log');
-      logEl.textContent += text + "\n";
-      logEl.scrollTop = logEl.scrollHeight;
-    }
-
-    async function loadModel() {
-      log("Loading ML model...");
-      try {
-        model = await tf.loadLayersModel('models/doodle/model.json');
-        const metadata = await fetch('models/doodle/metadata.json');
-        const meta = await metadata.json();
-        classNames = meta.labels || meta.classNames || [];
-        log(`✅ Model loaded! ${classNames.length} classes`);
-      } catch (e) {
-        log("❌ ERROR loading model: " + e.message);
-      }
-    }
+    let stream = null;
+    let video = document.getElementById('camera-preview');
+    let outputCanvas = document.getElementById('output-canvas');
+    let status = document.getElementById('status');
 
     async function startCamera() {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      scoreStream = stream;
-      const video = document.getElementById('camera-preview');
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       video.srcObject = stream;
-      video.onloadeddata = () => document.getElementById('snap-now-btn').style.display = 'block';
+      video.onloadeddata = () => document.getElementById('snap-btn').style.display = 'block';
     }
 
-    async function snapFromPreview() {
-      const video = document.getElementById('camera-preview');
-      const canvas = document.getElementById('photo-canvas');
-      const ctx = canvas.getContext('2d');
+    document.getElementById('snap-btn').onclick = () => {
+      const ctx = outputCanvas.getContext('2d');
+      outputCanvas.width = video.videoWidth;
+      outputCanvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
 
-      // 5:7 crop logic
-      const targetRatio = 5 / 7;
-      let cropWidth = video.videoWidth;
-      let cropHeight = video.videoHeight;
-
-      if (cropWidth / cropHeight > targetRatio) {
-        cropWidth = cropHeight * targetRatio;
-      } else {
-        cropHeight = cropWidth / targetRatio;
-      }
-
-      canvas.width = cropWidth;
-      canvas.height = cropHeight;
-
-      const offsetX = (video.videoWidth - cropWidth) / 2;
-      const offsetY = (video.videoHeight - cropHeight) / 2;
-      ctx.drawImage(video, offsetX, offsetY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
-
-      document.querySelector('.camera-container').style.display = 'none';
-      document.getElementById('snap-now-btn').style.display = 'none';
-      canvas.style.display = 'block';
-
-      if (scoreStream) {
-        scoreStream.getTracks().forEach(t => t.stop());
-        scoreStream = null;
-      }
-
-      log("Photo captured. Running ML detection...");
-      detectedDoodles = await detectDoodlesFromCanvas(canvas);
-      renderDetectedGrid();
-      renderDebugCells(canvas);
-      document.getElementById('tweak-prompt').style.display = 'block';
-    }
-
-    async function detectDoodlesFromCanvas(canvas) {
-      const cols = 5;
-      const rows = 7;
-      const cw = canvas.width / cols;
-      const ch = canvas.height / rows;
-      const results = [];
-
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const cellCanvas = document.createElement('canvas');
-          cellCanvas.width = 224;
-          cellCanvas.height = 224;
-          const cellCtx = cellCanvas.getContext('2d');
-          cellCtx.drawImage(canvas, c*cw, r*ch, cw, ch, 0, 0, 224, 224);
-
-          const tensor = tf.browser.fromPixels(cellCanvas).expandDims(0).toFloat().div(255);
-          const prediction = model.predict(tensor);
-          const scores = await prediction.array();
-
-          let maxIndex = scores[0].indexOf(Math.max(...scores[0]));
-          let predicted = classNames[maxIndex];
-
-          if (predicted === 'unknown') {
-            scores[0][maxIndex] = -999;
-            maxIndex = scores[0].indexOf(Math.max(...scores[0]));
-            predicted = classNames[maxIndex];
-          }
-
-          log(`Cell [${r},${c}] → ${predicted}`);
-
-          results.push(predicted);
-        }
-      }
-      return results;
-    }
-
-    function renderDebugCells(canvas) {
-      const container = document.getElementById('debug-cells');
-      container.innerHTML = '';
-      const cols = 5;
-      const rows = 7;
-      const cw = canvas.width / cols;
-      const ch = canvas.height / rows;
-
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const cellCanvas = document.createElement('canvas');
-          cellCanvas.width = cw;
-          cellCanvas.height = ch;
-          const ctx = cellCanvas.getContext('2d');
-          ctx.drawImage(canvas, c*cw, r*ch, cw, ch, 0, 0, cw, ch);
-
-          const div = document.createElement('div');
-          div.className = 'debug-cell';
-          div.appendChild(cellCanvas);
-          container.appendChild(div);
-        }
-      }
-    }
-
-    function renderDetectedGrid() {
-      const grid = document.getElementById('detected-grid');
-      grid.innerHTML = '';
-      grid.style.display = 'grid';
-
-      detectedDoodles.forEach((d, i) => {
-        const cell = document.createElement('div');
-        cell.className = `grid-cell ${d}`;
-        cell.dataset.index = i;
-        cell.dataset.doodle = d;
-
-        cell.style.backgroundImage = `url('images/${d}.png')`;
-
-        cell.addEventListener('click', () => {
-          const opts = classNames.filter(name => name !== 'unknown');
-          let idx = opts.indexOf(cell.dataset.doodle);
-          idx = (idx + 1) % opts.length;
-          const next = opts[idx];
-          cell.dataset.doodle = next;
-          cell.className = `grid-cell ${next}`;
-          cell.style.backgroundImage = `url('images/${next}.png')`;
-          detectedDoodles[i] = next;
-        });
-        grid.appendChild(cell);
-      });
-    }
-
-    window.onload = async () => {
-      await loadModel();
-      startCamera();
-      document.getElementById('snap-now-btn').addEventListener('click', snapFromPreview);
+      status.textContent = "Processing blue rectangle...";
+      processImage(outputCanvas);
     };
+
+    function processImage(canvas) {
+      const src = cv.imread(canvas);
+      const dst = new cv.Mat();
+
+      // Convert to HSV and filter for blue
+      cv.cvtColor(src, dst, cv.COLOR_RGB2HSV);
+      const low = new cv.Mat(src.rows, src.cols, cv.CV_8UC3, [90, 50, 50]);
+      const high = new cv.Mat(src.rows, src.cols, cv.CV_8UC3, [130, 255, 255]);
+      cv.inRange(dst, low, high, dst);
+
+      // Find contours
+      const contours = new cv.MatVector();
+      const hierarchy = new cv.Mat();
+      cv.findContours(dst, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+      let maxArea = 0;
+      let bestRect = null;
+
+      for (let i = 0; i < contours.size(); i++) {
+        const cnt = contours.get(i);
+        const area = cv.contourArea(cnt);
+        if (area > maxArea) {
+          maxArea = area;
+          bestRect = cv.boundingRect(cnt);
+        }
+      }
+
+      if (bestRect) {
+        status.textContent = `Found blue rectangle! Area: ${Math.round(maxArea)}`;
+        
+        // Draw the detected rectangle on the output
+        cv.rectangle(src, bestRect, new cv.Scalar(0, 255, 0), 8);
+        cv.imshow('output-canvas', src);
+      } else {
+        status.textContent = "No blue rectangle detected";
+      }
+
+      src.delete();
+      dst.delete();
+    }
+
+    window.onload = startCamera;
   </script>
 </body>
 </html>
