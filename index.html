@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Outline Scanner Test 3.6</title>
+  <title>White Outline Scanner Test 3.7</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -18,7 +18,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">White Outline Scanner Test 3.6</div>
+    <div class="header">White Outline Scanner Test 3.7</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -30,7 +30,7 @@
     </div>
   </div>
   <script>
-    console.log("=== WHITE OUTLINE SCANNER 3.6 LOADED ===");
+    console.log("=== WHITE OUTLINE SCANNER 3.7 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
@@ -79,7 +79,7 @@
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
         cv.threshold(gray, mask, 150, 255, cv.THRESH_BINARY);
         
-        // Aggressive morphology to make the white border a solid connected shape
+        // Aggressive morphology to connect thick borders
         let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(7, 7));
         cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 2);
         cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 8);
@@ -104,32 +104,29 @@
           }
         }
         
-        // Use minAreaRect for precise rotated box (better corners for warp)
-        let boxPoints = null;
+        // Get rotated rect points using OpenCV.js specific API
+        let vertices = null;
         if (bestContour && bestArea > 10000) {
           let rect = cv.minAreaRect(bestContour);
-          boxPoints = cv.boxPoints(rect);  // FIXED: 1 arg, returns Mat directly
-          console.log(`minAreaRect: ${rect.size.width.toFixed(0)}x${rect.size.height.toFixed(0)} @ ${rect.angle.toFixed(1)}°`);
+          vertices = cv.RotatedRect.points(rect);  // Returns array of 4 {x, y} objects
+          console.log(`Rotated rect angle: ${rect.angle.toFixed(1)}° | Size: ${rect.size.width.toFixed(0)}x${rect.size.height.toFixed(0)}`);
         }
         
         // DEBUG - COPY THIS AFTER SNAP
-        console.log(`=== DEBUG 3.6 ===`);
+        console.log(`=== DEBUG 3.7 ===`);
         console.log(`Total contours: ${contours.size()}`);
         console.log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a))}`);
-        console.log(`Best area: ${Math.round(bestArea)} | Box points: ${boxPoints ? 'YES' : 'NO'}`);
+        console.log(`Best area: ${Math.round(bestArea)} | Vertices found: ${vertices ? vertices.length : 0}`);
         
         let minArea = Math.max(15000, (src.rows * src.cols) * 0.015);
         
-        if (boxPoints && bestArea > minArea) {
+        if (vertices && vertices.length === 4 && bestArea > minArea) {
           status.textContent = `SUCCESS! Warped notebook (Area: ${Math.round(bestArea)})`;
           
-          // Extract 4 points (boxPoints is 4x2 float Mat)
+          // Extract 4 points from vertices array (each is {x, y})
           let pts = [];
           for (let j = 0; j < 4; j++) {
-            pts.push([
-              boxPoints.data32F[j * 2],
-              boxPoints.data32F[j * 2 + 1]
-            ]);
+            pts.push([vertices[j].x, vertices[j].y]);
           }
           
           let ordered = orderPoints(pts);
@@ -161,7 +158,7 @@
           let warped = new cv.Mat();
           cv.warpPerspective(src, warped, M, new cv.Size(dstWidth, dstHeight), cv.INTER_LINEAR);
           
-          // Upscale to fixed preview size
+          // Upscale to fixed preview
           let targetWidth = 800;
           let targetHeight = Math.round(targetWidth * (dstHeight / dstWidth));
           let resized = new cv.Mat();
@@ -175,7 +172,6 @@
           // Cleanup
           srcPoints.delete(); dstPoints.delete(); M.delete();
           warped.delete(); resized.delete();
-          boxPoints.delete();
         } else {
           status.textContent = `No strong outline (max area: ${Math.round(bestArea)}) — check console!`;
           cv.imshow('output-canvas', src);
