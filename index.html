@@ -3,7 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blue Rectangle Scanner Test 2.0 - No OpenCV</title>
+  <title>Blue Rectangle Scanner Test 2.2</title>
+  
+  <!-- Very aggressive cache busting -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
+  <!-- Force fresh OpenCV.js with random timestamp -->
+  <script src="https://docs.opencv.org/4.x/opencv.js?v=2.2_<%= Date.now() %>" async></script>
+  
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
     .container { height:100dvh; display:flex; flex-direction:column; }
@@ -18,7 +27,7 @@
 <body>
 
   <div class="container">
-    <div class="header">Blue Rectangle Scanner Test 2.0 - No OpenCV</div>
+    <div class="header">Blue Rectangle Scanner Test 2.2</div>
     <div class="content">
       <p>Point camera at your notebook</p>
       <div class="camera-container">
@@ -31,7 +40,7 @@
   </div>
 
   <script>
-    console.log("=== BLUE SCANNER 2.0 LOADED (NO OPENCV) ===");
+    console.log("=== BLUE SCANNER 2.2 LOADED ===");
 
     let stream = null;
     let video = document.getElementById('camera-preview');
@@ -51,8 +60,15 @@
       outputCanvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0);
 
-      status.textContent = "Photo captured successfully! (OpenCV disabled for testing)";
-      console.log("Photo captured - OpenCV was NOT used");
+      status.textContent = "Checking OpenCV.js...";
+
+      setTimeout(() => {
+        if (typeof cv === "undefined") {
+          status.textContent = "ERROR: OpenCV.js failed to load";
+        } else {
+          status.textContent = "OpenCV.js loaded. Ready.";
+        }
+      }, 800);
     };
 
     window.onload = startCamera;
