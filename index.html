@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Outline Scanner Test 4.9</title>
+  <title>White Outline Scanner Test 4.6</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
     .container { height:100dvh; display:flex; flex-direction:column; }
     .header { background:#7f2a8f; padding:3cqi; text-align:center; font-size:6cqi; }
     .content { flex:1; display:flex; flex-direction:column; align-items:center; padding:4cqi; gap:3cqi; }
-    .camera-container {
-      position:relative;
-      width:90vw;
-      max-width:520px;
+    .camera-container { 
+      position:relative; 
+      width:90vw; 
+      max-width:520px; 
       aspect-ratio: 3 / 2; /* Matches notebook: 9.75:6.5 ≈ 1.5:1 */
-      border-radius:16px;
-      overflow:hidden;
+      border-radius:16px; 
+      overflow:hidden; 
     }
     #camera-preview { width:100%; height:100%; object-fit:cover; }
     #output-canvas { max-width:90vw; border:3px solid #333; border-radius:12px; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
@@ -26,7 +26,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">White Outline Scanner Test 4.9</div>
+    <div class="header">White Outline Scanner Test 4.6</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -39,19 +39,19 @@
     </div>
   </div>
   <script>
-    console.log("=== WHITE OUTLINE SCANNER 4.9 LOADED ===");
+    console.log("=== WHITE OUTLINE SCANNER 4.6 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
     let status = document.getElementById('status');
     let debugInfo = document.getElementById('debug-info');
-  
+   
     async function startCamera() {
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       video.srcObject = stream;
       video.onloadeddata = () => document.getElementById('snap-btn').style.display = 'block';
     }
-  
+   
     document.getElementById('snap-btn').onclick = () => {
       status.textContent = "Capturing photo...";
       const ctx = outputCanvas.getContext('2d');
@@ -63,7 +63,7 @@
         processWhiteOutline(outputCanvas);
       }, 100);
     };
-  
+   
     function orderPoints(pts) {
       let ordered = new Array(4);
       let minSum = Infinity, maxSum = -Infinity;
@@ -78,33 +78,33 @@
       }
       return ordered;
     }
-  
+   
     function processWhiteOutline(canvas) {
       try {
         let src = cv.imread(canvas); // RGBA
-      
+       
         // Lenient white detection with blur for crisp edges
         let gray = new cv.Mat();
         let mask = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
         cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0);
         cv.threshold(gray, mask, 170, 255, cv.THRESH_BINARY); // Tighter threshold for crisper white edges
-      
+       
         // Morphology: balance to connect but tighten
         let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3)); // Smaller kernel for precision
         cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 1);
         cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 3); // Connect lightly
         cv.erode(mask, mask, kernel, new cv.Point(-1, -1), 4); // Tighten more than before
-      
+       
         // Use EXTERNAL for largest outer contour
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
         cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-      
+       
         let allAreas = [];
         let maxArea = 0;
         let maxIdx = -1;
-      
+       
         for (let i = 0; i < contours.size(); i++) {
           let contour = contours.get(i);
           let area = cv.contourArea(contour);
@@ -114,30 +114,30 @@
             maxIdx = i;
           }
         }
-      
+       
         // DEBUG
-        console.log(`=== DEBUG 4.9 ===`);
+        console.log(`=== DEBUG 4.6 ===`);
         console.log(`Total contours: ${contours.size()}`);
         console.log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a))}`);
         console.log(`Best area: ${Math.round(maxArea)}`);
-      
+       
         let minArea = Math.max(20000, (src.rows * src.cols) * 0.02);
         let bestVertices = null;
-      
+       
         if (maxIdx !== -1 && maxArea > minArea) {
           let contour = contours.get(maxIdx);
-        
+         
           // Convex hull + approxPolyDP for exact 4 corners
           let hull = new cv.Mat();
           cv.convexHull(contour, hull);
-        
+         
           let peri = cv.arcLength(hull, true);
           let epsilon = 0.015 * peri; // Tighter epsilon for sharper corners
           let approx = new cv.Mat();
           cv.approxPolyDP(hull, approx, epsilon, true);
-        
+         
           console.log(`Approx polyDP points: ${approx.rows}`);
-        
+         
           if (approx.rows === 4) {
             bestVertices = [];
             let data = approx.data32S;
@@ -150,23 +150,23 @@
             let rect = cv.minAreaRect(contour);
             bestVertices = cv.RotatedRect.points(rect);
           }
-        
+         
           hull.delete();
           approx.delete();
         }
-      
+       
         if (bestVertices && bestVertices.length === 4) {
           status.textContent = `SUCCESS! Aligned warped notebook (Area: ${Math.round(maxArea)})`;
-        
+         
           // Extract points
           let pts = [];
           for (let j = 0; j < 4; j++) {
             pts.push([bestVertices[j].x, bestVertices[j].y]);
           }
-        
+         
           let ordered = orderPoints(pts);
-          console.log(`Raw ordered corners: ${ordered.map(p => `(${Math.round(p[0])},${Math.round(p[1)})`).join(' → ')}`);
-        
+          console.log(`Raw ordered corners: ${ordered.map(p => `(${Math.round(p[0])},${Math.round(p[1])})`).join(' → ')}`);
+         
           // Inset corners slightly to eliminate sliver
           let insetFactor = 0.015; // 1.5% — eliminates edge background without cutting content
           let cx = (ordered[0][0] + ordered[1][0] + ordered[2][0] + ordered[3][0]) / 4;
@@ -177,8 +177,8 @@
             ordered[i][0] += dx * insetFactor;
             ordered[i][1] += dy * insetFactor;
           }
-          console.log(`Inset corners: ${ordered.map(p => `(${Math.round(p[0])},${Math.round(p[1)})`).join(' → ')}`);
-        
+          console.log(`Inset corners: ${ordered.map(p => `(${Math.round(p[0])},${Math.round(p[1])})`).join(' → ')}`);
+         
           // Force exact paper aspect (9.75 x 6.5)
           let paperRatio = 9.75 / 6.5; // 1.5
           let dstWidth = Math.max(400, Math.round(Math.max(
@@ -187,34 +187,34 @@
           )));
           let dstHeight = Math.round(dstWidth / paperRatio);
           console.log(`Paper aspect warp: ${dstWidth}x${dstHeight}`);
-        
+         
           // Perspective transform
           let srcPoints = new cv.Mat(4, 1, cv.CV_32FC2);
           let dstPoints = new cv.Mat(4, 1, cv.CV_32FC2);
           srcPoints.data32F.set([ordered[0][0], ordered[0][1], ordered[1][0], ordered[1][1],
                                  ordered[2][0], ordered[2][1], ordered[3][0], ordered[3][1]]);
           dstPoints.data32F.set([0, 0, dstWidth, 0, dstWidth, dstHeight, 0, dstHeight]);
-        
+         
           let M = cv.getPerspectiveTransform(srcPoints, dstPoints);
-        
+         
           let warped = new cv.Mat();
           cv.warpPerspective(src, warped, M, new cv.Size(dstWidth, dstHeight), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(255, 255, 255, 255));
-        
+         
           // Upscale preview
           let targetWidth = 800;
           let targetHeight = Math.round(targetWidth * (dstHeight / dstWidth));
           let resized = new cv.Mat();
           cv.resize(warped, resized, new cv.Size(targetWidth, targetHeight), 0, 0, cv.INTER_CUBIC);
-        
+         
           outputCanvas.width = targetWidth;
           outputCanvas.height = targetHeight;
           cv.imshow('output-canvas', resized);
           console.log('✅ Aligned preview rendered! (tight edges, no sliver)');
-        
+         
           // === NEW: DRAW 7x11 SQUARE GRID OVERLAY ===
           // FIDDLE ZONE — tweak these to eyeball-perfect alignment
           const gridHeightPercent = 0.90;           // % of image HEIGHT (0.9 = bigger, closer to edges)
-          const gridVerticalOffsetPercent = -0.025; // % of image HEIGHT: negative = nudge UP (tuned to ~2.5% so it doesn't touch top)
+          const gridVerticalOffsetPercent = -0.05;  // % of image HEIGHT: negative = nudge UP
           const lineColor = 'rgba(255, 50, 50, 0.92)'; // Bright red, semi-transparent
           const lineWidth = 1.8;                    // Thin but visible
           
@@ -230,12 +230,11 @@
           let cellSize = gridHeight / numRows;      // Enforces perfect 1:1 squares
           let gridWidth = cellSize * numCols;
           
-          // Auto-center horizontally
+          // === AUTO-CENTERED HORIZONTALLY (no more conflict!) ===
+          // Horizontal inset is now *automatically* whatever is needed to center the square grid
+          // (This resolves the height% vs. side-inset tradeoff you mentioned)
           let offsetX = (targetWidth - gridWidth) / 2;
-          
-          // Auto-center vertically + apply nudge + CLAMP to prevent touching edges
           let offsetY = (targetHeight - gridHeight) / 2 + (targetHeight * gridVerticalOffsetPercent);
-          offsetY = Math.max(0, Math.min(offsetY, targetHeight - gridHeight)); // This was the fix!
           
           // Draw horizontal lines (8 lines for 7 rows)
           for (let i = 0; i <= numRows; i++) {
@@ -255,23 +254,21 @@
             ctx.stroke();
           }
           
-          // Auto-compute effective insets for debug
+          // Auto-compute effective side inset % for debug
           const effectiveHorizontalInsetPercent = ((targetWidth - gridWidth) / 2) / targetWidth;
-          const topMarginPercent = (offsetY / targetHeight);
-          const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight);
           
           // Debug info in UI
           debugInfo.innerHTML = `
-            <strong>GRID DEBUG 4.9</strong><br>
+            <strong>GRID DEBUG 4.6</strong><br>
             📏 Image: ${targetWidth}×${targetHeight}<br>
             🟥 Grid: ${Math.round(gridWidth)}×${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>
-            📍 Offset: X=${Math.round(offsetX)} (${Math.round(effectiveHorizontalInsetPercent * 100)}% inset), Y=${Math.round(offsetY)}<br>
-            📏 Margins: Top=${Math.round(topMarginPercent * 100)}%, Bottom=${Math.round(bottomMarginPercent * 100)}%<br>
-            <em>✨ Vertically centered + nudged up ~2.5% (clamped so it NEVER touches top/bottom!)</em><br>
+            📍 Offset: X=${Math.round(offsetX)}, Y=${Math.round(offsetY)}<br>
+            📏 Effective side inset: ${Math.round(effectiveHorizontalInsetPercent * 100)}%<br>
+            <em>✨ Height % & vertical nudge updated. Horizontal now auto-centers — no more edge-touching!</em><br>
             <em>Tweak <code>gridHeightPercent</code> or <code>gridVerticalOffsetPercent</code> above 👆</em>
           `;
-          console.log(`✅ 7x11 grid overlaid! cellSize=${Math.round(cellSize)}px | top margin=${Math.round(topMarginPercent*100)}% | bottom=${Math.round(bottomMarginPercent*100)}%`);
-        
+          console.log(`✅ 7x11 grid overlaid! cellSize=${Math.round(cellSize)}px | horiz inset=${Math.round(effectiveHorizontalInsetPercent*100)}%`);
+         
           // Cleanup
           srcPoints.delete(); dstPoints.delete(); M.delete();
           warped.delete(); resized.delete();
@@ -279,7 +276,7 @@
           status.textContent = `No strong outline (max area: ${Math.round(maxArea)}) — check console!`;
           cv.imshow('output-canvas', src);
         }
-      
+       
         // Cleanup
         src.delete(); gray.delete(); mask.delete(); kernel.delete();
         contours.delete(); hierarchy.delete();
@@ -296,7 +293,7 @@
         if (src) cv.imshow('output-canvas', src);
       }
     }
-  
+   
     window.onload = startCamera;
   </script>
 </body>
