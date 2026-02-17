@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Outline Scanner Test 4.2</title>
+  <title>White Outline Scanner Test 4.3</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -18,7 +18,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">White Outline Scanner Test 4.2</div>
+    <div class="header">White Outline Scanner Test 4.3</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -30,7 +30,7 @@
     </div>
   </div>
   <script>
-    console.log("=== WHITE OUTLINE SCANNER 4.2 LOADED ===");
+    console.log("=== WHITE OUTLINE SCANNER 4.3 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
@@ -78,15 +78,15 @@
         let mask = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
         cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0);
-        cv.threshold(gray, mask, 160, 255, cv.THRESH_BINARY); // Slightly higher for tighter white
+        cv.threshold(gray, mask, 170, 255, cv.THRESH_BINARY); // Tighter threshold for crisper white edges
        
-        // Light morphology to connect border without over-expanding
-        let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(5, 5));
+        // Morphology: balance to connect but tighten
+        let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3)); // Smaller kernel for precision
         cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 1);
-        cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 4); // Light dilate for connection
-        cv.erode(mask, mask, kernel, new cv.Point(-1, -1), 2); // Tighten slightly
+        cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 3); // Connect lightly
+        cv.erode(mask, mask, kernel, new cv.Point(-1, -1), 4); // Tighten more than before
        
-        // Use EXTERNAL for largest outer contour (includes full white border)
+        // Use EXTERNAL for largest outer contour
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
         cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
@@ -106,7 +106,7 @@
         }
        
         // DEBUG
-        console.log(`=== DEBUG 4.2 ===`);
+        console.log(`=== DEBUG 4.3 ===`);
         console.log(`Total contours: ${contours.size()}`);
         console.log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a))}`);
         console.log(`Best area: ${Math.round(maxArea)}`);
@@ -117,15 +117,12 @@
         if (maxIdx !== -1 && maxArea > minArea) {
           let contour = contours.get(maxIdx);
          
-          // === KEY FIX: Use approxPolyDP on convex hull for EXACT 4 corners ===
-          // This is the standard document scanner approach. minAreaRect was
-          // the culprit — it gave a *bounding* rect (slightly larger than the
-          // actual paper), so the perspective warp included background.
+          // Convex hull + approxPolyDP for exact 4 corners
           let hull = new cv.Mat();
           cv.convexHull(contour, hull);
          
           let peri = cv.arcLength(hull, true);
-          let epsilon = 0.02 * peri; // 2% of perimeter — tunes for clean rectangles
+          let epsilon = 0.015 * peri; // Tighter epsilon for sharper corners
           let approx = new cv.Mat();
           cv.approxPolyDP(hull, approx, epsilon, true);
          
@@ -133,13 +130,12 @@
          
           if (approx.rows === 4) {
             bestVertices = [];
-            let data = approx.data32S; // Int32Array: [x0, y0, x1, y1, ...]
+            let data = approx.data32S;
             for (let j = 0; j < 4; j++) {
               bestVertices.push({ x: data[j * 2], y: data[j * 2 + 1] });
             }
             console.log(`✅ Using exact 4 corner points from approxPolyDP`);
           } else {
-            // Rare fallback (noisy contour)
             console.log(`⚠️ Fallback to minAreaRect (${approx.rows} points)`);
             let rect = cv.minAreaRect(contour);
             bestVertices = cv.RotatedRect.points(rect);
@@ -152,17 +148,30 @@
         if (bestVertices && bestVertices.length === 4) {
           status.textContent = `SUCCESS! Aligned warped notebook (Area: ${Math.round(maxArea)})`;
          
-          // Extract points from vertices
+          // Extract points
           let pts = [];
           for (let j = 0; j < 4; j++) {
             pts.push([bestVertices[j].x, bestVertices[j].y]);
           }
          
           let ordered = orderPoints(pts);
-          console.log(`Ordered corners: ${ordered.map(p => `(${Math.round(p[0])},${Math.round(p[1])})`).join(' → ')}`);
+          console.log(`Raw ordered corners: ${ordered.map(p => `(${Math.round(p[0])},${Math.round(p[1])})`).join(' → ')}`);
+         
+          // === NEW: Inset corners slightly to eliminate sliver ===
+          // Shrinks the quad toward its center by ~1.5% (tunable)
+          let insetFactor = 0.015; // 1.5% — eliminates edge background without cutting content
+          let cx = (ordered[0][0] + ordered[1][0] + ordered[2][0] + ordered[3][0]) / 4;
+          let cy = (ordered[0][1] + ordered[1][1] + ordered[2][1] + ordered[3][1]) / 4;
+          for (let i = 0; i < 4; i++) {
+            let dx = cx - ordered[i][0];
+            let dy = cy - ordered[i][1];
+            ordered[i][0] += dx * insetFactor;
+            ordered[i][1] += dy * insetFactor;
+          }
+          console.log(`Inset corners: ${ordered.map(p => `(${Math.round(p[0])},${Math.round(p[1])})`).join(' → ')}`);
          
           // Force exact paper aspect (9.75 x 6.5)
-          let paperRatio = 9.75 / 6.5; // ~1.5
+          let paperRatio = 9.75 / 6.5; // 1.5
           let dstWidth = Math.max(400, Math.round(Math.max(
             Math.hypot(ordered[1][0] - ordered[0][0], ordered[1][1] - ordered[0][1]),
             Math.hypot(ordered[2][0] - ordered[3][0], ordered[2][1] - ordered[3][1])
@@ -180,7 +189,7 @@
           let M = cv.getPerspectiveTransform(srcPoints, dstPoints);
          
           let warped = new cv.Mat();
-          cv.warpPerspective(src, warped, M, new cv.Size(dstWidth, dstHeight), cv.INTER_LINEAR);
+          cv.warpPerspective(src, warped, M, new cv.Size(dstWidth, dstHeight), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(255, 255, 255, 255));
          
           // Upscale preview
           let targetWidth = 800;
@@ -191,7 +200,7 @@
           outputCanvas.width = targetWidth;
           outputCanvas.height = targetHeight;
           cv.imshow('output-canvas', resized);
-          console.log('✅ Aligned preview rendered! (no background)');
+          console.log('✅ Aligned preview rendered! (tight edges, no sliver)');
          
           // Cleanup
           srcPoints.delete(); dstPoints.delete(); M.delete();
