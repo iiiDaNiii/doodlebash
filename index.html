@@ -3,14 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Outline Scanner Test 4.3</title>
+  <title>White Outline Scanner Test 4.4</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
     .container { height:100dvh; display:flex; flex-direction:column; }
     .header { background:#7f2a8f; padding:3cqi; text-align:center; font-size:6cqi; }
     .content { flex:1; display:flex; flex-direction:column; align-items:center; padding:4cqi; gap:3cqi; }
-    .camera-container { position:relative; width:90vw; max-width:520px; aspect-ratio:5/7; border-radius:16px; overflow:hidden; }
+    .camera-container { 
+      position:relative; 
+      width:90vw; 
+      max-width:520px; 
+      aspect-ratio: 3 / 2; /* Matches notebook: 9.75:6.5 ≈ 1.5:1 (wider, landscape feel) */
+      border-radius:16px; 
+      overflow:hidden; 
+    }
     #camera-preview { width:100%; height:100%; object-fit:cover; }
     #output-canvas { max-width:90vw; border:3px solid #333; border-radius:12px; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
     .status { font-size:4.5cqi; text-align:center; margin:10px 0; }
@@ -18,7 +25,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">White Outline Scanner Test 4.3</div>
+    <div class="header">White Outline Scanner Test 4.4</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -30,7 +37,7 @@
     </div>
   </div>
   <script>
-    console.log("=== WHITE OUTLINE SCANNER 4.3 LOADED ===");
+    console.log("=== WHITE OUTLINE SCANNER 4.4 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
@@ -106,7 +113,7 @@
         }
        
         // DEBUG
-        console.log(`=== DEBUG 4.3 ===`);
+        console.log(`=== DEBUG 4.4 ===`);
         console.log(`Total contours: ${contours.size()}`);
         console.log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a))}`);
         console.log(`Best area: ${Math.round(maxArea)}`);
@@ -157,8 +164,7 @@
           let ordered = orderPoints(pts);
           console.log(`Raw ordered corners: ${ordered.map(p => `(${Math.round(p[0])},${Math.round(p[1])})`).join(' → ')}`);
          
-          // === NEW: Inset corners slightly to eliminate sliver ===
-          // Shrinks the quad toward its center by ~1.5% (tunable)
+          // Inset corners slightly to eliminate sliver
           let insetFactor = 0.015; // 1.5% — eliminates edge background without cutting content
           let cx = (ordered[0][0] + ordered[1][0] + ordered[2][0] + ordered[3][0]) / 4;
           let cy = (ordered[0][1] + ordered[1][1] + ordered[2][1] + ordered[3][1]) / 4;
