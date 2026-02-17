@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Outline Scanner Test 4.4</title>
+  <title>White Outline Scanner Test 4.5</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -14,18 +14,19 @@
       position:relative; 
       width:90vw; 
       max-width:520px; 
-      aspect-ratio: 3 / 2; /* Matches notebook: 9.75:6.5 ≈ 1.5:1 (wider, landscape feel) */
+      aspect-ratio: 3 / 2; /* Matches notebook: 9.75:6.5 ≈ 1.5:1 */
       border-radius:16px; 
       overflow:hidden; 
     }
     #camera-preview { width:100%; height:100%; object-fit:cover; }
     #output-canvas { max-width:90vw; border:3px solid #333; border-radius:12px; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
     .status { font-size:4.5cqi; text-align:center; margin:10px 0; }
+    .debug { font-size:3.2cqi; color:#aaa; text-align:left; max-width:520px; padding:2cqi; background:rgba(255,255,255,0.05); border-radius:8px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">White Outline Scanner Test 4.4</div>
+    <div class="header">White Outline Scanner Test 4.5</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -34,14 +35,16 @@
       <button id="snap-btn" style="display:none; padding:3cqi 8cqi; font-size:5.5cqi;">SNAP NOW</button>
       <canvas id="output-canvas"></canvas>
       <div id="status" class="status">Waiting for photo...</div>
+      <div class="debug" id="debug-info">Grid debug will appear here after scan...</div>
     </div>
   </div>
   <script>
-    console.log("=== WHITE OUTLINE SCANNER 4.4 LOADED ===");
+    console.log("=== WHITE OUTLINE SCANNER 4.5 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
     let status = document.getElementById('status');
+    let debugInfo = document.getElementById('debug-info');
    
     async function startCamera() {
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
@@ -113,7 +116,7 @@
         }
        
         // DEBUG
-        console.log(`=== DEBUG 4.4 ===`);
+        console.log(`=== DEBUG 4.5 ===`);
         console.log(`Total contours: ${contours.size()}`);
         console.log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a))}`);
         console.log(`Best area: ${Math.round(maxArea)}`);
@@ -207,6 +210,59 @@
           outputCanvas.height = targetHeight;
           cv.imshow('output-canvas', resized);
           console.log('✅ Aligned preview rendered! (tight edges, no sliver)');
+         
+          // === NEW: DRAW 7x11 SQUARE GRID OVERLAY ===
+          // FIDDLE ZONE — tweak these to eyeball-perfect alignment with the printed grid
+          const gridHeightPercent = 0.85;     // % of image HEIGHT to occupy (lower = more inset from top/bottom)
+          const gridHorizontalInsetPercent = 0.075; // % of image WIDTH to inset from sides (tune for left/right margins)
+          const gridVerticalOffsetPercent = 0.0;    // % shift up/down (-0.05 = move up, +0.05 = move down)
+          const lineColor = 'rgba(255, 50, 50, 0.92)'; // Bright red, semi-transparent
+          const lineWidth = 1.8;              // Thin but visible (increase to 2.5 if too faint)
+          
+          const ctx = outputCanvas.getContext('2d');
+          ctx.strokeStyle = lineColor;
+          ctx.lineWidth = lineWidth;
+          ctx.lineCap = 'round';
+          
+          // Compute grid dimensions (square cells, 7 rows × 11 cols)
+          const numRows = 7;
+          const numCols = 11;
+          let gridHeight = targetHeight * gridHeightPercent;
+          let cellSize = gridHeight / numRows;              // This enforces perfect squares
+          let gridWidth = cellSize * numCols;
+          
+          // Center it horizontally, with optional side insets
+          let offsetX = (targetWidth - gridWidth) / 2 * (1 - gridHorizontalInsetPercent * 2) + 
+                        targetWidth * gridHorizontalInsetPercent;
+          let offsetY = (targetHeight - gridHeight) / 2 * (1 + gridVerticalOffsetPercent);
+          
+          // Draw horizontal lines (8 lines for 7 rows)
+          for (let i = 0; i <= numRows; i++) {
+            let y = Math.round(offsetY + i * cellSize);
+            ctx.beginPath();
+            ctx.moveTo(Math.round(offsetX), y);
+            ctx.lineTo(Math.round(offsetX + gridWidth), y);
+            ctx.stroke();
+          }
+          
+          // Draw vertical lines (12 lines for 11 cols)
+          for (let j = 0; j <= numCols; j++) {
+            let x = Math.round(offsetX + j * cellSize);
+            ctx.beginPath();
+            ctx.moveTo(x, Math.round(offsetY));
+            ctx.lineTo(x, Math.round(offsetY + gridHeight));
+            ctx.stroke();
+          }
+          
+          // Debug info in UI
+          debugInfo.innerHTML = `
+            <strong>GRID DEBUG</strong><br>
+            📏 Image: ${targetWidth}×${targetHeight}<br>
+            🟥 Grid: ${Math.round(gridWidth)}×${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>
+            📍 Offset: X=${Math.round(offsetX)}, Y=${Math.round(offsetY)}<br>
+            <em>Tweak the % vars in the code above 👆 to snap the grid to the printed lines</em>
+          `;
+          console.log(`✅ 7x11 grid overlaid! cellSize=${Math.round(cellSize)}px`);
          
           // Cleanup
           srcPoints.delete(); dstPoints.delete(); M.delete();
