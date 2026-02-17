@@ -90,6 +90,37 @@
     }
     .grid-cell:hover { transform: scale(1.12); }
     #export-btn { background:#4dbde5; color:white; padding:3cqi 10cqi; font-size:5cqi; border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; display:none; }
+    
+    /* NEW: Popup for doodle selection */
+    #doodle-popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      padding: 4cqi;
+      border-radius: 16px;
+      z-index: 100;
+      box-shadow: 0 0 20px rgba(255,255,255,0.2);
+    }
+    .popup-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr); /* Adjust based on number of classes */
+      gap: 2cqi;
+      max-width: 80vw;
+    }
+    .popup-item {
+      aspect-ratio: 1;
+      background: #f0f0f0;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      cursor: pointer;
+    }
+    .popup-item:hover { border-color: #ff0; }
   </style>
 </head>
 <body>
@@ -108,10 +139,13 @@
       <!-- Doodle UI -->
       <div id="debug-cells" class="debug-cells"></div>
       <div id="console-log" class="console-log">Waiting for photo...</div>
-      <div id="tweak-prompt">Detected! Tap any wrong cell to cycle</div>
+      <div id="tweak-prompt">Detected! Tap any wrong cell to select</div>
       <div id="detected-grid"></div>
       <button id="export-btn">📤 EXPORT TRAINING ZIP</button>
     </div>
+  </div>
+  <div id="doodle-popup">
+    <div class="popup-grid" id="popup-grid"></div>
   </div>
   <script>
     console.log("=== DOODLE NOTEBOOK SCANNER 5.1 LOADED ===");
@@ -127,7 +161,7 @@
     let model = null;
     let classNames = [];
     let detectedDoodles = [];
-    let cellCanvases = []; // NEW: Store crops for export
+    let cellCanvases = []; // Store crops for export
    
     function log(text) {
       const logEl = document.getElementById('console-log');
@@ -182,9 +216,9 @@
     }
    
     async function detectDoodlesFromWarped(canvas, offsetX, offsetY, cellSize) {
-      const playableCols = [0,1,2,3,4,6,7,8,9,10]; // Skip center binding (col 5)
+      const playableCols = [0,1,2,3,4,6,7,8,9,10];
       const results = [];
-      cellCanvases = []; // Clear for new scan
+      cellCanvases = [];
       log("🚀 Detecting 70 doodles across both pages...");
      
       for (let r = 0; r < 7; r++) {
@@ -194,7 +228,7 @@
           cellCanvas.height = 224;
           const cellCtx = cellCanvas.getContext('2d');
          
-          // Precise crop from warped canvas
+          // Precise crop
           cellCtx.drawImage(
             canvas,
             Math.round(offsetX + c * cellSize),
@@ -204,13 +238,12 @@
             0, 0, 224, 224
           );
          
-          cellCanvases.push(cellCanvas); // Store for export
+          cellCanvases.push(cellCanvas);
          
           const tensor = tf.browser.fromPixels(cellCanvas).expandDims(0).toFloat().div(255);
           const prediction = model.predict(tensor);
           const scores = await prediction.array();
          
-          // Find best prediction (skip 'unknown' if possible)
           let maxIndex = scores[0].indexOf(Math.max(...scores[0]));
           let predicted = classNames[maxIndex];
           if (predicted === 'unknown' && scores[0].length > 1) {
@@ -233,7 +266,7 @@
       for (let r = 0; r < 7; r++) {
         for (let c of playableCols) {
           const cellCanvas = document.createElement('canvas');
-          cellCanvas.width = cellSize * 0.8; // Smaller thumbnails
+          cellCanvas.width = cellSize * 0.8;
           cellCanvas.height = cellSize * 0.8;
           const ctx = cellCanvas.getContext('2d');
           ctx.drawImage(
@@ -252,6 +285,32 @@
       }
     }
    
+    let currentCellIndex = -1;
+    function showDoodlePopup(index) {
+      currentCellIndex = index;
+      const popup = document.getElementById('doodle-popup');
+      const grid = document.getElementById('popup-grid');
+      grid.innerHTML = '';
+      
+      const opts = classNames.filter(name => name !== 'unknown');
+      opts.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'popup-item';
+        item.style.backgroundImage = `url('images/${d}.png')`;
+        item.onclick = () => {
+          const cell = document.querySelector(`.grid-cell[data-index="${index}"]`);
+          cell.dataset.doodle = d;
+          cell.className = `grid-cell ${d}`;
+          cell.style.backgroundImage = `url('images/${d}.png')`;
+          detectedDoodles[index] = d;
+          popup.style.display = 'none';
+        };
+        grid.appendChild(item);
+      });
+      
+      popup.style.display = 'block';
+    }
+   
     function renderDetectedGrid() {
       const grid = document.getElementById('detected-grid');
       grid.innerHTML = '';
@@ -264,35 +323,23 @@
         cell.dataset.doodle = d;
         cell.style.backgroundImage = `url('images/${d}.png')`;
        
-        cell.addEventListener('click', () => {
-          const opts = classNames.filter(name => name !== 'unknown');
-          let idx = opts.indexOf(cell.dataset.doodle);
-          idx = (idx + 1) % opts.length;
-          const next = opts[idx];
-          cell.dataset.doodle = next;
-          cell.className = `grid-cell ${next}`;
-          cell.style.backgroundImage = `url('images/${next}.png')`;
-          detectedDoodles[i] = next;
-        });
+        cell.addEventListener('click', () => showDoodlePopup(i));
        
         grid.appendChild(cell);
       });
       document.getElementById('export-btn').style.display = 'block';
     }
    
-    // NEW: Export training ZIP
     async function exportTrainingData() {
       const zip = new JSZip();
-      const classCounts = {};
+      const classCounts = {}; // Not used for random, but kept for future
       
       log("📦 Building training ZIP...");
       
       detectedDoodles.forEach((doodle, i) => {
         const className = doodle.toLowerCase().replace(/[^a-z0-9]/g, '');
-        classCounts[className] = (classCounts[className] || 0) + 1;
-        
-        const paddedNum = String(classCounts[className]).padStart(3, '0');
-        const filename = `${className}_${paddedNum}.png`;
+        const randomNum = Math.floor(Math.random() * 900000) + 100000; // 6 random digits (100000-999999)
+        const filename = `${className}${randomNum}.png`;
         
         const cellCanvas = cellCanvases[i];
         cellCanvas.toBlob(blob => {
@@ -300,7 +347,6 @@
         }, 'image/png');
       });
       
-      // Delay for blobs to generate
       setTimeout(async () => {
         const content = await zip.generateAsync({type: "blob"});
         const url = URL.createObjectURL(content);
@@ -454,7 +500,18 @@
           let offsetY = (targetHeight - gridHeight) / 2 + (targetHeight * gridVerticalOffsetPercent);
           offsetY = Math.max(0, Math.min(offsetY, targetHeight - gridHeight));
          
-          // Draw grid
+          // NEW: Crop & detect BEFORE drawing grid (no red lines in thumbnails)
+          if (model) {
+            detectedDoodles = await detectDoodlesFromWarped(outputCanvas, offsetX, offsetY, cellSize);
+            renderDetectedGrid();
+            renderDebugCells(outputCanvas, offsetX, offsetY, cellSize);
+            document.getElementById('tweak-prompt').style.display = 'block';
+            document.getElementById('console-log').scrollTop = 999999;
+          } else {
+            log("⚠️ Model not ready — try snapping again");
+          }
+         
+          // Draw grid AFTER detection
           for (let i = 0; i <= numRows; i++) {
             let y = Math.round(offsetY + i * cellSize);
             ctx.beginPath();
@@ -483,17 +540,6 @@
             📏 Margins: Top=${Math.round(topMarginPercent * 100)}%, Bottom=${Math.round(bottomMarginPercent * 100)}%<br>
             <em>✨ Perfectly centered + your custom nudge!</em>
           `;
-         
-          // === DOODLE DETECTION (70 cells) ===
-          if (model) {
-            detectedDoodles = await detectDoodlesFromWarped(outputCanvas, offsetX, offsetY, cellSize);
-            renderDetectedGrid();
-            renderDebugCells(outputCanvas, offsetX, offsetY, cellSize);
-            document.getElementById('tweak-prompt').style.display = 'block';
-            document.getElementById('console-log').scrollTop = 999999;
-          } else {
-            log("⚠️ Model not ready — try snapping again");
-          }
          
           // Cleanup
           srcPoints.delete(); dstPoints.delete(); M.delete();
