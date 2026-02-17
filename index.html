@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>White Outline Scanner Test 4.6</title>
+  <title>White Outline Scanner Test 4.7</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
@@ -26,7 +26,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">White Outline Scanner Test 4.6</div>
+    <div class="header">White Outline Scanner Test 4.7</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -39,7 +39,7 @@
     </div>
   </div>
   <script>
-    console.log("=== WHITE OUTLINE SCANNER 4.6 LOADED ===");
+    console.log("=== WHITE OUTLINE SCANNER 4.7 LOADED ===");
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
@@ -116,7 +116,7 @@
         }
        
         // DEBUG
-        console.log(`=== DEBUG 4.6 ===`);
+        console.log(`=== DEBUG 4.7 ===`);
         console.log(`Total contours: ${contours.size()}`);
         console.log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a))}`);
         console.log(`Best area: ${Math.round(maxArea)}`);
@@ -177,7 +177,7 @@
             ordered[i][0] += dx * insetFactor;
             ordered[i][1] += dy * insetFactor;
           }
-          console.log(`Inset corners: ${ordered.map(p => `(${Math.round(p[0])},${Math.round(p[1])})`).join(' → ')}`);
+          console.log(`Inset corners: ${ordered.map(p => `(${Math.round(p[0])},${Math.round(p[1)})`).join(' → ')}`);
          
           // Force exact paper aspect (9.75 x 6.5)
           let paperRatio = 9.75 / 6.5; // 1.5
@@ -214,7 +214,7 @@
           // === NEW: DRAW 7x11 SQUARE GRID OVERLAY ===
           // FIDDLE ZONE — tweak these to eyeball-perfect alignment
           const gridHeightPercent = 0.90;           // % of image HEIGHT (0.9 = bigger, closer to edges)
-          const gridVerticalOffsetPercent = -0.05;  // % of image HEIGHT: negative = nudge UP
+          const gridVerticalOffsetPercent = -0.025; // % of image HEIGHT: negative = nudge UP (tuned to ~2.5% so it doesn't touch top)
           const lineColor = 'rgba(255, 50, 50, 0.92)'; // Bright red, semi-transparent
           const lineWidth = 1.8;                    // Thin but visible
           
@@ -230,11 +230,13 @@
           let cellSize = gridHeight / numRows;      // Enforces perfect 1:1 squares
           let gridWidth = cellSize * numCols;
           
-          // === AUTO-CENTERED HORIZONTALLY (no more conflict!) ===
-          // Horizontal inset is now *automatically* whatever is needed to center the square grid
-          // (This resolves the height% vs. side-inset tradeoff you mentioned)
+          // Auto-center horizontally
           let offsetX = (targetWidth - gridWidth) / 2;
+          
+          // Auto-center vertically + apply nudge (clamped to stay on-screen)
           let offsetY = (targetHeight - gridHeight) / 2 + (targetHeight * gridVerticalOffsetPercent);
+          // Clamp so grid never touches edges unless you *really* want it to
+          offsetY = Math.max(0, Math.min(offsetY, targetHeight - gridHeight));
           
           // Draw horizontal lines (8 lines for 7 rows)
           for (let i = 0; i <= numRows; i++) {
@@ -254,20 +256,22 @@
             ctx.stroke();
           }
           
-          // Auto-compute effective side inset % for debug
-          const effectiveHorizontalInsetPercent = ((targetWidth - gridWidth) / 2) / targetWidth;
+          // Auto-compute effective insets for debug
+          const effectiveHorizontalInsetPercent = ((targetWidth - gridWidth) / 2) / targetWidth * 100;
+          const topMarginPercent = (offsetY / targetHeight) * 100;
+          const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight) * 100;
           
           // Debug info in UI
           debugInfo.innerHTML = `
-            <strong>GRID DEBUG 4.6</strong><br>
+            <strong>GRID DEBUG 4.7</strong><br>
             📏 Image: ${targetWidth}×${targetHeight}<br>
             🟥 Grid: ${Math.round(gridWidth)}×${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>
-            📍 Offset: X=${Math.round(offsetX)}, Y=${Math.round(offsetY)}<br>
-            📏 Effective side inset: ${Math.round(effectiveHorizontalInsetPercent * 100)}%<br>
-            <em>✨ Height % & vertical nudge updated. Horizontal now auto-centers — no more edge-touching!</em><br>
+            📍 Offset: X=${Math.round(offsetX)} (${Math.round(effectiveHorizontalInsetPercent)}% inset), Y=${Math.round(offsetY)}<br>
+            📏 Margins: Top=${Math.round(topMarginPercent)}%, Bottom=${Math.round(bottomMarginPercent)}%<br>
+            <em>✨ Vertically centered + nudged up ~2.5% (no more top-touching!)</em><br>
             <em>Tweak <code>gridHeightPercent</code> or <code>gridVerticalOffsetPercent</code> above 👆</em>
           `;
-          console.log(`✅ 7x11 grid overlaid! cellSize=${Math.round(cellSize)}px | horiz inset=${Math.round(effectiveHorizontalInsetPercent*100)}%`);
+          console.log(`✅ 7x11 grid overlaid! cellSize=${Math.round(cellSize)}px | top margin=${Math.round(topMarginPercent)}% | bottom=${Math.round(bottomMarginPercent)}%`);
          
           // Cleanup
           srcPoints.delete(); dstPoints.delete(); M.delete();
