@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 5.1</title>
+  <title>Doodle Notebook Scanner 5.2</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -91,7 +91,7 @@
     .grid-cell:hover { transform: scale(1.12); }
     #export-btn { background:#4dbde5; color:white; padding:3cqi 10cqi; font-size:5cqi; border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; display:none; }
     
-    /* NEW: Popup for doodle selection */
+    /* Popup for doodle selection */
     #doodle-popup {
       display: none;
       position: fixed;
@@ -106,9 +106,11 @@
     }
     .popup-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr); /* Adjust based on number of classes */
+      grid-template-columns: repeat(5, 1fr);
       gap: 2cqi;
       max-width: 80vw;
+      max-height: 80vh;
+      overflow-y: auto;
     }
     .popup-item {
       aspect-ratio: 1;
@@ -125,7 +127,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Doodle Notebook Scanner 5.1</div>
+    <div class="header">Doodle Notebook Scanner 5.2</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -148,7 +150,7 @@
     <div class="popup-grid" id="popup-grid"></div>
   </div>
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 5.1 LOADED ===");
+    console.log("=== DOODLE NOTEBOOK SCANNER 5.2 LOADED ===");
    
     // Shared state
     let stream = null;
@@ -161,7 +163,7 @@
     let model = null;
     let classNames = [];
     let detectedDoodles = [];
-    let cellCanvases = []; // Store crops for export
+    let cellCanvases = [];
    
     function log(text) {
       const logEl = document.getElementById('console-log');
@@ -228,7 +230,6 @@
           cellCanvas.height = 224;
           const cellCtx = cellCanvas.getContext('2d');
          
-          // Precise crop
           cellCtx.drawImage(
             canvas,
             Math.round(offsetX + c * cellSize),
@@ -332,13 +333,11 @@
    
     async function exportTrainingData() {
       const zip = new JSZip();
-      const classCounts = {}; // Not used for random, but kept for future
-      
       log("📦 Building training ZIP...");
       
       detectedDoodles.forEach((doodle, i) => {
         const className = doodle.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const randomNum = Math.floor(Math.random() * 900000) + 100000; // 6 random digits (100000-999999)
+        const randomNum = Math.floor(Math.random() * 900000) + 100000; // 6 digits
         const filename = `${className}${randomNum}.png`;
         
         const cellCanvas = cellCanvases[i];
@@ -395,7 +394,7 @@
           }
         }
        
-        console.log(`=== DEBUG 5.1 ===`);
+        console.log(`=== DEBUG 5.2 ===`);
         console.log(`Total contours: ${contours.size()}`);
         console.log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a))}`);
         console.log(`Best area: ${Math.round(maxArea)}`);
@@ -500,7 +499,7 @@
           let offsetY = (targetHeight - gridHeight) / 2 + (targetHeight * gridVerticalOffsetPercent);
           offsetY = Math.max(0, Math.min(offsetY, targetHeight - gridHeight));
          
-          // NEW: Crop & detect BEFORE drawing grid (no red lines in thumbnails)
+          // Crop & detect BEFORE drawing grid (no red lines in thumbnails)
           if (model) {
             detectedDoodles = await detectDoodlesFromWarped(outputCanvas, offsetX, offsetY, cellSize);
             renderDetectedGrid();
@@ -533,7 +532,7 @@
           const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight);
          
           debugInfo.innerHTML = `
-            <strong>GRID DEBUG 5.1</strong><br>
+            <strong>GRID DEBUG 5.2</strong><br>
             📏 Image: ${targetWidth}×${targetHeight}<br>
             🟥 Grid: ${Math.round(gridWidth)}×${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>
             📍 Offset: X=${Math.round(offsetX)} (${Math.round(effectiveHorizontalInsetPercent * 100)}% inset), Y=${Math.round(offsetY)}<br>
