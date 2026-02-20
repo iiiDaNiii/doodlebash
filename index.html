@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 5.2</title>
+  <title>Doodle Notebook Scanner 5.3</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -91,7 +91,7 @@
     .grid-cell:hover { transform: scale(1.12); }
     #export-btn { background:#4dbde5; color:white; padding:3cqi 10cqi; font-size:5cqi; border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; display:none; }
     
-    /* Popup for doodle selection */
+    /* NEW: Popup for doodle selection */
     #doodle-popup {
       display: none;
       position: fixed;
@@ -106,14 +106,15 @@
     }
     .popup-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 2cqi;
-      max-width: 80vw;
+      grid-template-columns: repeat(7, 1fr); /* Wider for 41 items; auto-wraps to rows */
+      gap: 1.5cqi;
+      max-width: 90vw;
       max-height: 80vh;
       overflow-y: auto;
     }
     .popup-item {
-      aspect-ratio: 1;
+      width: 8cqi;
+      height: 8cqi; /* Fixed larger size for visibility */
       background: #f0f0f0;
       border: 2px solid #ccc;
       border-radius: 8px;
@@ -127,7 +128,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Doodle Notebook Scanner 5.2</div>
+    <div class="header">Doodle Notebook Scanner 5.3</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -150,7 +151,7 @@
     <div class="popup-grid" id="popup-grid"></div>
   </div>
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 5.2 LOADED ===");
+    console.log("=== DOODLE NOTEBOOK SCANNER 5.3 LOADED ===");
    
     // Shared state
     let stream = null;
@@ -394,7 +395,7 @@
           }
         }
        
-        console.log(`=== DEBUG 5.2 ===`);
+        console.log(`=== DEBUG 5.3 ===`);
         console.log(`Total contours: ${contours.size()}`);
         console.log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a))}`);
         console.log(`Best area: ${Math.round(maxArea)}`);
@@ -532,7 +533,7 @@
           const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight);
          
           debugInfo.innerHTML = `
-            <strong>GRID DEBUG 5.2</strong><br>
+            <strong>GRID DEBUG 5.3</strong><br>
             📏 Image: ${targetWidth}×${targetHeight}<br>
             🟥 Grid: ${Math.round(gridWidth)}×${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>
             📍 Offset: X=${Math.round(offsetX)} (${Math.round(effectiveHorizontalInsetPercent * 100)}% inset), Y=${Math.round(offsetY)}<br>
