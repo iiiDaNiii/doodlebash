@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 5.9</title>
+  <title>Doodle Notebook Scanner 5.10</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -128,7 +128,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Doodle Notebook Scanner 5.9</div>
+    <div class="header">Doodle Notebook Scanner 5.10</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -151,7 +151,7 @@
     <div class="popup-grid" id="popup-grid"></div>
   </div>
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 5.9 LOADED ===");
+    console.log("=== DOODLE NOTEBOOK SCANNER 5.10 LOADED ===");
   
     // Shared state
     let stream = null;
@@ -186,9 +186,21 @@
     }
   
     async function startCamera() {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      video.srcObject = stream;
-      video.onloadeddata = () => document.getElementById('snap-btn').style.display = 'block';
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        video.srcObject = stream;
+        video.onloadeddata = () => {
+          document.getElementById('snap-btn').style.display = 'block';
+          log("✅ Camera preview loaded!");
+        };
+        video.onerror = (e) => {
+          log("❌ Video error: " + e.message);
+          status.textContent = "Camera error - check permissions or try reloading.";
+        };
+      } catch (e) {
+        log("❌ Camera access error: " + e.message);
+        status.textContent = "Failed to access camera - grant permission and reload.";
+      }
     }
   
     document.getElementById('snap-btn').onclick = () => {
@@ -406,7 +418,7 @@
           }
         }
       
-        log(`=== DEBUG 5.9 ===`);
+        log(`=== DEBUG 5.10 ===`);
         log(`Total contours: ${contours.size()}`);
         log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a)).join(', ')}`);
         log(`Best overall area: ${Math.round(maxArea)}`);
@@ -592,7 +604,7 @@
             const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight);
         
             debugInfo.innerHTML = `
-              <strong>GRID DEBUG 5.9</strong><br>
+              <strong>GRID DEBUG 5.10</strong><br>
               📏 Image: ${targetWidth}×${targetHeight}<br>
               🟥 Grid: ${Math.round(gridWidth)}×${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>
               📍 Offset: X=${Math.round(offsetX)} (${Math.round(effectiveHorizontalInsetPercent * 100)}% inset), Y=${Math.round(offsetY)}<br>
@@ -613,7 +625,8 @@
         contours.delete(); hierarchy.delete();
       } catch (e) {
         console.error('=== FULL ERROR ===', e);
-        status.textContent = `Error: ${e.message || e} (check console)`;
+        log("❌ Processing error: " + e.message);
+        status.textContent = `Error: ${e.message || e} (check console log)`;
       }
     }
   
