@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 5.3</title>
+  <title>Doodle Notebook Scanner 5.12</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -128,9 +128,9 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Doodle Notebook Scanner 5.3</div>
+    <div class="header">Doodle Notebook Scanner 5.12</div>
     <div class="content">
-      <p>Point camera at your notebook (full white border in frame!)</p>
+      <p>Point camera at your notebook (markers in frame!)</p>
       <div class="camera-container">
         <video id="camera-preview" autoplay playsinline muted></video>
       </div>
@@ -151,7 +151,7 @@
     <div class="popup-grid" id="popup-grid"></div>
   </div>
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 5.3 LOADED ===");
+    console.log("=== DOODLE NOTEBOOK SCANNER 5.12 LOADED ===");
   
     // Shared state
     let stream = null;
@@ -197,7 +197,7 @@
       outputCanvas.width = video.videoWidth;
       outputCanvas.height = video.videoHeight;
       ctx.drawImage(video, 0, 0);
-      status.textContent = "Processing & warping white outline... (3-5 seconds)";
+      status.textContent = "Processing & warping with markers... (3-5 seconds)";
       setTimeout(async () => {
         await processWhiteOutline(outputCanvas);
       }, 100);
@@ -365,75 +365,73 @@
       try {
         let src = cv.imread(canvas);
       
-        // White detection (your tuned params)
+        // ArUco marker detection
         let gray = new cv.Mat();
-        let mask = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-        cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0);
-        cv.threshold(gray, mask, 170, 255, cv.THRESH_BINARY);
-      
-        let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
-        cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 1);
-        cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 3);
-        cv.erode(mask, mask, kernel, new cv.Point(-1, -1), 4);
-      
-        let contours = new cv.MatVector();
-        let hierarchy = new cv.Mat();
-        cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-      
-        let allAreas = [];
-        let maxArea = 0;
-        let maxIdx = -1;
-      
-        for (let i = 0; i < contours.size(); i++) {
-          let contour = contours.get(i);
-          let area = cv.contourArea(contour);
-          allAreas.push(area);
-          if (area > maxArea) {
-            maxArea = area;
-            maxIdx = i;
-          }
-        }
-      
-        console.log(`=== DEBUG 5.3 ===`);
-        console.log(`Total contours: ${contours.size()}`);
-        console.log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a))}`);
-        console.log(`Best area: ${Math.round(maxArea)}`);
-      
-        let minArea = Math.max(20000, (src.rows * src.cols) * 0.02);
+        
+        let dictionary = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_4X4_50);
+        let detectorParams = new cv.aruco.DetectorParameters();
+        let detector = new cv.aruco.ArucoDetector(dictionary, detectorParams);
+        let corners = new cv.MatVector();
+        let ids = new cv.Mat();
+        detector.detectMarkers(gray, corners, ids);
+        
         let bestVertices = null;
-      
-        if (maxIdx !== -1 && maxArea > minArea) {
-          let contour = contours.get(maxIdx);
         
-          let hull = new cv.Mat();
-          cv.convexHull(contour, hull);
-        
-          let peri = cv.arcLength(hull, true);
-          let epsilon = 0.015 * peri;
-          let approx = new cv.Mat();
-          cv.approxPolyDP(hull, approx, epsilon, true);
-        
-          console.log(`Approx polyDP points: ${approx.rows}`);
-        
-          if (approx.rows === 4) {
-            bestVertices = [];
-            let data = approx.data32S;
-            for (let j = 0; j < 4; j++) {
-              bestVertices.push({ x: data[j * 2], y: data[j * 2 + 1] });
-            }
-          } else {
-            console.log(`⚠️ Fallback to minAreaRect`);
-            let rect = cv.minAreaRect(contour);
-            bestVertices = cv.RotatedRect.points(rect);
+        if (ids.rows === 4) {
+          log(`✅ Found 4 markers!`);
+          let markerCenters = [];
+          let markerMap = {};
+          for (let i = 0; i < ids.rows; i++) {
+            let id = ids.data32S[i];
+            let markerCorners = corners.get(i);
+            let data = markerCorners.data32F;
+            let centerX = (data[0] + data[2] + data[4] + data[6]) / 4;
+            let centerY = (data[1] + data[3] + data[5] + data[7]) / 4;
+            markerCenters.push({id, center: [centerX, centerY], corners: markerCorners});
+            markerMap[id] = markerCorners;
           }
-        
-          hull.delete();
-          approx.delete();
+          
+          // Sort markers by position (using orderPoints on centers)
+          let orderedMarkers = orderPoints(markerCenters.map(m => m.center)).map((p, idx) => {
+            return markerCenters.find(m => m.center[0] === p[0] && m.center[1] === p[1]);
+          });
+          
+          // Extract sheet corners from marker corners (assuming markers are outside: use inner corners)
+          // For ArUco corners order: 0 top-left, 1 top-right, 2 bottom-right, 3 bottom-left
+          // For top-left marker: use its bottom-right corner (index 4,5 for bottom-left, adjust based on orientation)
+          // Assuming standard placement, use:
+          // Top-left marker's bottom-right corner
+          // Top-right marker's bottom-left corner
+          // Bottom-right marker's top-left corner
+          // Bottom-left marker's top-right corner
+          // You may need to test and adjust these indices based on how you place the markers
+          bestVertices = [];
+          let tlCorners = orderedMarkers[0].corners.data32F;
+          bestVertices.push({x: tlCorners[4], y: tlCorners[5]}); // Adjust if needed
+          let trCorners = orderedMarkers[1].corners.data32F;
+          bestVertices.push({x: trCorners[6], y: trCorners[7]}); // Adjust
+          let brCorners = orderedMarkers[2].corners.data32F;
+          bestVertices.push({x: brCorners[0], y: brCorners[1]}); // Adjust
+          let blCorners = orderedMarkers[3].corners.data32F;
+          bestVertices.push({x: blCorners[2], y: blCorners[3]}); // Adjust
+        } else {
+          log(`❌ Found ${ids.rows} markers — need 4 for warping`);
+          status.textContent = "Markers not detected - try again with all corners visible.";
+          cv.imshow('output-canvas', src);
+          gray.delete();
+          src.delete();
+          corners.delete();
+          ids.delete();
+          return;
         }
-      
+        
+        gray.delete();
+        corners.delete();
+        ids.delete();
+        
         if (bestVertices && bestVertices.length === 4) {
-          status.textContent = `SUCCESS! Warped & scored (Area: ${Math.round(maxArea)})`;
+          status.textContent = `SUCCESS! Warped & scored (Markers used)`;
         
           let pts = [];
           for (let j = 0; j < 4; j++) {
@@ -479,7 +477,7 @@
           outputCanvas.height = targetHeight;
           cv.imshow('output-canvas', resized);
         
-          // === YOUR FIDDLE ZONE (preserved exactly) ===
+          // Grid and doodle detection
           const gridHeightPercent = 0.89;
           const gridVerticalOffsetPercent = -0.01;
           const lineColor = 'rgba(255, 50, 50, 0.92)';
@@ -500,7 +498,6 @@
           let offsetY = (targetHeight - gridHeight) / 2 + (targetHeight * gridVerticalOffsetPercent);
           offsetY = Math.max(0, Math.min(offsetY, targetHeight - gridHeight));
         
-          // Crop & detect BEFORE drawing grid (no red lines in thumbnails)
           if (model) {
             detectedDoodles = await detectDoodlesFromWarped(outputCanvas, offsetX, offsetY, cellSize);
             renderDetectedGrid();
@@ -511,7 +508,6 @@
             log("⚠️ Model not ready — try snapping again");
           }
         
-          // Draw grid AFTER detection
           for (let i = 0; i <= numRows; i++) {
             let y = Math.round(offsetY + i * cellSize);
             ctx.beginPath();
@@ -527,13 +523,12 @@
             ctx.stroke();
           }
         
-          // Grid debug
           const effectiveHorizontalInsetPercent = ((targetWidth - gridWidth) / 2) / targetWidth;
           const topMarginPercent = (offsetY / targetHeight);
           const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight);
         
           debugInfo.innerHTML = `
-            <strong>GRID DEBUG 5.3</strong><br>
+            <strong>GRID DEBUG 5.12</strong><br>
             📏 Image: ${targetWidth}×${targetHeight}<br>
             🟥 Grid: ${Math.round(gridWidth)}×${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>
             📍 Offset: X=${Math.round(offsetX)} (${Math.round(effectiveHorizontalInsetPercent * 100)}% inset), Y=${Math.round(offsetY)}<br>
@@ -541,16 +536,14 @@
             <em>✨ Perfectly centered + your custom nudge!</em>
           `;
         
-          // Cleanup
           srcPoints.delete(); dstPoints.delete(); M.delete();
           warped.delete(); resized.delete();
         } else {
-          status.textContent = `No strong outline (max area: ${Math.round(maxArea)})`;
+          status.textContent = "Markers not detected - try again with all corners visible.";
           cv.imshow('output-canvas', src);
         }
-      
-        src.delete(); gray.delete(); mask.delete(); kernel.delete();
-        contours.delete(); hierarchy.delete();
+        
+        src.delete();
       } catch (e) {
         console.error('=== FULL ERROR ===', e);
         status.textContent = `Error: ${e.message || e} (check console)`;
