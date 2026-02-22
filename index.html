@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 5.6</title>
+  <title>Doodle Notebook Scanner 5.7</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -128,7 +128,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Doodle Notebook Scanner 5.6</div>
+    <div class="header">Doodle Notebook Scanner 5.7</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -151,7 +151,7 @@
     <div class="popup-grid" id="popup-grid"></div>
   </div>
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 5.6 LOADED ===");
+    console.log("=== DOODLE NOTEBOOK SCANNER 5.7 LOADED ===");
   
     // Shared state
     let stream = null;
@@ -365,13 +365,16 @@
       try {
         let src = cv.imread(canvas);
       
-        // White detection (with adaptive thresholding for better handling of varying backgrounds)
+        // White detection (with CLAHE for local contrast enhancement on varying backgrounds)
         let gray = new cv.Mat();
         let mask = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
         cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0);
-        cv.equalizeHist(gray, gray);  // Enhance contrast (comment out if over-contrasting on dark backgrounds)
-        cv.adaptiveThreshold(gray, mask, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2);
+        
+        let clahe = cv.createCLAHE(2.0, new cv.Size(8, 8));
+        clahe.apply(gray, gray);
+        
+        cv.threshold(gray, mask, 170, 255, cv.THRESH_BINARY);
       
         let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
         cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 1);
@@ -396,10 +399,10 @@
           }
         }
       
-        console.log(`=== DEBUG 5.6 ===`);
-        console.log(`Total contours: ${contours.size()}`);
-        console.log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a))}`);
-        console.log(`Best area: ${Math.round(maxArea)}`);
+        log(`=== DEBUG 5.7 ===`);
+        log(`Total contours: ${contours.size()}`);
+        log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a)).join(', ')}`);
+        log(`Best area: ${Math.round(maxArea)}`);
       
         let minArea = Math.max(20000, (src.rows * src.cols) * 0.02);
         let bestVertices = null;
@@ -415,7 +418,7 @@
           let approx = new cv.Mat();
           cv.approxPolyDP(hull, approx, epsilon, true);
         
-          console.log(`Approx polyDP points: ${approx.rows}`);
+          log(`Approx polyDP points: ${approx.rows}`);
         
           if (approx.rows === 4) {
             bestVertices = [];
@@ -424,7 +427,7 @@
               bestVertices.push({ x: data[j * 2], y: data[j * 2 + 1] });
             }
           } else {
-            console.log(`⚠️ Fallback to minAreaRect`);
+            log(`⚠️ Fallback to minAreaRect`);
             let rect = cv.minAreaRect(contour);
             bestVertices = cv.RotatedRect.points(rect);
           }
@@ -534,7 +537,7 @@
           const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight);
         
           debugInfo.innerHTML = `
-            <strong>GRID DEBUG 5.6</strong><br>
+            <strong>GRID DEBUG 5.7</strong><br>
             📏 Image: ${targetWidth}×${targetHeight}<br>
             🟥 Grid: ${Math.round(gridWidth)}×${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>
             📍 Offset: X=${Math.round(offsetX)} (${Math.round(effectiveHorizontalInsetPercent * 100)}% inset), Y=${Math.round(offsetY)}<br>
@@ -552,6 +555,7 @@
       
         src.delete(); gray.delete(); mask.delete(); kernel.delete();
         contours.delete(); hierarchy.delete();
+        clahe.delete();
       } catch (e) {
         console.error('=== FULL ERROR ===', e);
         status.textContent = `Error: ${e.message || e} (check console)`;
