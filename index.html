@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 5.8</title>
+  <title>Doodle Notebook Scanner 5.9</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -128,7 +128,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Doodle Notebook Scanner 5.8</div>
+    <div class="header">Doodle Notebook Scanner 5.9</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -151,7 +151,7 @@
     <div class="popup-grid" id="popup-grid"></div>
   </div>
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 5.8 LOADED ===");
+    console.log("=== DOODLE NOTEBOOK SCANNER 5.9 LOADED ===");
   
     // Shared state
     let stream = null;
@@ -361,26 +361,37 @@
   
     document.getElementById('export-btn').onclick = exportTrainingData;
   
+    function drawOverlay(ordered) {
+      const ctx = outputCanvas.getContext('2d');
+      ctx.strokeStyle = 'lime';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(ordered[0][0], ordered[0][1]);
+      ctx.lineTo(ordered[1][0], ordered[1][1]);
+      ctx.lineTo(ordered[2][0], ordered[2][1]);
+      ctx.lineTo(ordered[3][0], ordered[3][1]);
+      ctx.closePath();
+      ctx.stroke();
+    }
+  
     async function processWhiteOutline(canvas) {
       try {
         let src = cv.imread(canvas);
       
-        // White detection (with histogram equalization and lower threshold for lighter backgrounds)
+        // Edge detection with Canny for better handling of varying backgrounds
         let gray = new cv.Mat();
-        let mask = new cv.Mat();
+        let edges = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
         cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0);
-        cv.equalizeHist(gray, gray);
-        cv.threshold(gray, mask, 160, 255, cv.THRESH_BINARY); // Lowered to 160 for better light background handling
+        cv.equalizeHist(gray, gray); // Enhance contrast
+        cv.Canny(gray, edges, 50, 150, 3); // Low thresholds for faint edges on light backgrounds
       
         let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
-        cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 1);
-        cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 3);
-        cv.erode(mask, mask, kernel, new cv.Point(-1, -1), 4);
+        cv.dilate(edges, edges, kernel, new cv.Point(-1, -1), 2); // Connect edge gaps
       
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
-        cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+        cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
       
         let allAreas = [];
         let maxArea = 0;
@@ -395,7 +406,7 @@
           }
         }
       
-        log(`=== DEBUG 5.8 ===`);
+        log(`=== DEBUG 5.9 ===`);
         log(`Total contours: ${contours.size()}`);
         log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a)).join(', ')}`);
         log(`Best overall area: ${Math.round(maxArea)}`);
@@ -404,7 +415,6 @@
         let paperRatio = 9.75 / 6.5; // ~1.5
         let candidateIdx = -1;
         let maxQuadArea = 0;
-        let usedFallback = false;
       
         for (let i = 0; i < contours.size(); i++) {
           let contour = contours.get(i);
@@ -415,14 +425,14 @@
           cv.convexHull(contour, hull);
         
           let peri = cv.arcLength(hull, true);
-          let epsilon = 0.015 * peri;
+          let epsilon = 0.02 * peri; // Increased for better quad approx
           let approx = new cv.Mat();
           cv.approxPolyDP(hull, approx, epsilon, true);
         
           if (approx.rows === 4) {
             let rect = cv.minAreaRect(contour);
-            let aspect = rect.size.width / rect.size.height;
-            if (Math.abs(aspect - paperRatio) < 0.3) {
+            let aspect = Math.max(rect.size.width / rect.size.height, rect.size.height / rect.size.width); // Normalize
+            if (Math.abs(aspect - paperRatio) < 0.4) { // Relaxed tolerance
               if (area > maxQuadArea) {
                 maxQuadArea = area;
                 candidateIdx = i;
@@ -436,15 +446,13 @@
       
         if (candidateIdx === -1) {
           candidateIdx = maxIdx;
-          maxArea = maxArea; // Use overall max
-          usedFallback = true;
+          maxQuadArea = maxArea;
           log(`⚠️ No good quad found — falling back to largest contour`);
         } else {
-          maxArea = maxQuadArea;
           log(`✅ Found good quad contour!`);
         }
       
-        log(`Selected idx: ${candidateIdx}, Area: ${Math.round(maxArea)}`);
+        log(`Selected idx: ${candidateIdx}, Area: ${Math.round(maxQuadArea)}`);
       
         let bestVertices = null;
       
@@ -455,7 +463,7 @@
           cv.convexHull(contour, hull);
         
           let peri = cv.arcLength(hull, true);
-          let epsilon = 0.015 * peri;
+          let epsilon = 0.02 * peri;
           let approx = new cv.Mat();
           cv.approxPolyDP(hull, approx, epsilon, true);
         
@@ -478,8 +486,6 @@
         }
       
         if (bestVertices && bestVertices.length === 4) {
-          status.textContent = `SUCCESS! Warped & scored (Area: ${Math.round(maxArea)})`;
-        
           let pts = [];
           for (let j = 0; j < 4; j++) {
             pts.push([bestVertices[j].x, bestVertices[j].y]);
@@ -487,113 +493,123 @@
         
           let ordered = orderPoints(pts);
         
-          let insetFactor = 0.015;
-          let cx = (ordered[0][0] + ordered[1][0] + ordered[2][0] + ordered[3][0]) / 4;
-          let cy = (ordered[0][1] + ordered[1][1] + ordered[2][1] + ordered[3][1]) / 4;
-          for (let i = 0; i < 4; i++) {
-            let dx = cx - ordered[i][0];
-            let dy = cy - ordered[i][1];
-            ordered[i][0] += dx * insetFactor;
-            ordered[i][1] += dy * insetFactor;
-          }
+          // Draw green overlay on original snapped image
+          drawOverlay(ordered);
+          status.textContent = "Detected border (green overlay) — warping in 2s...";
         
-          let dstWidth = Math.max(400, Math.round(Math.max(
-            Math.hypot(ordered[1][0] - ordered[0][0], ordered[1][1] - ordered[0][1]),
-            Math.hypot(ordered[2][0] - ordered[3][0], ordered[2][1] - ordered[3][1])
-          )));
-          let dstHeight = Math.round(dstWidth / paperRatio);
+          // Proceed to warp after delay
+          setTimeout(() => {
+            let insetFactor = 0.015;
+            let cx = (ordered[0][0] + ordered[1][0] + ordered[2][0] + ordered[3][0]) / 4;
+            let cy = (ordered[0][1] + ordered[1][1] + ordered[2][1] + ordered[3][1]) / 4;
+            for (let i = 0; i < 4; i++) {
+              let dx = cx - ordered[i][0];
+              let dy = cy - ordered[i][1];
+              ordered[i][0] += dx * insetFactor;
+              ordered[i][1] += dy * insetFactor;
+            }
         
-          let srcPoints = new cv.Mat(4, 1, cv.CV_32FC2);
-          let dstPoints = new cv.Mat(4, 1, cv.CV_32FC2);
-          srcPoints.data32F.set([ordered[0][0], ordered[0][1], ordered[1][0], ordered[1][1],
-                                 ordered[2][0], ordered[2][1], ordered[3][0], ordered[3][1]]);
-          dstPoints.data32F.set([0, 0, dstWidth, 0, dstWidth, dstHeight, 0, dstHeight]);
+            let paperRatio = 9.75 / 6.5;
+            let dstWidth = Math.max(400, Math.round(Math.max(
+              Math.hypot(ordered[1][0] - ordered[0][0], ordered[1][1] - ordered[0][1]),
+              Math.hypot(ordered[2][0] - ordered[3][0], ordered[2][1] - ordered[3][1])
+            )));
+            let dstHeight = Math.round(dstWidth / paperRatio);
         
-          let M = cv.getPerspectiveTransform(srcPoints, dstPoints);
+            let srcPoints = new cv.Mat(4, 1, cv.CV_32FC2);
+            let dstPoints = new cv.Mat(4, 1, cv.CV_32FC2);
+            srcPoints.data32F.set([ordered[0][0], ordered[0][1], ordered[1][0], ordered[1][1],
+                                   ordered[2][0], ordered[2][1], ordered[3][0], ordered[3][1]]);
+            dstPoints.data32F.set([0, 0, dstWidth, 0, dstWidth, dstHeight, 0, dstHeight]);
         
-          let warped = new cv.Mat();
-          cv.warpPerspective(src, warped, M, new cv.Size(dstWidth, dstHeight), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(255, 255, 255, 255));
+            let M = cv.getPerspectiveTransform(srcPoints, dstPoints);
         
-          let targetWidth = 800;
-          let targetHeight = Math.round(targetWidth * (dstHeight / dstWidth));
-          let resized = new cv.Mat();
-          cv.resize(warped, resized, new cv.Size(targetWidth, targetHeight), 0, 0, cv.INTER_CUBIC);
+            let warped = new cv.Mat();
+            cv.warpPerspective(src, warped, M, new cv.Size(dstWidth, dstHeight), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(255, 255, 255, 255));
         
-          outputCanvas.width = targetWidth;
-          outputCanvas.height = targetHeight;
-          cv.imshow('output-canvas', resized);
+            let targetWidth = 800;
+            let targetHeight = Math.round(targetWidth * (dstHeight / dstWidth));
+            let resized = new cv.Mat();
+            cv.resize(warped, resized, new cv.Size(targetWidth, targetHeight), 0, 0, cv.INTER_CUBIC);
         
-          // === YOUR FIDDLE ZONE (preserved exactly) ===
-          const gridHeightPercent = 0.89;
-          const gridVerticalOffsetPercent = -0.01;
-          const lineColor = 'rgba(255, 50, 50, 0.92)';
-          const lineWidth = 1.8;
+            outputCanvas.width = targetWidth;
+            outputCanvas.height = targetHeight;
+            cv.imshow('output-canvas', resized);
         
-          const ctx = outputCanvas.getContext('2d');
-          ctx.strokeStyle = lineColor;
-          ctx.lineWidth = lineWidth;
-          ctx.lineCap = 'round';
+            status.textContent = `SUCCESS! Warped & scored (Area: ${Math.round(maxQuadArea)})`;
         
-          const numRows = 7;
-          const numCols = 11;
-          let gridHeight = targetHeight * gridHeightPercent;
-          let cellSize = gridHeight / numRows;
-          let gridWidth = cellSize * numCols;
+            // === YOUR FIDDLE ZONE (preserved exactly) ===
+            const gridHeightPercent = 0.89;
+            const gridVerticalOffsetPercent = -0.01;
+            const lineColor = 'rgba(255, 50, 50, 0.92)';
+            const lineWidth = 1.8;
         
-          let offsetX = (targetWidth - gridWidth) / 2;
-          let offsetY = (targetHeight - gridHeight) / 2 + (targetHeight * gridVerticalOffsetPercent);
-          offsetY = Math.max(0, Math.min(offsetY, targetHeight - gridHeight));
+            const ctx = outputCanvas.getContext('2d');
+            ctx.strokeStyle = lineColor;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
         
-          // Crop & detect BEFORE drawing grid (no red lines in thumbnails)
-          if (model) {
-            detectedDoodles = await detectDoodlesFromWarped(outputCanvas, offsetX, offsetY, cellSize);
-            renderDetectedGrid();
-            renderDebugCells(outputCanvas, offsetX, offsetY, cellSize);
-            document.getElementById('tweak-prompt').style.display = 'block';
-            document.getElementById('console-log').scrollTop = 999999;
-          } else {
-            log("⚠️ Model not ready — try snapping again");
-          }
+            const numRows = 7;
+            const numCols = 11;
+            let gridHeight = targetHeight * gridHeightPercent;
+            let cellSize = gridHeight / numRows;
+            let gridWidth = cellSize * numCols;
         
-          // Draw grid AFTER detection
-          for (let i = 0; i <= numRows; i++) {
-            let y = Math.round(offsetY + i * cellSize);
-            ctx.beginPath();
-            ctx.moveTo(Math.round(offsetX), y);
-            ctx.lineTo(Math.round(offsetX + gridWidth), y);
-            ctx.stroke();
-          }
-          for (let j = 0; j <= numCols; j++) {
-            let x = Math.round(offsetX + j * cellSize);
-            ctx.beginPath();
-            ctx.moveTo(x, Math.round(offsetY));
-            ctx.lineTo(x, Math.round(offsetY + gridHeight));
-            ctx.stroke();
-          }
+            let offsetX = (targetWidth - gridWidth) / 2;
+            let offsetY = (targetHeight - gridHeight) / 2 + (targetHeight * gridVerticalOffsetPercent);
+            offsetY = Math.max(0, Math.min(offsetY, targetHeight - gridHeight));
         
-          // Grid debug
-          const effectiveHorizontalInsetPercent = ((targetWidth - gridWidth) / 2) / targetWidth;
-          const topMarginPercent = (offsetY / targetHeight);
-          const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight);
+            // Crop & detect BEFORE drawing grid (no red lines in thumbnails)
+            if (model) {
+              detectedDoodles = await detectDoodlesFromWarped(outputCanvas, offsetX, offsetY, cellSize);
+              renderDetectedGrid();
+              renderDebugCells(outputCanvas, offsetX, offsetY, cellSize);
+              document.getElementById('tweak-prompt').style.display = 'block';
+              document.getElementById('console-log').scrollTop = 999999;
+            } else {
+              log("⚠️ Model not ready — try snapping again");
+            }
         
-          debugInfo.innerHTML = `
-            <strong>GRID DEBUG 5.8</strong><br>
-            📏 Image: ${targetWidth}×${targetHeight}<br>
-            🟥 Grid: ${Math.round(gridWidth)}×${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>
-            📍 Offset: X=${Math.round(offsetX)} (${Math.round(effectiveHorizontalInsetPercent * 100)}% inset), Y=${Math.round(offsetY)}<br>
-            📏 Margins: Top=${Math.round(topMarginPercent * 100)}%, Bottom=${Math.round(bottomMarginPercent * 100)}%<br>
-            <em>✨ Perfectly centered + your custom nudge!</em>
-          `;
+            // Draw grid AFTER detection
+            for (let i = 0; i <= numRows; i++) {
+              let y = Math.round(offsetY + i * cellSize);
+              ctx.beginPath();
+              ctx.moveTo(Math.round(offsetX), y);
+              ctx.lineTo(Math.round(offsetX + gridWidth), y);
+              ctx.stroke();
+            }
+            for (let j = 0; j <= numCols; j++) {
+              let x = Math.round(offsetX + j * cellSize);
+              ctx.beginPath();
+              ctx.moveTo(x, Math.round(offsetY));
+              ctx.lineTo(x, Math.round(offsetY + gridHeight));
+              ctx.stroke();
+            }
         
-          // Cleanup
-          srcPoints.delete(); dstPoints.delete(); M.delete();
-          warped.delete(); resized.delete();
+            // Grid debug
+            const effectiveHorizontalInsetPercent = ((targetWidth - gridWidth) / 2) / targetWidth;
+            const topMarginPercent = (offsetY / targetHeight);
+            const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight);
+        
+            debugInfo.innerHTML = `
+              <strong>GRID DEBUG 5.9</strong><br>
+              📏 Image: ${targetWidth}×${targetHeight}<br>
+              🟥 Grid: ${Math.round(gridWidth)}×${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>
+              📍 Offset: X=${Math.round(offsetX)} (${Math.round(effectiveHorizontalInsetPercent * 100)}% inset), Y=${Math.round(offsetY)}<br>
+              📏 Margins: Top=${Math.round(topMarginPercent * 100)}%, Bottom=${Math.round(bottomMarginPercent * 100)}%<br>
+              <em>✨ Perfectly centered + your custom nudge!</em>
+            `;
+        
+            // Cleanup
+            srcPoints.delete(); dstPoints.delete(); M.delete();
+            warped.delete(); resized.delete();
+          }, 2000); // 2-second delay for overlay view
         } else {
           status.textContent = `No strong outline (max area: ${Math.round(maxArea)})`;
           cv.imshow('output-canvas', src);
         }
       
-        src.delete(); gray.delete(); mask.delete(); kernel.delete();
+        src.delete(); gray.delete(); edges.delete(); kernel.delete();
         contours.delete(); hierarchy.delete();
       } catch (e) {
         console.error('=== FULL ERROR ===', e);
