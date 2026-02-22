@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 5.4</title>
+  <title>Doodle Notebook Scanner 5.5</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -128,7 +128,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Doodle Notebook Scanner 5.4</div>
+    <div class="header">Doodle Notebook Scanner 5.5</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -151,7 +151,7 @@
     <div class="popup-grid" id="popup-grid"></div>
   </div>
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 5.4 LOADED ===");
+    console.log("=== DOODLE NOTEBOOK SCANNER 5.5 LOADED ===");
   
     // Shared state
     let stream = null;
@@ -365,14 +365,14 @@
       try {
         let src = cv.imread(canvas);
       
-        // White detection (with histogram equalization for better contrast on lighter backgrounds)
+        // White detection (with Otsu's automatic thresholding for adaptive background handling)
         let gray = new cv.Mat();
         let mask = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
         cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0);
-        cv.equalizeHist(gray, gray);  // NEW: Enhance contrast for varying backgrounds
-        cv.threshold(gray, mask, 170, 255, cv.THRESH_BINARY);
-      
+        cv.equalizeHist(gray, gray);  // Enhance contrast
+        cv.threshold(gray, mask, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);  // NEW: Otsu for auto-threshold
+        
         let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
         cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 1);
         cv.dilate(mask, mask, kernel, new cv.Point(-1, -1), 3);
@@ -396,7 +396,7 @@
           }
         }
       
-        console.log(`=== DEBUG 5.4 ===`);
+        console.log(`=== DEBUG 5.5 ===`);
         console.log(`Total contours: ${contours.size()}`);
         console.log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a))}`);
         console.log(`Best area: ${Math.round(maxArea)}`);
@@ -534,7 +534,7 @@
           const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight);
         
           debugInfo.innerHTML = `
-            <strong>GRID DEBUG 5.4</strong><br>
+            <strong>GRID DEBUG 5.5</strong><br>
             📏 Image: ${targetWidth}×${targetHeight}<br>
             🟥 Grid: ${Math.round(gridWidth)}×${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>
             📍 Offset: X=${Math.round(offsetX)} (${Math.round(effectiveHorizontalInsetPercent * 100)}% inset), Y=${Math.round(offsetY)}<br>
