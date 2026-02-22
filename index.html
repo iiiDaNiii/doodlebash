@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 5.12</title>
+  <title>Doodle Notebook Scanner 5.13</title>
   <script src="js/opencv.js" async></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -128,9 +128,9 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Doodle Notebook Scanner 5.12</div>
+    <div class="header">Doodle Notebook Scanner 5.13</div>
     <div class="content">
-      <p>Point camera at your notebook (full white border in frame!)</p>
+      <p>Point camera at your notebook (markers in frame!)</p>
       <div class="camera-container">
         <video id="camera-preview" autoplay playsinline muted></video>
       </div>
@@ -151,7 +151,7 @@
     <div class="popup-grid" id="popup-grid"></div>
   </div>
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 5.12 LOADED ===");
+    console.log("=== DOODLE NOTEBOOK SCANNER 5.13 LOADED ===");
   
     // Shared state
     let stream = null;
@@ -390,13 +390,13 @@
           if (markerMap[0] && markerMap[1] && markerMap[2] && markerMap[3]) {
             bestVertices = [];
             let tlCorners = markerMap[0].data32F;
-            bestVertices.push({x: tlCorners[4], y: tlCorners[5]}); // Example: adjust to inner corner
+            bestVertices.push({x: tlCorners[4], y: tlCorners[5]}); // Bottom-left of top-left marker (adjust)
             let trCorners = markerMap[1].data32F;
-            bestVertices.push({x: trCorners[6], y: trCorners[7]});
+            bestVertices.push({x: trCorners[6], y: trCorners[7]}); // Bottom-right of top-right
             let brCorners = markerMap[2].data32F;
-            bestVertices.push({x: brCorners[0], y: brCorners[1]});
+            bestVertices.push({x: brCorners[0], y: brCorners[1]}); // Top-left of bottom-right
             let blCorners = markerMap[3].data32F;
-            bestVertices.push({x: blCorners[2], y: blCorners[3]});
+            bestVertices.push({x: blCorners[2], y: blCorners[3]}); // Top-right of bottom-left
             log("✅ All 4 markers found — using for warping");
           } else {
             log("⚠️ Missing some markers");
