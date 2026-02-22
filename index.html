@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 5.7</title>
+  <title>Doodle Notebook Scanner 5.8</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -128,7 +128,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Doodle Notebook Scanner 5.7</div>
+    <div class="header">Doodle Notebook Scanner 5.8</div>
     <div class="content">
       <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
@@ -151,7 +151,7 @@
     <div class="popup-grid" id="popup-grid"></div>
   </div>
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 5.7 LOADED ===");
+    console.log("=== DOODLE NOTEBOOK SCANNER 5.8 LOADED ===");
   
     // Shared state
     let stream = null;
@@ -365,16 +365,13 @@
       try {
         let src = cv.imread(canvas);
       
-        // White detection (with CLAHE for local contrast enhancement on varying backgrounds)
+        // White detection (with histogram equalization and lower threshold for lighter backgrounds)
         let gray = new cv.Mat();
         let mask = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
         cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0);
-        
-        let clahe = cv.createCLAHE(2.0, new cv.Size(8, 8));
-        clahe.apply(gray, gray);
-        
-        cv.threshold(gray, mask, 170, 255, cv.THRESH_BINARY);
+        cv.equalizeHist(gray, gray);
+        cv.threshold(gray, mask, 160, 255, cv.THRESH_BINARY); // Lowered to 160 for better light background handling
       
         let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
         cv.morphologyEx(mask, mask, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 1);
@@ -390,8 +387,7 @@
         let maxIdx = -1;
       
         for (let i = 0; i < contours.size(); i++) {
-          let contour = contours.get(i);
-          let area = cv.contourArea(contour);
+          let area = cv.contourArea(contours.get(i));
           allAreas.push(area);
           if (area > maxArea) {
             maxArea = area;
@@ -399,16 +395,61 @@
           }
         }
       
-        log(`=== DEBUG 5.7 ===`);
+        log(`=== DEBUG 5.8 ===`);
         log(`Total contours: ${contours.size()}`);
         log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a)).join(', ')}`);
-        log(`Best area: ${Math.round(maxArea)}`);
+        log(`Best overall area: ${Math.round(maxArea)}`);
       
         let minArea = Math.max(20000, (src.rows * src.cols) * 0.02);
+        let paperRatio = 9.75 / 6.5; // ~1.5
+        let candidateIdx = -1;
+        let maxQuadArea = 0;
+        let usedFallback = false;
+      
+        for (let i = 0; i < contours.size(); i++) {
+          let contour = contours.get(i);
+          let area = cv.contourArea(contour);
+          if (area < minArea) continue;
+        
+          let hull = new cv.Mat();
+          cv.convexHull(contour, hull);
+        
+          let peri = cv.arcLength(hull, true);
+          let epsilon = 0.015 * peri;
+          let approx = new cv.Mat();
+          cv.approxPolyDP(hull, approx, epsilon, true);
+        
+          if (approx.rows === 4) {
+            let rect = cv.minAreaRect(contour);
+            let aspect = rect.size.width / rect.size.height;
+            if (Math.abs(aspect - paperRatio) < 0.3) {
+              if (area > maxQuadArea) {
+                maxQuadArea = area;
+                candidateIdx = i;
+              }
+            }
+          }
+        
+          hull.delete();
+          approx.delete();
+        }
+      
+        if (candidateIdx === -1) {
+          candidateIdx = maxIdx;
+          maxArea = maxArea; // Use overall max
+          usedFallback = true;
+          log(`⚠️ No good quad found — falling back to largest contour`);
+        } else {
+          maxArea = maxQuadArea;
+          log(`✅ Found good quad contour!`);
+        }
+      
+        log(`Selected idx: ${candidateIdx}, Area: ${Math.round(maxArea)}`);
+      
         let bestVertices = null;
       
-        if (maxIdx !== -1 && maxArea > minArea) {
-          let contour = contours.get(maxIdx);
+        if (candidateIdx !== -1) {
+          let contour = contours.get(candidateIdx);
         
           let hull = new cv.Mat();
           cv.convexHull(contour, hull);
@@ -456,7 +497,6 @@
             ordered[i][1] += dy * insetFactor;
           }
         
-          let paperRatio = 9.75 / 6.5;
           let dstWidth = Math.max(400, Math.round(Math.max(
             Math.hypot(ordered[1][0] - ordered[0][0], ordered[1][1] - ordered[0][1]),
             Math.hypot(ordered[2][0] - ordered[3][0], ordered[2][1] - ordered[3][1])
@@ -537,7 +577,7 @@
           const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight);
         
           debugInfo.innerHTML = `
-            <strong>GRID DEBUG 5.7</strong><br>
+            <strong>GRID DEBUG 5.8</strong><br>
             📏 Image: ${targetWidth}×${targetHeight}<br>
             🟥 Grid: ${Math.round(gridWidth)}×${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>
             📍 Offset: X=${Math.round(offsetX)} (${Math.round(effectiveHorizontalInsetPercent * 100)}% inset), Y=${Math.round(offsetY)}<br>
@@ -555,7 +595,6 @@
       
         src.delete(); gray.delete(); mask.delete(); kernel.delete();
         contours.delete(); hierarchy.delete();
-        clahe.delete();
       } catch (e) {
         console.error('=== FULL ERROR ===', e);
         status.textContent = `Error: ${e.message || e} (check console)`;
