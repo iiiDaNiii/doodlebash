@@ -1,639 +1,574 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 5.10</title>
-  <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <style>
-    body { margin:0; background:#000; color:white; font-family:system-ui; }
-    .container { height:100dvh; display:flex; flex-direction:column; }
-    .header { background:#7f2a8f; padding:3cqi; text-align:center; font-size:6cqi; }
-    .content { flex:1; display:flex; flex-direction:column; align-items:center; padding:4cqi; gap:3cqi; }
-    .camera-container {
-      position:relative;
-      width:90vw;
-      max-width:520px;
-      aspect-ratio: 3 / 2;
-      border-radius:16px;
-      overflow:hidden;
-    }
-    #camera-preview { width:100%; height:100%; object-fit:cover; }
-    #output-canvas { max-width:90vw; border:3px solid #333; border-radius:12px; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
-    .status { font-size:4.5cqi; text-align:center; margin:10px 0; }
-    .debug { font-size:3.2cqi; color:#aaa; text-align:left; max-width:520px; padding:2cqi; background:rgba(255,255,255,0.05); border-radius:8px; }
-  
-    /* Doodle UI styles */
-    .debug-cells {
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      gap: 4px;
-      width: 90vw;
-      max-width: 520px;
-    }
-    .debug-cell {
-      border: 2px solid #666;
-      border-radius: 8px;
-      overflow: hidden;
-      aspect-ratio: 1 / 1;
-    }
-    .debug-cell canvas { width: 100%; height: 100%; display: block; }
-    .console-log {
-      width: 90vw;
-      max-width: 520px;
-      background: #222;
-      color: #0f0;
-      padding: 12px;
-      font-family: monospace;
-      font-size: 3.2cqi;
-      line-height: 1.5;
-      border-radius: 8px;
-      white-space: pre-wrap;
-      max-height: 180px;
-      overflow-y: auto;
-    }
-    #tweak-prompt {
-      display:none;
-      text-align:center;
-      font-size:4cqi;
-      color:#ff0;
-      background:rgba(0,0,0,0.6);
-      padding:2cqi;
-      border-radius:8px;
-      width:90vw;
-      max-width:520px;
-    }
-    #detected-grid {
-      display: none;
-      grid-template-columns: repeat(10, 1fr);
-      grid-template-rows: repeat(7, 1fr);
-      gap: 3px;
-      width: 90vw;
-      max-width: 520px;
-      height: 420px; /* Roughly 7:10 aspect */
-      background: #111;
-      padding: 8px;
-      border-radius: 12px;
-    }
-    .grid-cell {
-      aspect-ratio: 1;
-      background: #f0f0f0;
-      border: 3px solid #ccc;
-      border-radius: 8px;
-      background-size: contain;
-      background-position: center;
-      background-repeat: no-repeat;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .grid-cell:hover { transform: scale(1.12); }
-    #export-btn { background:#4dbde5; color:white; padding:3cqi 10cqi; font-size:5cqi; border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; display:none; }
-   
-    /* NEW: Popup for doodle selection */
-    #doodle-popup {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.8);
-      padding: 4cqi;
-      border-radius: 16px;
-      z-index: 100;
-      box-shadow: 0 0 20px rgba(255,255,255,0.2);
-    }
-    .popup-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr); /* Wider for 41 items; auto-wraps to rows */
-      gap: 1.5cqi;
-      max-width: 90vw;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    .popup-item {
-      width: 8cqi;
-      height: 8cqi; /* Fixed larger size for visibility */
-      background: #f0f0f0;
-      border: 2px solid #ccc;
-      border-radius: 8px;
-      background-size: contain;
-      background-position: center;
-      background-repeat: no-repeat;
-      cursor: pointer;
-    }
-    .popup-item:hover { border-color: #ff0; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doodle Notebook Scanner 5.10</title>
+<script src="https://docs.opencv.org/4.x/opencv.js" async></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+body { margin:0; background:#000; color:white; font-family:system-ui; }
+.container { height:100dvh; display:flex; flex-direction:column; }
+.header { background:#7f2a8f; padding:3cqi; text-align:center; font-size:6cqi; }
+.content { flex:1; display:flex; flex-direction:column; align-items:center; padding:4cqi; gap:3cqi; }
+.camera-container {
+position:relative;
+width:90vw;
+max-width:520px;
+aspect-ratio: 3 / 2;
+border-radius:16px;
+overflow:hidden;
+}
+#camera-preview { width:100%; height:100%; object-fit:cover; }
+#output-canvas { max-width:90vw; border:3px solid #333; border-radius:12px; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
+.status { font-size:4.5cqi; text-align:center; margin:10px 0; }
+.debug { font-size:3.2cqi; color:#aaa; text-align:left; max-width:520px; padding:2cqi; background:rgba(255,255,255,0.05); border-radius:8px; }
+/* Doodle UI styles /
+.debug-cells {
+display: grid;
+grid-template-columns: repeat(10, 1fr);
+gap: 4px;
+width: 90vw;
+max-width: 520px;
+}
+.debug-cell {
+border: 2px solid #666;
+border-radius: 8px;
+overflow: hidden;
+aspect-ratio: 1 / 1;
+}
+.debug-cell canvas { width: 100%; height: 100%; display: block; }
+.console-log {
+width: 90vw;
+max-width: 520px;
+background: #222;
+color: #0f0;
+padding: 12px;
+font-family: monospace;
+font-size: 3.2cqi;
+line-height: 1.5;
+border-radius: 8px;
+white-space: pre-wrap;
+max-height: 180px;
+overflow-y: auto;
+}
+#tweak-prompt {
+display:none;
+text-align:center;
+font-size:4cqi;
+color:#ff0;
+background:rgba(0,0,0,0.6);
+padding:2cqi;
+border-radius:8px;
+width:90vw;
+max-width:520px;
+}
+#detected-grid {
+display: none;
+grid-template-columns: repeat(10, 1fr);
+grid-template-rows: repeat(7, 1fr);
+gap: 3px;
+width: 90vw;
+max-width: 520px;
+height: 420px; / Roughly 7:10 aspect */
+background: #111;
+padding: 8px;
+border-radius: 12px;
+}
+.grid-cell {
+aspect-ratio: 1;
+background: #f0f0f0;
+border: 3px solid #ccc;
+border-radius: 8px;
+background-size: contain;
+background-position: center;
+background-repeat: no-repeat;
+cursor: pointer;
+transition: transform 0.2s;
+}
+.grid-cell:hover { transform: scale(1.12); }
+#export-btn { background:#4dbde5; color:white; padding:3cqi 10cqi; font-size:5cqi; border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; display:none; }
+/* NEW: Popup for doodle selection /
+#doodle-popup {
+display: none;
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+background: rgba(0,0,0,0.8);
+padding: 4cqi;
+border-radius: 16px;
+z-index: 100;
+box-shadow: 0 0 20px rgba(255,255,255,0.2);
+}
+.popup-grid {
+display: grid;
+grid-template-columns: repeat(7, 1fr); / Wider for 41 items; auto-wraps to rows /
+gap: 1.5cqi;
+max-width: 90vw;
+max-height: 80vh;
+overflow-y: auto;
+}
+.popup-item {
+width: 8cqi;
+height: 8cqi; / Fixed larger size for visibility */
+background: #f0f0f0;
+border: 2px solid #ccc;
+border-radius: 8px;
+background-size: contain;
+background-position: center;
+background-repeat: no-repeat;
+cursor: pointer;
+}
+.popup-item:hover { border-color: #ff0; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">Doodle Notebook Scanner 5.10</div>
-    <div class="content">
-      <p>Point camera at your notebook (full white border in frame!)</p>
-      <div class="camera-container">
-        <video id="camera-preview" autoplay playsinline muted></video>
-      </div>
-      <button id="snap-btn" style="display:none; padding:3cqi 8cqi; font-size:5.5cqi;">SNAP NOW</button>
-      <canvas id="output-canvas"></canvas>
-      <div id="status" class="status">Waiting for photo...</div>
-      <div class="debug" id="debug-info">Grid debug will appear here after scan...</div>
-    
-      <!-- Doodle UI -->
-      <div id="debug-cells" class="debug-cells"></div>
-      <div id="console-log" class="console-log">Waiting for photo...</div>
-      <div id="tweak-prompt">Detected! Tap any wrong cell to select</div>
-      <div id="detected-grid"></div>
+<div class="container">
+<div class="header">Doodle Notebook Scanner 5.10</div>
+<div class="content">
+<p>Point camera at your notebook (full white border in frame!)</p>
+<div class="camera-container">
+<video id="camera-preview" autoplay playsinline muted></video>
+</div>
+<button id="snap-btn" style="display:none; padding:3cqi 8cqi; font-size:5.5cqi;">SNAP NOW</button>
+<canvas id="output-canvas"></canvas>
+<div id="status" class="status">Waiting for photo...</div>
+<div class="debug" id="debug-info">Grid debug will appear here after scan...</div>
+      
+      
+      Waiting for photo...
+      Detected! Tap any wrong cell to select
+      
       <button id="export-btn">📤 EXPORT TRAINING ZIP</button>
-    </div>
-  </div>
-  <div id="doodle-popup">
-    <div class="popup-grid" id="popup-grid"></div>
-  </div>
+    
+  
+  
+    
+  
   <script>
     console.log("=== DOODLE NOTEBOOK SCANNER 5.10 LOADED ===");
-  
-    // Shared state
-    let stream = null;
-    let video = document.getElementById('camera-preview');
-    let outputCanvas = document.getElementById('output-canvas');
-    let status = document.getElementById('status');
-    let debugInfo = document.getElementById('debug-info');
-  
-    // Doodle ML
-    let model = null;
-    let classNames = [];
-    let detectedDoodles = [];
-    let cellCanvases = [];
-  
-    function log(text) {
-      const logEl = document.getElementById('console-log');
-      logEl.textContent += text + "\n";
-      logEl.scrollTop = logEl.scrollHeight;
-    }
-  
-    async function loadModel() {
-      log("Loading ML model...");
-      try {
-        model = await tf.loadLayersModel('models/doodle/model.json');
-        const metadata = await fetch('models/doodle/metadata.json');
-        const meta = await metadata.json();
-        classNames = meta.labels || meta.classNames || [];
-        log(`✅ Model loaded! ${classNames.length} classes`);
-      } catch (e) {
-        log("❌ ERROR loading model: " + e.message);
-      }
-    }
-  
-    async function startCamera() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        video.srcObject = stream;
-        video.onloadeddata = () => {
-          document.getElementById('snap-btn').style.display = 'block';
-          log("✅ Camera preview loaded!");
-        };
-        video.onerror = (e) => {
-          log("❌ Video error: " + e.message);
-          status.textContent = "Camera error - check permissions or try reloading.";
-        };
-      } catch (e) {
-        log("❌ Camera access error: " + e.message);
-        status.textContent = "Failed to access camera - grant permission and reload.";
-      }
-    }
-  
-    document.getElementById('snap-btn').onclick = () => {
-      status.textContent = "Capturing photo...";
-      const ctx = outputCanvas.getContext('2d');
-      outputCanvas.width = video.videoWidth;
-      outputCanvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0);
-      status.textContent = "Processing & warping white outline... (3-5 seconds)";
-      setTimeout(async () => {
-        await processWhiteOutline(outputCanvas);
-      }, 100);
-    };
-  
-    function orderPoints(pts) {
-      let ordered = new Array(4);
-      let minSum = Infinity, maxSum = -Infinity;
-      let minDiff = Infinity, maxDiff = -Infinity;
-      for (let p of pts) {
-        let sum = p[0] + p[1];
-        let diff = p[0] - p[1];
-        if (sum < minSum) { minSum = sum; ordered[0] = p; }
-        if (sum > maxSum) { maxSum = sum; ordered[2] = p; }
-        if (diff < minDiff) { minDiff = diff; ordered[3] = p; }
-        if (diff > maxDiff) { maxDiff = diff; ordered[1] = p; }
-      }
-      return ordered;
-    }
-  
-    async function detectDoodlesFromWarped(canvas, offsetX, offsetY, cellSize) {
-      const playableCols = [0,1,2,3,4,6,7,8,9,10];
-      const results = [];
-      cellCanvases = [];
-      log("🚀 Detecting 70 doodles across both pages...");
-    
-      for (let r = 0; r < 7; r++) {
-        for (let c of playableCols) {
-          const cellCanvas = document.createElement('canvas');
-          cellCanvas.width = 224;
-          cellCanvas.height = 224;
-          const cellCtx = cellCanvas.getContext('2d');
-        
-          cellCtx.drawImage(
-            canvas,
-            Math.round(offsetX + c * cellSize),
-            Math.round(offsetY + r * cellSize),
-            Math.round(cellSize),
-            Math.round(cellSize),
-            0, 0, 224, 224
-          );
-        
-          cellCanvases.push(cellCanvas);
-        
-          const tensor = tf.browser.fromPixels(cellCanvas).expandDims(0).toFloat().div(255);
-          const prediction = model.predict(tensor);
-          const scores = await prediction.array();
-        
-          let maxIndex = scores[0].indexOf(Math.max(...scores[0]));
-          let predicted = classNames[maxIndex];
-          if (predicted === 'unknown' && scores[0].length > 1) {
-            scores[0][maxIndex] = -999;
-            maxIndex = scores[0].indexOf(Math.max(...scores[0]));
-            predicted = classNames[maxIndex];
-          }
-        
-          log(`Cell [${r},${c}] → ${predicted}`);
-          results.push(predicted);
-        }
-      }
-      return results;
-    }
-  
-    function renderDebugCells(canvas, offsetX, offsetY, cellSize) {
-      const container = document.getElementById('debug-cells');
-      container.innerHTML = '';
-      const playableCols = [0,1,2,3,4,6,7,8,9,10];
-      for (let r = 0; r < 7; r++) {
-        for (let c of playableCols) {
-          const cellCanvas = document.createElement('canvas');
-          cellCanvas.width = cellSize * 0.8;
-          cellCanvas.height = cellSize * 0.8;
-          const ctx = cellCanvas.getContext('2d');
-          ctx.drawImage(
-            canvas,
-            Math.round(offsetX + c * cellSize),
-            Math.round(offsetY + r * cellSize),
-            Math.round(cellSize),
-            Math.round(cellSize),
-            0, 0, cellCanvas.width, cellCanvas.height
-          );
-          const div = document.createElement('div');
-          div.className = 'debug-cell';
-          div.appendChild(cellCanvas);
-          container.appendChild(div);
-        }
-      }
-    }
-  
-    let currentCellIndex = -1;
-    function showDoodlePopup(index) {
-      currentCellIndex = index;
-      const popup = document.getElementById('doodle-popup');
-      const grid = document.getElementById('popup-grid');
-      grid.innerHTML = '';
-     
-      const opts = classNames.filter(name => name !== 'unknown');
-      opts.forEach(d => {
-        const item = document.createElement('div');
-        item.className = 'popup-item';
-        item.style.backgroundImage = `url('images/${d}.png')`;
-        item.onclick = () => {
-          const cell = document.querySelector(`.grid-cell[data-index="${index}"]`);
-          cell.dataset.doodle = d;
-          cell.className = `grid-cell ${d}`;
-          cell.style.backgroundImage = `url('images/${d}.png')`;
-          detectedDoodles[index] = d;
-          popup.style.display = 'none';
-        };
-        grid.appendChild(item);
-      });
-     
-      popup.style.display = 'block';
-    }
-  
-    function renderDetectedGrid() {
-      const grid = document.getElementById('detected-grid');
-      grid.innerHTML = '';
-      grid.style.display = 'grid';
-    
-      detectedDoodles.forEach((d, i) => {
-        const cell = document.createElement('div');
-        cell.className = `grid-cell ${d}`;
-        cell.dataset.index = i;
-        cell.dataset.doodle = d;
-        cell.style.backgroundImage = `url('images/${d}.png')`;
-      
-        cell.addEventListener('click', () => showDoodlePopup(i));
-      
-        grid.appendChild(cell);
-      });
-      document.getElementById('export-btn').style.display = 'block';
-    }
-  
-    async function exportTrainingData() {
-      const zip = new JSZip();
-      log("📦 Building training ZIP...");
-     
-      detectedDoodles.forEach((doodle, i) => {
-        const className = doodle.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const randomNum = Math.floor(Math.random() * 900000) + 100000; // 6 digits
-        const filename = `${className}${randomNum}.png`;
-       
-        const cellCanvas = cellCanvases[i];
-        cellCanvas.toBlob(blob => {
-          zip.file(filename, blob);
-        }, 'image/png');
-      });
-     
-      setTimeout(async () => {
-        const content = await zip.generateAsync({type: "blob"});
-        const url = URL.createObjectURL(content);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `doodle-training-${new Date().toISOString().slice(0,10)}.zip`;
-        a.click();
-        URL.revokeObjectURL(url);
-        log(`✅ Exported ${detectedDoodles.length} images!`);
-      }, 500);
-    }
-  
-    document.getElementById('export-btn').onclick = exportTrainingData;
-  
-    function drawOverlay(ordered) {
-      const ctx = outputCanvas.getContext('2d');
-      ctx.strokeStyle = 'lime';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(ordered[0][0], ordered[0][1]);
-      ctx.lineTo(ordered[1][0], ordered[1][1]);
-      ctx.lineTo(ordered[2][0], ordered[2][1]);
-      ctx.lineTo(ordered[3][0], ordered[3][1]);
-      ctx.closePath();
-      ctx.stroke();
-    }
-  
-    async function processWhiteOutline(canvas) {
-      try {
-        let src = cv.imread(canvas);
-      
-        // Edge detection with Canny for better handling of varying backgrounds
-        let gray = new cv.Mat();
-        let edges = new cv.Mat();
-        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-        cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0);
-        cv.equalizeHist(gray, gray); // Enhance contrast
-        cv.Canny(gray, edges, 50, 150, 3); // Low thresholds for faint edges on light backgrounds
-      
-        let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
-        cv.dilate(edges, edges, kernel, new cv.Point(-1, -1), 2); // Connect edge gaps
-      
-        let contours = new cv.MatVector();
-        let hierarchy = new cv.Mat();
-        cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-      
-        let allAreas = [];
-        let maxArea = 0;
-        let maxIdx = -1;
-      
-        for (let i = 0; i < contours.size(); i++) {
-          let area = cv.contourArea(contours.get(i));
-          allAreas.push(area);
-          if (area > maxArea) {
-            maxArea = area;
-            maxIdx = i;
-          }
-        }
-      
-        log(`=== DEBUG 5.10 ===`);
-        log(`Total contours: ${contours.size()}`);
-        log(`Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a)).join(', ')}`);
-        log(`Best overall area: ${Math.round(maxArea)}`);
-      
-        let minArea = Math.max(20000, (src.rows * src.cols) * 0.02);
-        let paperRatio = 9.75 / 6.5; // ~1.5
-        let candidateIdx = -1;
-        let maxQuadArea = 0;
-      
-        for (let i = 0; i < contours.size(); i++) {
-          let contour = contours.get(i);
-          let area = cv.contourArea(contour);
-          if (area < minArea) continue;
-        
-          let hull = new cv.Mat();
-          cv.convexHull(contour, hull);
-        
-          let peri = cv.arcLength(hull, true);
-          let epsilon = 0.02 * peri; // Increased for better quad approx
-          let approx = new cv.Mat();
-          cv.approxPolyDP(hull, approx, epsilon, true);
-        
-          if (approx.rows === 4) {
-            let rect = cv.minAreaRect(contour);
-            let aspect = Math.max(rect.size.width / rect.size.height, rect.size.height / rect.size.width); // Normalize
-            if (Math.abs(aspect - paperRatio) < 0.4) { // Relaxed tolerance
-              if (area > maxQuadArea) {
-                maxQuadArea = area;
-                candidateIdx = i;
-              }
-            }
-          }
-        
-          hull.delete();
-          approx.delete();
-        }
-      
-        if (candidateIdx === -1) {
-          candidateIdx = maxIdx;
-          maxQuadArea = maxArea;
-          log(`⚠️ No good quad found — falling back to largest contour`);
-        } else {
-          log(`✅ Found good quad contour!`);
-        }
-      
-        log(`Selected idx: ${candidateIdx}, Area: ${Math.round(maxQuadArea)}`);
-      
-        let bestVertices = null;
-      
-        if (candidateIdx !== -1) {
-          let contour = contours.get(candidateIdx);
-        
-          let hull = new cv.Mat();
-          cv.convexHull(contour, hull);
-        
-          let peri = cv.arcLength(hull, true);
-          let epsilon = 0.02 * peri;
-          let approx = new cv.Mat();
-          cv.approxPolyDP(hull, approx, epsilon, true);
-        
-          log(`Approx polyDP points: ${approx.rows}`);
-        
-          if (approx.rows === 4) {
-            bestVertices = [];
-            let data = approx.data32S;
-            for (let j = 0; j < 4; j++) {
-              bestVertices.push({ x: data[j * 2], y: data[j * 2 + 1] });
-            }
-          } else {
-            log(`⚠️ Fallback to minAreaRect`);
-            let rect = cv.minAreaRect(contour);
-            bestVertices = cv.RotatedRect.points(rect);
-          }
-        
-          hull.delete();
-          approx.delete();
-        }
-      
-        if (bestVertices && bestVertices.length === 4) {
-          let pts = [];
-          for (let j = 0; j < 4; j++) {
-            pts.push([bestVertices[j].x, bestVertices[j].y]);
-          }
-        
-          let ordered = orderPoints(pts);
-        
-          // Draw green overlay on original snapped image
-          drawOverlay(ordered);
-          status.textContent = "Detected border (green overlay) — warping in 2s...";
-        
-          // Proceed to warp after delay
-          setTimeout(() => {
-            let insetFactor = 0.015;
-            let cx = (ordered[0][0] + ordered[1][0] + ordered[2][0] + ordered[3][0]) / 4;
-            let cy = (ordered[0][1] + ordered[1][1] + ordered[2][1] + ordered[3][1]) / 4;
-            for (let i = 0; i < 4; i++) {
-              let dx = cx - ordered[i][0];
-              let dy = cy - ordered[i][1];
-              ordered[i][0] += dx * insetFactor;
-              ordered[i][1] += dy * insetFactor;
-            }
-        
-            let paperRatio = 9.75 / 6.5;
-            let dstWidth = Math.max(400, Math.round(Math.max(
-              Math.hypot(ordered[1][0] - ordered[0][0], ordered[1][1] - ordered[0][1]),
-              Math.hypot(ordered[2][0] - ordered[3][0], ordered[2][1] - ordered[3][1])
-            )));
-            let dstHeight = Math.round(dstWidth / paperRatio);
-        
-            let srcPoints = new cv.Mat(4, 1, cv.CV_32FC2);
-            let dstPoints = new cv.Mat(4, 1, cv.CV_32FC2);
-            srcPoints.data32F.set([ordered[0][0], ordered[0][1], ordered[1][0], ordered[1][1],
-                                   ordered[2][0], ordered[2][1], ordered[3][0], ordered[3][1]]);
-            dstPoints.data32F.set([0, 0, dstWidth, 0, dstWidth, dstHeight, 0, dstHeight]);
-        
-            let M = cv.getPerspectiveTransform(srcPoints, dstPoints);
-        
-            let warped = new cv.Mat();
-            cv.warpPerspective(src, warped, M, new cv.Size(dstWidth, dstHeight), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(255, 255, 255, 255));
-        
-            let targetWidth = 800;
-            let targetHeight = Math.round(targetWidth * (dstHeight / dstWidth));
-            let resized = new cv.Mat();
-            cv.resize(warped, resized, new cv.Size(targetWidth, targetHeight), 0, 0, cv.INTER_CUBIC);
-        
-            outputCanvas.width = targetWidth;
-            outputCanvas.height = targetHeight;
-            cv.imshow('output-canvas', resized);
-        
-            status.textContent = `SUCCESS! Warped & scored (Area: ${Math.round(maxQuadArea)})`;
-        
-            // === YOUR FIDDLE ZONE (preserved exactly) ===
-            const gridHeightPercent = 0.89;
-            const gridVerticalOffsetPercent = -0.01;
-            const lineColor = 'rgba(255, 50, 50, 0.92)';
-            const lineWidth = 1.8;
-        
-            const ctx = outputCanvas.getContext('2d');
-            ctx.strokeStyle = lineColor;
-            ctx.lineWidth = lineWidth;
-            ctx.lineCap = 'round';
-        
-            const numRows = 7;
-            const numCols = 11;
-            let gridHeight = targetHeight * gridHeightPercent;
-            let cellSize = gridHeight / numRows;
-            let gridWidth = cellSize * numCols;
-        
-            let offsetX = (targetWidth - gridWidth) / 2;
-            let offsetY = (targetHeight - gridHeight) / 2 + (targetHeight * gridVerticalOffsetPercent);
-            offsetY = Math.max(0, Math.min(offsetY, targetHeight - gridHeight));
-        
-            // Crop & detect BEFORE drawing grid (no red lines in thumbnails)
-            if (model) {
-              detectedDoodles = await detectDoodlesFromWarped(outputCanvas, offsetX, offsetY, cellSize);
-              renderDetectedGrid();
-              renderDebugCells(outputCanvas, offsetX, offsetY, cellSize);
-              document.getElementById('tweak-prompt').style.display = 'block';
-              document.getElementById('console-log').scrollTop = 999999;
-            } else {
-              log("⚠️ Model not ready — try snapping again");
-            }
-        
-            // Draw grid AFTER detection
-            for (let i = 0; i <= numRows; i++) {
-              let y = Math.round(offsetY + i * cellSize);
-              ctx.beginPath();
-              ctx.moveTo(Math.round(offsetX), y);
-              ctx.lineTo(Math.round(offsetX + gridWidth), y);
-              ctx.stroke();
-            }
-            for (let j = 0; j <= numCols; j++) {
-              let x = Math.round(offsetX + j * cellSize);
-              ctx.beginPath();
-              ctx.moveTo(x, Math.round(offsetY));
-              ctx.lineTo(x, Math.round(offsetY + gridHeight));
-              ctx.stroke();
-            }
-        
-            // Grid debug
-            const effectiveHorizontalInsetPercent = ((targetWidth - gridWidth) / 2) / targetWidth;
-            const topMarginPercent = (offsetY / targetHeight);
-            const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight);
-        
-            debugInfo.innerHTML = `
-              <strong>GRID DEBUG 5.10</strong><br>
-              📏 Image: ${targetWidth}×${targetHeight}<br>
-              🟥 Grid: ${Math.round(gridWidth)}×${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>
-              📍 Offset: X=${Math.round(offsetX)} (${Math.round(effectiveHorizontalInsetPercent * 100)}% inset), Y=${Math.round(offsetY)}<br>
-              📏 Margins: Top=${Math.round(topMarginPercent * 100)}%, Bottom=${Math.round(bottomMarginPercent * 100)}%<br>
-              <em>✨ Perfectly centered + your custom nudge!</em>
-            `;
-        
-            // Cleanup
-            srcPoints.delete(); dstPoints.delete(); M.delete();
-            warped.delete(); resized.delete();
-          }, 2000); // 2-second delay for overlay view
-        } else {
-          status.textContent = `No strong outline (max area: ${Math.round(maxArea)})`;
-          cv.imshow('output-canvas', src);
-        }
-      
-        src.delete(); gray.delete(); edges.delete(); kernel.delete();
-        contours.delete(); hierarchy.delete();
-      } catch (e) {
-        console.error('=== FULL ERROR ===', e);
-        log("❌ Processing error: " + e.message);
-        status.textContent = `Error: ${e.message || e} (check console log)`;
-      }
-    }
-  
-    window.onload = async () => {
-      await loadModel();
-      startCamera();
-    };
-  </script>
+// Shared state
+let stream = null;
+let video = document.getElementById('camera-preview');
+let outputCanvas = document.getElementById('output-canvas');
+let status = document.getElementById('status');
+let debugInfo = document.getElementById('debug-info');
+// Doodle ML
+let model = null;
+let classNames = [];
+let detectedDoodles = [];
+let cellCanvases = [];
+function log(text) {
+const logEl = document.getElementById('console-log');
+logEl.textContent += text + "\n";
+logEl.scrollTop = logEl.scrollHeight;
+}
+async function loadModel() {
+log("Loading ML model...");
+try {
+model = await tf.loadLayersModel('models/doodle/model.json');
+const metadata = await fetch('models/doodle/metadata.json');
+const meta = await metadata.json();
+classNames = meta.labels || meta.classNames || [];
+log(✅ Model loaded! ${classNames.length} classes);
+} catch (e) {
+log("❌ ERROR loading model: " + String(e));
+}
+}
+async function startCamera() {
+log("Starting camera...");
+try {
+stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+log("Got stream");
+video.srcObject = stream;
+await video.play();
+log("Video playing");
+video.onloadeddata = () => {
+document.getElementById('snap-btn').style.display = 'block';
+log("✅ Camera preview loaded!");
+};
+video.onerror = (e) => {
+log("❌ Video error: " + String(e));
+status.textContent = "Camera error - check permissions or try reloading.";
+};
+} catch (e) {
+log("❌ Camera access error: " + String(e));
+status.textContent = "Failed to access camera - grant permission and reload.";
+}
+}
+function waitForOpenCV() {
+return new Promise((resolve) => {
+if (typeof cv !== 'undefined' && cv.getBuildInformation) {
+log("OpenCV ready");
+resolve();
+} else {
+cv['onRuntimeInitialized'] = () => {
+log("OpenCV initialized");
+resolve();
+};
+}
+});
+}
+document.getElementById('snap-btn').onclick = () => {
+status.textContent = "Capturing photo...";
+const ctx = outputCanvas.getContext('2d');
+outputCanvas.width = video.videoWidth;
+outputCanvas.height = video.videoHeight;
+ctx.drawImage(video, 0, 0);
+status.textContent = "Processing & warping white outline... (3-5 seconds)";
+setTimeout(async () => {
+await processWhiteOutline(outputCanvas);
+}, 100);
+};
+function orderPoints(pts) {
+let ordered = new Array(4);
+let minSum = Infinity, maxSum = -Infinity;
+let minDiff = Infinity, maxDiff = -Infinity;
+for (let p of pts) {
+let sum = p[0] + p[1];
+let diff = p[0] - p[1];
+if (sum < minSum) { minSum = sum; ordered[0] = p; }
+if (sum > maxSum) { maxSum = sum; ordered[2] = p; }
+if (diff < minDiff) { minDiff = diff; ordered[3] = p; }
+if (diff > maxDiff) { maxDiff = diff; ordered[1] = p; }
+}
+return ordered;
+}
+async function detectDoodlesFromWarped(canvas, offsetX, offsetY, cellSize) {
+const playableCols = [0,1,2,3,4,6,7,8,9,10];
+const results = [];
+cellCanvases = [];
+log("🚀 Detecting 70 doodles across both pages...");
+for (let r = 0; r < 7; r++) {
+for (let c of playableCols) {
+const cellCanvas = document.createElement('canvas');
+cellCanvas.width = 224;
+cellCanvas.height = 224;
+const cellCtx = cellCanvas.getContext('2d');
+cellCtx.drawImage(
+canvas,
+Math.round(offsetX + c * cellSize),
+Math.round(offsetY + r * cellSize),
+Math.round(cellSize),
+Math.round(cellSize),
+0, 0, 224, 224
+);
+cellCanvases.push(cellCanvas);
+const tensor = tf.browser.fromPixels(cellCanvas).expandDims(0).toFloat().div(255);
+const prediction = model.predict(tensor);
+const scores = await prediction.array();
+let maxIndex = scores[0].indexOf(Math.max(...scores[0]));
+let predicted = classNames[maxIndex];
+if (predicted === 'unknown' && scores[0].length > 1) {
+scores[0][maxIndex] = -999;
+maxIndex = scores[0].indexOf(Math.max(...scores[0]));
+predicted = classNames[maxIndex];
+}
+log(Cell [${r},${c}] → ${predicted});
+results.push(predicted);
+}
+}
+return results;
+}
+function renderDebugCells(canvas, offsetX, offsetY, cellSize) {
+const container = document.getElementById('debug-cells');
+container.innerHTML = '';
+const playableCols = [0,1,2,3,4,6,7,8,9,10];
+for (let r = 0; r < 7; r++) {
+for (let c of playableCols) {
+const cellCanvas = document.createElement('canvas');
+cellCanvas.width = cellSize * 0.8;
+cellCanvas.height = cellSize * 0.8;
+const ctx = cellCanvas.getContext('2d');
+ctx.drawImage(
+canvas,
+Math.round(offsetX + c * cellSize),
+Math.round(offsetY + r * cellSize),
+Math.round(cellSize),
+Math.round(cellSize),
+0, 0, cellCanvas.width, cellCanvas.height
+);
+const div = document.createElement('div');
+div.className = 'debug-cell';
+div.appendChild(cellCanvas);
+container.appendChild(div);
+}
+}
+}
+let currentCellIndex = -1;
+function showDoodlePopup(index) {
+currentCellIndex = index;
+const popup = document.getElementById('doodle-popup');
+const grid = document.getElementById('popup-grid');
+grid.innerHTML = '';
+const opts = classNames.filter(name => name !== 'unknown');
+opts.forEach(d => {
+const item = document.createElement('div');
+item.className = 'popup-item';
+item.style.backgroundImage = url('images/${d}.png');
+item.onclick = () => {
+const cell = document.querySelector(.grid-cell[data-index="${index}"]);
+cell.dataset.doodle = d;
+cell.className = grid-cell ${d};
+cell.style.backgroundImage = url('images/${d}.png');
+detectedDoodles[index] = d;
+popup.style.display = 'none';
+};
+grid.appendChild(item);
+});
+popup.style.display = 'block';
+}
+function renderDetectedGrid() {
+const grid = document.getElementById('detected-grid');
+grid.innerHTML = '';
+grid.style.display = 'grid';
+detectedDoodles.forEach((d, i) => {
+const cell = document.createElement('div');
+cell.className = grid-cell ${d};
+cell.dataset.index = i;
+cell.dataset.doodle = d;
+cell.style.backgroundImage = url('images/${d}.png');
+cell.addEventListener('click', () => showDoodlePopup(i));
+grid.appendChild(cell);
+});
+document.getElementById('export-btn').style.display = 'block';
+}
+async function exportTrainingData() {
+const zip = new JSZip();
+log("📦 Building training ZIP...");
+detectedDoodles.forEach((doodle, i) => {
+const className = doodle.toLowerCase().replace(/[^a-z0-9]/g, '');
+const randomNum = Math.floor(Math.random() * 900000) + 100000; // 6 digits
+const filename = ${className}${randomNum}.png;
+const cellCanvas = cellCanvases[i];
+cellCanvas.toBlob(blob => {
+zip.file(filename, blob);
+}, 'image/png');
+});
+setTimeout(async () => {
+const content = await zip.generateAsync({type: "blob"});
+const url = URL.createObjectURL(content);
+const a = document.createElement('a');
+a.href = url;
+a.download = doodle-training-${new Date().toISOString().slice(0,10)}.zip;
+a.click();
+URL.revokeObjectURL(url);
+log(✅ Exported ${detectedDoodles.length} images!);
+}, 500);
+}
+document.getElementById('export-btn').onclick = exportTrainingData;
+function drawOverlay(ordered) {
+const ctx = outputCanvas.getContext('2d');
+ctx.strokeStyle = 'lime';
+ctx.lineWidth = 4;
+ctx.beginPath();
+ctx.moveTo(ordered[0][0], ordered[0][1]);
+ctx.lineTo(ordered[1][0], ordered[1][1]);
+ctx.lineTo(ordered[2][0], ordered[2][1]);
+ctx.lineTo(ordered[3][0], ordered[3][1]);
+ctx.closePath();
+ctx.stroke();
+}
+async function processWhiteOutline(canvas) {
+try {
+let src = cv.imread(canvas);
+// Edge detection with Canny for better handling of varying backgrounds
+let gray = new cv.Mat();
+let edges = new cv.Mat();
+cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0);
+cv.equalizeHist(gray, gray); // Enhance contrast
+cv.Canny(gray, edges, 50, 150, 3); // Low thresholds for faint edges on light backgrounds
+let kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
+cv.dilate(edges, edges, kernel, new cv.Point(-1, -1), 2); // Connect edge gaps
+let contours = new cv.MatVector();
+let hierarchy = new cv.Mat();
+cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+let allAreas = [];
+let maxArea = 0;
+let maxIdx = -1;
+for (let i = 0; i < contours.size(); i++) {
+let area = cv.contourArea(contours.get(i));
+allAreas.push(area);
+if (area > maxArea) {
+maxArea = area;
+maxIdx = i;
+}
+}
+log(=== DEBUG 5.10 ===);
+log(Total contours: ${contours.size()});
+log(Top 5 areas: ${allAreas.sort((a,b) => b - a).slice(0,5).map(a => Math.round(a)).join(', ')});
+log(Best overall area: ${Math.round(maxArea)});
+let minArea = Math.max(20000, (src.rows * src.cols) * 0.02);
+let paperRatio = 9.75 / 6.5; // ~1.5
+let candidateIdx = -1;
+let maxQuadArea = 0;
+for (let i = 0; i < contours.size(); i++) {
+let contour = contours.get(i);
+let area = cv.contourArea(contour);
+if (area < minArea) continue;
+let hull = new cv.Mat();
+cv.convexHull(contour, hull);
+let peri = cv.arcLength(hull, true);
+let epsilon = 0.02 * peri; // Increased for better quad approx
+let approx = new cv.Mat();
+cv.approxPolyDP(hull, approx, epsilon, true);
+if (approx.rows === 4) {
+let rect = cv.minAreaRect(contour);
+let aspect = Math.max(rect.size.width / rect.size.height, rect.size.height / rect.size.width); // Normalize
+if (Math.abs(aspect - paperRatio) < 0.4) { // Relaxed tolerance
+if (area > maxQuadArea) {
+maxQuadArea = area;
+candidateIdx = i;
+}
+}
+}
+hull.delete();
+approx.delete();
+}
+if (candidateIdx === -1) {
+candidateIdx = maxIdx;
+maxQuadArea = maxArea;
+log(⚠️ No good quad found — falling back to largest contour);
+} else {
+log(✅ Found good quad contour!);
+}
+log(Selected idx: ${candidateIdx}, Area: ${Math.round(maxQuadArea)});
+let bestVertices = null;
+if (candidateIdx !== -1) {
+let contour = contours.get(candidateIdx);
+let hull = new cv.Mat();
+cv.convexHull(contour, hull);
+let peri = cv.arcLength(hull, true);
+let epsilon = 0.02 * peri;
+let approx = new cv.Mat();
+cv.approxPolyDP(hull, approx, epsilon, true);
+log(Approx polyDP points: ${approx.rows});
+if (approx.rows === 4) {
+bestVertices = [];
+let data = approx.data32S;
+for (let j = 0; j < 4; j++) {
+bestVertices.push({ x: data[j * 2], y: data[j * 2 + 1] });
+}
+} else {
+log(⚠️ Fallback to minAreaRect);
+let rect = cv.minAreaRect(contour);
+bestVertices = cv.RotatedRect.points(rect);
+}
+hull.delete();
+approx.delete();
+}
+if (bestVertices && bestVertices.length === 4) {
+let pts = [];
+for (let j = 0; j < 4; j++) {
+pts.push([bestVertices[j].x, bestVertices[j].y]);
+}
+let ordered = orderPoints(pts);
+// Draw green overlay on original snapped image
+drawOverlay(ordered);
+status.textContent = "Detected border (green overlay) — warping in 2s...";
+// Proceed to warp after delay
+setTimeout(() => {
+let insetFactor = 0.015;
+let cx = (ordered[0][0] + ordered[1][0] + ordered[2][0] + ordered[3][0]) / 4;
+let cy = (ordered[0][1] + ordered[1][1] + ordered[2][1] + ordered[3][1]) / 4;
+for (let i = 0; i < 4; i++) {
+let dx = cx - ordered[i][0];
+let dy = cy - ordered[i][1];
+ordered[i][0] += dx * insetFactor;
+ordered[i][1] += dy * insetFactor;
+}
+let paperRatio = 9.75 / 6.5;
+let dstWidth = Math.max(400, Math.round(Math.max(
+Math.hypot(ordered[1][0] - ordered[0][0], ordered[1][1] - ordered[0][1]),
+Math.hypot(ordered[2][0] - ordered[3][0], ordered[2][1] - ordered[3][1])
+)));
+let dstHeight = Math.round(dstWidth / paperRatio);
+let srcPoints = new cv.Mat(4, 1, cv.CV_32FC2);
+let dstPoints = new cv.Mat(4, 1, cv.CV_32FC2);
+srcPoints.data32F.set([ordered[0][0], ordered[0][1], ordered[1][0], ordered[1][1],
+ordered[2][0], ordered[2][1], ordered[3][0], ordered[3][1]]);
+dstPoints.data32F.set([0, 0, dstWidth, 0, dstWidth, dstHeight, 0, dstHeight]);
+let M = cv.getPerspectiveTransform(srcPoints, dstPoints);
+let warped = new cv.Mat();
+cv.warpPerspective(src, warped, M, new cv.Size(dstWidth, dstHeight), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(255, 255, 255, 255));
+let targetWidth = 800;
+let targetHeight = Math.round(targetWidth * (dstHeight / dstWidth));
+let resized = new cv.Mat();
+cv.resize(warped, resized, new cv.Size(targetWidth, targetHeight), 0, 0, cv.INTER_CUBIC);
+outputCanvas.width = targetWidth;
+outputCanvas.height = targetHeight;
+cv.imshow('output-canvas', resized);
+status.textContent = SUCCESS! Warped & scored (Area: ${Math.round(maxQuadArea)});
+// === YOUR FIDDLE ZONE (preserved exactly) ===
+const gridHeightPercent = 0.89;
+const gridVerticalOffsetPercent = -0.01;
+const lineColor = 'rgba(255, 50, 50, 0.92)';
+const lineWidth = 1.8;
+const ctx = outputCanvas.getContext('2d');
+ctx.strokeStyle = lineColor;
+ctx.lineWidth = lineWidth;
+ctx.lineCap = 'round';
+const numRows = 7;
+const numCols = 11;
+let gridHeight = targetHeight * gridHeightPercent;
+let cellSize = gridHeight / numRows;
+let gridWidth = cellSize * numCols;
+let offsetX = (targetWidth - gridWidth) / 2;
+let offsetY = (targetHeight - gridHeight) / 2 + (targetHeight * gridVerticalOffsetPercent);
+offsetY = Math.max(0, Math.min(offsetY, targetHeight - gridHeight));
+// Crop & detect BEFORE drawing grid (no red lines in thumbnails)
+if (model) {
+detectedDoodles = await detectDoodlesFromWarped(outputCanvas, offsetX, offsetY, cellSize);
+renderDetectedGrid();
+renderDebugCells(outputCanvas, offsetX, offsetY, cellSize);
+document.getElementById('tweak-prompt').style.display = 'block';
+document.getElementById('console-log').scrollTop = 999999;
+} else {
+log("⚠️ Model not ready — try snapping again");
+}
+// Draw grid AFTER detection
+for (let i = 0; i <= numRows; i++) {
+let y = Math.round(offsetY + i * cellSize);
+ctx.beginPath();
+ctx.moveTo(Math.round(offsetX), y);
+ctx.lineTo(Math.round(offsetX + gridWidth), y);
+ctx.stroke();
+}
+for (let j = 0; j <= numCols; j++) {
+let x = Math.round(offsetX + j * cellSize);
+ctx.beginPath();
+ctx.moveTo(x, Math.round(offsetY));
+ctx.lineTo(x, Math.round(offsetY + gridHeight));
+ctx.stroke();
+}
+// Grid debug
+const effectiveHorizontalInsetPercent = ((targetWidth - gridWidth) / 2) / targetWidth;
+const topMarginPercent = (offsetY / targetHeight);
+const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight);
+debugInfo.innerHTML =               <strong>GRID DEBUG 5.10</strong><br>               📏 Image: $$   {targetWidth}×   $${targetHeight}<br>               🟥 Grid: $$   {Math.round(gridWidth)}×   $${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>               📍 Offset: X=$$   {Math.round(offsetX)} (   $${Math.round(effectiveHorizontalInsetPercent * 100)}% inset), Y=${Math.round(offsetY)}<br>               📏 Margins: Top=$$   {Math.round(topMarginPercent * 100)}%, Bottom=   $${Math.round(bottomMarginPercent * 100)}%<br>               <em>✨ Perfectly centered + your custom nudge!</em>            ;
+// Cleanup
+srcPoints.delete(); dstPoints.delete(); M.delete();
+warped.delete(); resized.delete();
+}, 2000); // 2-second delay for overlay view
+} else {
+status.textContent = No strong outline (max area: ${Math.round(maxArea)});
+cv.imshow('output-canvas', src);
+}
+src.delete(); gray.delete(); edges.delete(); kernel.delete();
+contours.delete(); hierarchy.delete();
+} catch (e) {
+console.error('=== FULL ERROR ===', e);
+log("❌ Processing error: " + String(e));
+status.textContent = Error: ${e.message || e} (check console log);
+}
+}
+window.onload = async () => {
+await waitForOpenCV();
+await loadModel();
+await startCamera();
+};
+</script>
 </body>
 </html>
