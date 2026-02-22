@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Doodle Notebook Scanner 5.12</title>
-  <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
+  <script src="js/opencv.js" async></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
@@ -130,7 +130,7 @@
   <div class="container">
     <div class="header">Doodle Notebook Scanner 5.12</div>
     <div class="content">
-      <p>Point camera at your notebook (markers in frame!)</p>
+      <p>Point camera at your notebook (full white border in frame!)</p>
       <div class="camera-container">
         <video id="camera-preview" autoplay playsinline muted></video>
       </div>
@@ -380,41 +380,27 @@
         
         if (ids.rows === 4) {
           log(`✅ Found 4 markers!`);
-          let markerCenters = [];
           let markerMap = {};
           for (let i = 0; i < ids.rows; i++) {
             let id = ids.data32S[i];
             let markerCorners = corners.get(i);
-            let data = markerCorners.data32F;
-            let centerX = (data[0] + data[2] + data[4] + data[6]) / 4;
-            let centerY = (data[1] + data[3] + data[5] + data[7]) / 4;
-            markerCenters.push({id, center: [centerX, centerY], corners: markerCorners});
             markerMap[id] = markerCorners;
           }
           
-          // Sort markers by position (using orderPoints on centers)
-          let orderedMarkers = orderPoints(markerCenters.map(m => m.center)).map((p, idx) => {
-            return markerCenters.find(m => m.center[0] === p[0] && m.center[1] === p[1]);
-          });
-          
-          // Extract sheet corners from marker corners (assuming markers are outside: use inner corners)
-          // For ArUco corners order: 0 top-left, 1 top-right, 2 bottom-right, 3 bottom-left
-          // For top-left marker: use its bottom-right corner (index 4,5 for bottom-left, adjust based on orientation)
-          // Assuming standard placement, use:
-          // Top-left marker's bottom-right corner
-          // Top-right marker's bottom-left corner
-          // Bottom-right marker's top-left corner
-          // Bottom-left marker's top-right corner
-          // You may need to test and adjust these indices based on how you place the markers
-          bestVertices = [];
-          let tlCorners = orderedMarkers[0].corners.data32F;
-          bestVertices.push({x: tlCorners[4], y: tlCorners[5]}); // Adjust if needed
-          let trCorners = orderedMarkers[1].corners.data32F;
-          bestVertices.push({x: trCorners[6], y: trCorners[7]}); // Adjust
-          let brCorners = orderedMarkers[2].corners.data32F;
-          bestVertices.push({x: brCorners[0], y: brCorners[1]}); // Adjust
-          let blCorners = orderedMarkers[3].corners.data32F;
-          bestVertices.push({x: blCorners[2], y: blCorners[3]}); // Adjust
+          if (markerMap[0] && markerMap[1] && markerMap[2] && markerMap[3]) {
+            bestVertices = [];
+            let tlCorners = markerMap[0].data32F;
+            bestVertices.push({x: tlCorners[4], y: tlCorners[5]}); // Example: adjust to inner corner
+            let trCorners = markerMap[1].data32F;
+            bestVertices.push({x: trCorners[6], y: trCorners[7]});
+            let brCorners = markerMap[2].data32F;
+            bestVertices.push({x: brCorners[0], y: brCorners[1]});
+            let blCorners = markerMap[3].data32F;
+            bestVertices.push({x: blCorners[2], y: blCorners[3]});
+            log("✅ All 4 markers found — using for warping");
+          } else {
+            log("⚠️ Missing some markers");
+          }
         } else {
           log(`❌ Found ${ids.rows} markers — need 4 for warping`);
           status.textContent = "Markers not detected - try again with all corners visible.";
@@ -477,7 +463,7 @@
           outputCanvas.height = targetHeight;
           cv.imshow('output-canvas', resized);
         
-          // Grid and doodle detection
+          // === YOUR FIDDLE ZONE (preserved exactly) ===
           const gridHeightPercent = 0.89;
           const gridVerticalOffsetPercent = -0.01;
           const lineColor = 'rgba(255, 50, 50, 0.92)';
@@ -498,6 +484,7 @@
           let offsetY = (targetHeight - gridHeight) / 2 + (targetHeight * gridVerticalOffsetPercent);
           offsetY = Math.max(0, Math.min(offsetY, targetHeight - gridHeight));
         
+          // Crop & detect BEFORE drawing grid (no red lines in thumbnails)
           if (model) {
             detectedDoodles = await detectDoodlesFromWarped(outputCanvas, offsetX, offsetY, cellSize);
             renderDetectedGrid();
@@ -508,6 +495,7 @@
             log("⚠️ Model not ready — try snapping again");
           }
         
+          // Draw grid AFTER detection
           for (let i = 0; i <= numRows; i++) {
             let y = Math.round(offsetY + i * cellSize);
             ctx.beginPath();
@@ -523,6 +511,7 @@
             ctx.stroke();
           }
         
+          // Grid debug
           const effectiveHorizontalInsetPercent = ((targetWidth - gridWidth) / 2) / targetWidth;
           const topMarginPercent = (offsetY / targetHeight);
           const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight);
@@ -536,6 +525,7 @@
             <em>✨ Perfectly centered + your custom nudge!</em>
           `;
         
+          // Cleanup
           srcPoints.delete(); dstPoints.delete(); M.delete();
           warped.delete(); resized.delete();
         } else {
