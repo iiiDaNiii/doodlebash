@@ -379,7 +379,7 @@
         cv.threshold(edges, mask, 150, 255, cv.THRESH_BINARY);
         
         // Fallback to adaptive if no good contours found
-        if (mask.isEmpty()) {
+        if (mask.empty()) {
           cv.adaptiveThreshold(edges, mask, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2);
         }
        
