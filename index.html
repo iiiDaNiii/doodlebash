@@ -186,9 +186,18 @@
     }
   
     async function startCamera() {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      video.srcObject = stream;
-      video.onloadeddata = () => document.getElementById('snap-btn').style.display = 'block';
+      log("Starting camera...");
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        video.srcObject = stream;
+        video.onloadeddata = () => {
+          document.getElementById('snap-btn').style.display = 'block';
+          log("✅ Camera preview loaded!");
+        };
+      } catch (e) {
+        log("❌ Camera access error: " + e.message);
+        status.textContent = "Failed to access camera - grant permission and reload.";
+      }
     }
   
     document.getElementById('snap-btn').onclick = () => {
@@ -362,7 +371,7 @@
     document.getElementById('export-btn').onclick = exportTrainingData;
   
     function waitForOpenCV() {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         if (typeof cv !== 'undefined' && cv.getBuildInformation) {
           log("✅ OpenCV ready");
           resolve();
@@ -371,12 +380,19 @@
             log("✅ OpenCV initialized");
             resolve();
           };
+          setTimeout(() => {
+            if (typeof cv === 'undefined') {
+              log("❌ OpenCV failed to load");
+              reject(new Error("OpenCV failed to load"));
+            }
+          }, 10000); // Timeout after 10s
         }
       });
     }
   
     async function processWhiteOutline(canvas) {
       try {
+        await waitForOpenCV();
         let src = cv.imread(canvas);
       
         // ArUco marker detection
@@ -404,7 +420,7 @@
           if (markerMap[0] && markerMap[1] && markerMap[2] && markerMap[3]) {
             bestVertices = [];
             let tlCorners = markerMap[0].data32F;
-            bestVertices.push({x: tlCorners[4], y: tlCorners[5]}); // Example adjustment
+            bestVertices.push({x: tlCorners[4], y: tlCorners[5]}); // Adjust these indices based on marker orientation tests
             let trCorners = markerMap[1].data32F;
             bestVertices.push({x: trCorners[6], y: trCorners[7]});
             let brCorners = markerMap[2].data32F;
@@ -555,7 +571,7 @@
     }
   
     window.onload = async () => {
-      await waitForOpenCV();
+      log("Loading page...");
       await loadModel();
       startCamera();
     };
