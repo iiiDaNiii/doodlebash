@@ -370,25 +370,27 @@
   
     document.getElementById('export-btn').onclick = exportTrainingData;
   
-    function waitForOpenCV() {
-      return new Promise((resolve, reject) => {
+   function waitForOpenCV() {
+  return new Promise((resolve, reject) => {
+    if (typeof cv !== 'undefined' && cv.getBuildInformation) {
+      log("✅ OpenCV ready");
+      resolve();
+    } else {
+      const checkInterval = setInterval(() => {
         if (typeof cv !== 'undefined' && cv.getBuildInformation) {
-          log("✅ OpenCV ready");
+          clearInterval(checkInterval);
+          log("✅ OpenCV initialized");
           resolve();
-        } else {
-          cv['onRuntimeInitialized'] = () => {
-            log("✅ OpenCV initialized");
-            resolve();
-          };
-          setTimeout(() => {
-            if (typeof cv === 'undefined') {
-              log("❌ OpenCV failed to load");
-              reject(new Error("OpenCV failed to load"));
-            }
-          }, 10000); // Timeout after 10s
         }
-      });
+      }, 100);
+      setTimeout(() => {
+        clearInterval(checkInterval);
+        log("❌ OpenCV failed to load");
+        reject(new Error("OpenCV failed to load"));
+      }, 10000); // Timeout after 10s
     }
+  });
+}
   
     async function processWhiteOutline(canvas) {
       try {
