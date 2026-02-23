@@ -362,8 +362,27 @@
   
     document.getElementById('export-btn').onclick = exportTrainingData;
   
+    function waitForAprilTag() {
+      log("Waiting for AprilTag library...");
+      return new Promise((resolve) => {
+        const interval = setInterval(() => {
+          if (typeof apriltag !== 'undefined') {
+            log("✅ AprilTag library loaded");
+            clearInterval(interval);
+            resolve();
+          }
+        }, 100);
+        setTimeout(() => {
+          clearInterval(interval);
+          log("❌ AprilTag library failed to load");
+          resolve(); // Proceed, error will show in detection
+        }, 10000);
+      });
+    }
+  
     async function processWhiteOutline(canvas) {
       try {
+        await waitForAprilTag();
         let src = cv.imread(canvas);
       
         // AprilTag detection
