@@ -369,25 +369,41 @@
  
     document.getElementById('export-btn').onclick = exportTrainingData;
  
-    function waitForOpenCV() {
+    async function waitForOpenCV() {
+      log("Waiting for OpenCV to initialize...");
       return new Promise((resolve, reject) => {
-        if (typeof cv !== 'undefined' && cv.getBuildInformation) {
-          log("✅ OpenCV ready");
-          resolve();
-        } else {
-          const checkInterval = setInterval(() => {
-            if (typeof cv !== 'undefined' && cv.getBuildInformation) {
-              clearInterval(checkInterval);
-              log("✅ OpenCV initialized");
-              resolve();
+        let attempts = 0;
+        const maxAttempts = 300; // 30 seconds at 100ms intervals
+
+        const check = async () => {
+          attempts++;
+          log(`Check #${attempts}: typeof cv = ${typeof cv}`);
+          if (typeof cv !== 'undefined') {
+            if (typeof cv.then === 'function') { // cv is a Promise (common in some builds)
+              log("cv is a Promise — awaiting resolution...");
+              try {
+                cv = await cv;
+                log("cv Promise resolved successfully");
+              } catch (e) {
+                log("❌ Error awaiting cv Promise: " + e.message);
+                reject(e);
+                return;
+              }
             }
-          }, 100);
-          setTimeout(() => {
-            clearInterval(checkInterval);
-            log("❌ OpenCV failed to load after timeout");
+            if (cv && cv.getBuildInformation) {
+              log("✅ OpenCV ready (build info available)");
+              resolve();
+              return;
+            }
+          }
+          if (attempts >= maxAttempts) {
+            log("❌ OpenCV failed to load after timeout (30s)");
             reject(new Error("OpenCV failed to load after timeout"));
-          }, 20000); // Increased timeout to 20s for slower mobile loads
-        }
+            return;
+          }
+          setTimeout(check, 100);
+        };
+        check();
       });
     }
  
@@ -566,8 +582,8 @@
        
         src.delete();
       } catch (e) {
-        console.error('=== FULL ERROR ===', e);
-        status.textContent = `Error: ${e.message || e} (check console)`;
+        log('❌ Processing error: ' + (e.message || e));
+        status.textContent = `Error: ${e.message || e} (details in log)`;
       }
     }
  
@@ -600,9 +616,14 @@
       }
     };
   </script>
+  <!-- For testing, try the CDN version below instead of local. Comment out the local one and uncomment this: -->
+  <!-- <script src="https://docs.opencv.org/4.x/opencv.js" async 
+    onload="log('✅ opencv.js (CDN) script loaded successfully')" 
+    onerror="log('❌ Error loading opencv.js (CDN): Check network or browser')">
+  </script> -->
   <script src="js/opencv.js" async 
     onload="log('✅ opencv.js script loaded successfully')" 
-    onerror="log('❌ Error loading opencv.js script: Check path, server, or network')">
+    onerror="log('❌ Error loading opencv.js script: Check path, server (use http.server), MIME types for .wasm, or try CDN')">
   </script>
 
 </body>
