@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 5.14</title>
+  <title>Doodle Notebook Scanner 5.15</title>
   <script src="https://docs.opencv.org/4.x/opencv.js" async></script>
   <script src="https://unpkg.com/js-apriltag@latest/dist/apriltag.js" async></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
@@ -129,7 +129,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Doodle Notebook Scanner 5.14</div>
+    <div class="header">Doodle Notebook Scanner 5.15</div>
     <div class="content">
       <p>Point camera at your notebook (markers in frame!)</p>
       <div class="camera-container">
@@ -152,7 +152,7 @@
     <div class="popup-grid" id="popup-grid"></div>
   </div>
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 5.14 LOADED ===");
+    console.log("=== DOODLE NOTEBOOK SCANNER 5.15 LOADED ===");
   
     // Shared state
     let stream = null;
@@ -370,8 +370,17 @@
         let gray = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
         
-        const detector = new AprilTagDetector('tag36h11');
-        const detections = detector.detect(gray);
+        // Create a temporary canvas to get ImageData from gray Mat
+        let tempCanvas = document.createElement('canvas');
+        tempCanvas.width = gray.cols;
+        tempCanvas.height = gray.rows;
+        cv.imshow(tempCanvas, gray);
+        let tempCtx = tempCanvas.getContext('2d');
+        let imageData = tempCtx.getImageData(0, 0, gray.cols, gray.rows);
+        
+        const detector = new apriltag();
+        detector.addFamily('tag36h11');
+        const detections = detector.detect(imageData);
         
         let bestVertices = null;
         
@@ -384,8 +393,8 @@
           
           if (markerMap[0] && markerMap[1] && markerMap[2] && markerMap[3]) {
             bestVertices = [];
-            let tl = markerMap[0].p; // p is array of 4 corners: [top-left, top-right, bottom-right, bottom-left]
-            bestVertices.push({x: tl[2][0], y: tl[2][1]}); // Example: bottom-right of top-left marker (adjust for inner)
+            let tl = markerMap[0].p; // p: [[x,y], [x,y], [x,y], [x,y]] - top-left, top-right, bottom-right, bottom-left
+            bestVertices.push({x: tl[2][0], y: tl[2][1]}); // Bottom-right of top-left marker (inner corner example)
             let tr = markerMap[1].p;
             bestVertices.push({x: tr[3][0], y: tr[3][1]}); // Bottom-left of top-right
             let br = markerMap[2].p;
@@ -508,7 +517,7 @@
           const bottomMarginPercent = ((targetHeight - (offsetY + gridHeight)) / targetHeight);
         
           debugInfo.innerHTML = `
-            <strong>GRID DEBUG 5.14</strong><br>
+            <strong>GRID DEBUG 5.15</strong><br>
             📏 Image: ${targetWidth}×${targetHeight}<br>
             🟥 Grid: ${Math.round(gridWidth)}×${Math.round(gridHeight)} (${Math.round(cellSize)}px cells)<br>
             📍 Offset: X=${Math.round(offsetX)} (${Math.round(effectiveHorizontalInsetPercent * 100)}% inset), Y=${Math.round(offsetY)}<br>
