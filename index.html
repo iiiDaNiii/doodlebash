@@ -103,7 +103,7 @@
       padding: 4cqi;
       border-radius: 16px;
       z-index: 100;
-      box-shadow: 0 0 20px rgba(255,255,255,0.2);
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
     }
     .popup-grid {
       display: grid;
@@ -362,15 +362,33 @@
   
     document.getElementById('export-btn').onclick = exportTrainingData;
   
+    function waitForAprilTag() {
+      return new Promise((resolve) => {
+        const interval = setInterval(() => {
+          if (typeof AprilTag !== 'undefined') {
+            log("✅ AprilTag library loaded");
+            clearInterval(interval);
+            resolve();
+          }
+        }, 100);
+        setTimeout(() => {
+          clearInterval(interval);
+          log("❌ AprilTag library failed to load");
+          resolve(); // Proceed anyway, error will show in detection
+        }, 10000);
+      });
+    }
+  
     async function processWhiteOutline(canvas) {
       try {
+        await waitForAprilTag();
         let src = cv.imread(canvas);
       
         // AprilTag detection
         let gray = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
         
-        // Create a temporary canvas to get ImageData from gray Mat
+        // Create temporary canvas for ImageData
         let tempCanvas = document.createElement('canvas');
         tempCanvas.width = gray.cols;
         tempCanvas.height = gray.rows;
@@ -378,9 +396,9 @@
         let tempCtx = tempCanvas.getContext('2d');
         let imageData = tempCtx.getImageData(0, 0, gray.cols, gray.rows);
         
-        const detector = new apriltag();
+        const detector = new AprilTag();
         detector.addFamily('tag36h11');
-        const detections = detector.detect(imageData);
+        const detections = detector.detect(imageData.data, imageData.width, imageData.height);
         
         let bestVertices = null;
         
@@ -394,7 +412,7 @@
           if (markerMap[0] && markerMap[1] && markerMap[2] && markerMap[3]) {
             bestVertices = [];
             let tl = markerMap[0].p; // p: [[x,y], [x,y], [x,y], [x,y]] - top-left, top-right, bottom-right, bottom-left
-            bestVertices.push({x: tl[2][0], y: tl[2][1]}); // Bottom-right of top-left marker (inner corner example)
+            bestVertices.push({x: tl[2][0], y: tl[2][1]}); // Bottom-right of top-left marker
             let tr = markerMap[1].p;
             bestVertices.push({x: tr[3][0], y: tr[3][1]}); // Bottom-left of top-right
             let br = markerMap[2].p;
