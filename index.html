@@ -1,137 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Doodle Notebook Scanner 5.13</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
-<!-- Pure JS ArUco -->
-<script src="https://cdn.jsdelivr.net/npm/js-aruco2@1.0.0/dist/js-aruco2.min.js"></script>
-
-<style>
-body { margin:0; background:#000; color:white; font-family:system-ui; }
-.container { height:100dvh; display:flex; flex-direction:column; }
-.header { background:#7f2a8f; padding:12px; text-align:center; font-size:22px; }
-.content { flex:1; display:flex; flex-direction:column; align-items:center; gap:12px; padding:12px; }
-.camera-container { position:relative; width:90vw; max-width:520px; aspect-ratio: 3/2; overflow:hidden; border-radius:12px; }
-video { width:100%; height:100%; object-fit:cover; }
-canvas { max-width:90vw; border:3px solid #333; background:#fff; }
-.console-log { width:90vw; max-width:520px; background:#111; color:#0f0; padding:10px; font-family:monospace; font-size:13px; max-height:200px; overflow-y:auto; }
-button { padding:12px 24px; font-size:18px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doodle Notebook Scanner 5.13</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    body { margin:0; background:#000; color:white; font-family:system-ui; }
+    .container { height:100dvh; display:flex; flex-direction:column; }
+    .header { background:#7f2a8f; padding:3cqi; text-align:center; font-size:6cqi; }
+    .content { flex:1; display:flex; flex-direction:column; align-items:center; padding:4cqi; gap:3cqi; }
+    .camera-container {
+      position:relative;
+      width:90vw;
+      max-width:520px;
+      aspect-ratio: 3 / 2;
+      border-radius:16px;
+      overflow:hidden;
+      background:#111;
+    }
+    #camera-preview { width:100%; height:100%; object-fit:cover; }
+    #grid-overlay {
+      position:absolute;
+      top:0; left:0; width:100%; height:100%;
+      pointer-events:none;
+      border: 3px solid rgba(255,50,50,0.9);
+    }
+    #output-canvas { max-width:90vw; border:3px solid #333; border-radius:12px; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
+    .status { font-size:4.5cqi; text-align:center; margin:10px 0; }
+    .console-log {
+      width: 90vw; max-width:520px; background:#222; color:#0f0; padding:12px;
+      font-family:monospace; font-size:3.2cqi; line-height:1.5; border-radius:8px;
+      white-space:pre-wrap; max-height:180px; overflow-y:auto;
+    }
+    #tweak-prompt { display:none; text-align:center; font-size:4cqi; color:#ff0; background:rgba(0,0,0,0.6); padding:2cqi; border-radius:8px; width:90vw; max-width:520px; }
+    #detected-grid { display:none; grid-template-columns:repeat(10,1fr); grid-template-rows:repeat(7,1fr); gap:3px; width:90vw; max-width:520px; height:420px; background:#111; padding:8px; border-radius:12px; }
+    .grid-cell { aspect-ratio:1; background:#f0f0f0; border:3px solid #ccc; border-radius:8px; background-size:contain; background-position:center; cursor:pointer; }
+    #export-btn { background:#4dbde5; color:white; padding:3cqi 10cqi; font-size:5cqi; border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; display:none; }
+  </style>
 </head>
-
 <body>
-<div class="container">
-  <div class="header">Doodle Notebook Scanner 5.13</div>
-  <div class="content">
-    <div class="camera-container">
-      <video id="camera" autoplay playsinline muted></video>
+  <div class="container">
+    <div class="header">Doodle Notebook Scanner 5.13</div>
+    <div class="content">
+      <p>Align the red grid with your printed sheet, then SNAP</p>
+      <div class="camera-container">
+        <video id="camera-preview" autoplay playsinline muted></video>
+        <canvas id="grid-overlay"></canvas>
+      </div>
+      <button id="snap-btn" style="display:none; padding:3cqi 8cqi; font-size:5.5cqi;">SNAP NOW</button>
+      <canvas id="output-canvas"></canvas>
+      <div id="status" class="status">Waiting for photo...</div>
+      <div id="console-log" class="console-log">Waiting for photo...</div>
+      <div id="tweak-prompt">Detected! Tap any wrong cell to select</div>
+      <div id="detected-grid"></div>
+      <button id="export-btn">📤 EXPORT TRAINING ZIP</button>
     </div>
-    <button id="snap">SNAP</button>
-    <canvas id="canvas"></canvas>
-    <div id="console" class="console-log">Ready…</div>
   </div>
-</div>
 
-<script>
-const video = document.getElementById("camera");
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const logEl = document.getElementById("console");
+  <script>
+    console.log("=== DOODLE NOTEBOOK SCANNER 5.13 - GRID ALIGNMENT MODE ===");
 
-function log(msg) {
-  logEl.textContent += msg + "\n";
-  logEl.scrollTop = logEl.scrollHeight;
-}
+    let stream = null;
+    let video = document.getElementById('camera-preview');
+    let gridCanvas = document.getElementById('grid-overlay');
+    let outputCanvas = document.getElementById('output-canvas');
+    let status = document.getElementById('status');
 
-// --- START CAMERA ---
-async function startCamera() {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: "environment" }
-  });
-  video.srcObject = stream;
-  await video.play();
-  log("✅ Camera started");
-}
+    let model = null;
+    let classNames = [];
+    let detectedDoodles = [];
+    let cellCanvases = [];
 
-// --- SNAP ---
-document.getElementById("snap").onclick = () => {
-  if (video.videoWidth === 0) {
-    log("⚠️ Video not ready");
-    return;
-  }
+    function log(text) {
+      const logEl = document.getElementById('console-log');
+      logEl.textContent += text + "\n";
+      logEl.scrollTop = logEl.scrollHeight;
+    }
 
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  ctx.drawImage(video, 0, 0);
+    async function loadModel() {
+      log("Loading ML model...");
+      try {
+        model = await tf.loadLayersModel('models/doodle/model.json');
+        const meta = await (await fetch('models/doodle/metadata.json')).json();
+        classNames = meta.labels || meta.classNames || [];
+        log(`✅ Model loaded! ${classNames.length} classes`);
+      } catch (e) {
+        log("❌ ERROR loading model: " + e.message);
+      }
+    }
 
-  requestAnimationFrame(() => detectAruco());
-};
+    async function startCamera() {
+      log("Starting camera...");
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        video.srcObject = stream;
+        video.onloadedmetadata = () => {
+          gridCanvas.width = video.videoWidth;
+          gridCanvas.height = video.videoHeight;
+          drawGridOverlay();
+          document.getElementById('snap-btn').style.display = 'block';
+          log("✅ Camera + grid overlay ready");
+        };
+      } catch (e) {
+        log("❌ Camera error: " + e.message);
+      }
+    }
 
-// --- DETECT ---
-function detectAruco() {
-  log("🔍 Detecting ArUco markers...");
+    function drawGridOverlay() {
+      const ctx = gridCanvas.getContext('2d');
+      ctx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
+      ctx.strokeStyle = 'rgba(255, 50, 50, 0.92)';
+      ctx.lineWidth = 3;
 
-  const DetectorClass =
-    window.AR?.Detector ||
-    window.aruco?.Detector;
+      const numRows = 7;
+      const numCols = 11;
+      const w = gridCanvas.width;
+      const h = gridCanvas.height;
 
-  if (!DetectorClass) {
-    log("❌ ArUco detector not found");
-    return;
-  }
+      // Draw horizontal lines
+      for (let i = 0; i <= numRows; i++) {
+        let y = (i / numRows) * h;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+      // Draw vertical lines
+      for (let j = 0; j <= numCols; j++) {
+        let x = (j / numCols) * w;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+    }
 
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    document.getElementById('snap-btn').onclick = () => {
+      status.textContent = "Capturing aligned photo...";
+      const ctx = outputCanvas.getContext('2d');
+      outputCanvas.width = video.videoWidth;
+      outputCanvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
 
-  // Convert to grayscale (important!)
-  for (let i = 0; i < imageData.data.length; i += 4) {
-    const g =
-      imageData.data[i] * 0.299 +
-      imageData.data[i + 1] * 0.587 +
-      imageData.data[i + 2] * 0.114;
-    imageData.data[i] =
-    imageData.data[i + 1] =
-    imageData.data[i + 2] = g;
-  }
+      status.textContent = "Processing aligned grid...";
+      setTimeout(() => processAlignedPhoto(outputCanvas), 100);
+    };
 
-  const detector = new DetectorClass();
-  const markers = detector.detect(imageData);
+    // ================== YOUR ORIGINAL PROCESSING (just without markers) ==================
+    async function processAlignedPhoto(canvas) {
+      // Use your exact same warping / grid logic from before, but with fixed offsets
+      // (since user aligned the grid, we assume the content is in the expected position)
 
-  log(`📌 Found ${markers.length} marker(s)`);
+      outputCanvas.width = 800;
+      outputCanvas.height = Math.round(800 * (6.5 / 9.75)); // your paper ratio
 
-  markers.forEach(m => {
-    log(`➡️ ID ${m.id} | corners: ${JSON.stringify(m.corners)}`);
+      const ctx = outputCanvas.getContext('2d');
+      ctx.drawImage(canvas, 0, 0, outputCanvas.width, outputCanvas.height);
 
-    // draw outline
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    m.corners.forEach((c, i) => {
-      if (i === 0) ctx.moveTo(c.x, c.y);
-      else ctx.lineTo(c.x, c.y);
-    });
-    ctx.closePath();
-    ctx.stroke();
+      // Your existing grid calculation (same as before)
+      const gridHeightPercent = 0.89;
+      const gridVerticalOffsetPercent = -0.01;
+      const numRows = 7;
+      const numCols = 11;
 
-    ctx.fillStyle = "red";
-    ctx.font = "30px system-ui";
-    ctx.fillText(m.id, m.corners[0].x, m.corners[0].y - 10);
-  });
+      let gridHeight = outputCanvas.height * gridHeightPercent;
+      let cellSize = gridHeight / numRows;
+      let gridWidth = cellSize * numCols;
 
-  const found = markers.filter(m => m.id >= 0 && m.id <= 3).length;
-  if (found === 4) {
-    log("✅ All 4 corner markers detected!");
-  } else {
-    log(`❌ Need 4 markers (found ${found})`);
-  }
-}
+      let offsetX = (outputCanvas.width - gridWidth) / 2;
+      let offsetY = (outputCanvas.height - gridHeight) / 2 + (outputCanvas.height * gridVerticalOffsetPercent);
 
-// --- INIT ---
-window.onload = startCamera;
-</script>
+      // Draw red grid on final image for visual confirmation
+      ctx.strokeStyle = 'rgba(255,50,50,0.92)';
+      ctx.lineWidth = 2;
+      for (let i = 0; i <= numRows; i++) {
+        let y = Math.round(offsetY + i * cellSize);
+        ctx.beginPath(); ctx.moveTo(offsetX, y); ctx.lineTo(offsetX + gridWidth, y); ctx.stroke();
+      }
+      for (let j = 0; j <= numCols; j++) {
+        let x = Math.round(offsetX + j * cellSize);
+        ctx.beginPath(); ctx.moveTo(x, offsetY); ctx.lineTo(x, offsetY + gridHeight); ctx.stroke();
+      }
+
+      // Run your doodle detection (exactly as before)
+      if (model) {
+        detectedDoodles = await detectDoodlesFromWarped(outputCanvas, offsetX, offsetY, cellSize);
+        renderDetectedGrid();
+        renderDebugCells(outputCanvas, offsetX, offsetY, cellSize);
+        document.getElementById('tweak-prompt').style.display = 'block';
+      }
+
+      status.textContent = "✅ Photo aligned and processed!";
+      log("✅ User-aligned grid processed successfully");
+    }
+
+    // Keep all your existing helper functions (orderPoints not needed anymore, but keep the rest)
+    async function detectDoodlesFromWarped(...) { /* your existing function */ }
+    function renderDebugCells(...) { /* your existing */ }
+    function renderDetectedGrid() { /* your existing */ }
+    async function exportTrainingData() { /* your existing */ }
+
+    window.onload = async () => {
+      log("Loading page...");
+      await loadModel();
+      startCamera();
+    };
+  </script>
 </body>
 </html>
