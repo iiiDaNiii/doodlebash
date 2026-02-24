@@ -3,22 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 6.2</title>
+  <title>Doodle Notebook Scanner 6.3</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     body { margin:0; background:#000; color:white; font-family:system-ui; }
     .container { height:100dvh; display:flex; flex-direction:column; }
     .header { background:#7f2a8f; padding:3cqi; text-align:center; font-size:6cqi; }
-    .content { flex:1; display:flex; flex-direction:column; align-items:center; padding:4cqi; gap:3cqi; }
+    .content { 
+      flex:1; 
+      display:flex; 
+      flex-direction:column; 
+      align-items:center; 
+      padding:4cqi; 
+      gap:3cqi; 
+    }
     .camera-container {
       position:relative;
       width:90vw;
       max-width:520px;
-      aspect-ratio: 3 / 2;
-      border-radius:16px;
+      aspect-ratio: 11 / 7;   /* exact ratio for square cells when full-edge */
+      border-radius: 0;       /* removed rounding so grid reaches edges */
       overflow:hidden;
       background:#111;
+      border: 4px solid #333;
     }
     #camera-preview { width:100%; height:100%; object-fit:cover; }
     #grid-overlay {
@@ -59,8 +67,22 @@
       background-repeat:no-repeat; cursor:pointer; transition:transform .2s;
     }
     .grid-cell:hover { transform:scale(1.12); }
-    #export-btn { background:#4dbde5; color:white; padding:3cqi 10cqi; font-size:5cqi; border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; display:none; }
+    #export-btn { 
+      background:#4dbde5; color:white; padding:3cqi 10cqi; font-size:5cqi; 
+      border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; 
+      display:none; 
+    }
     
+    /* SNAP button at bottom for thumb comfort */
+    #snap-btn { 
+      margin-top: auto; 
+      width: 85%; 
+      max-width: 520px; 
+      padding: 4cqi 8cqi; 
+      font-size: 6cqi; 
+      font-weight: bold;
+    }
+
     #doodle-popup {
       display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
       background:rgba(0,0,0,0.8); padding:4cqi; border-radius:16px; z-index:100;
@@ -81,25 +103,27 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Doodle Notebook Scanner 6.2</div>
+    <div class="header">Doodle Notebook Scanner 6.3</div>
     <div class="content">
-      <p>Align the two red page grids with your notebook pages.<br>Fill the inset area edge-to-edge then tap SNAP.</p>
+      <p>Align the two red page grids with your notebook pages.<br>Fill the preview edge-to-edge then tap SNAP.</p>
       
       <div class="camera-container">
         <video id="camera-preview" autoplay playsinline muted></video>
         <canvas id="grid-overlay"></canvas>
       </div>
-      
-      <button id="snap-btn" style="display:none; padding:3cqi 8cqi; font-size:5.5cqi;">SNAP NOW</button>
+
       <canvas id="output-canvas"></canvas>
       <div id="status" class="status">Align grids then SNAP</div>
-      <div class="debug" id="debug-info">6.2 • Two separate 5×7 pages • Exact live crop</div>
+      <div class="debug" id="debug-info">6.3 • Full-edge grid • Bold lines • Square cells</div>
       
       <div id="debug-cells" class="debug-cells"></div>
       <div id="console-log" class="console-log">Waiting for photo...</div>
       <div id="tweak-prompt">Detected! Tap any wrong cell to correct</div>
       <div id="detected-grid"></div>
       <button id="export-btn">📤 EXPORT TRAINING ZIP</button>
+
+      <!-- SNAP button moved to bottom -->
+      <button id="snap-btn" style="display:none;">SNAP NOW</button>
     </div>
   </div>
 
@@ -108,9 +132,7 @@
   </div>
 
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 6.2 - TWO SEPARATE PAGES + EXACT CROP ===");
-
-    const OVERLAY_INSET = 0.07; // tweak for more/less padding
+    console.log("=== DOODLE NOTEBOOK SCANNER 6.3 - FULL-EDGE + BOTTOM SNAP ===");
 
     // Shared state
     let stream = null;
@@ -144,21 +166,8 @@
     }
 
     function getCurrentGridRect(displayW, displayH) {
-      let availW = displayW * (1 - 2 * OVERLAY_INSET);
-      let availH = displayH * (1 - 2 * OVERLAY_INSET);
-      const targetRatio = 11 / 7;
-
-      let gridW = availW;
-      let gridH = availH;
-      if (gridW / gridH > targetRatio) gridW = gridH * targetRatio;
-      else gridH = gridW / targetRatio;
-
-      return {
-        left: Math.round((displayW - gridW) / 2),
-        top: Math.round((displayH - gridH) / 2),
-        w: Math.round(gridW),
-        h: Math.round(gridH)
-      };
+      // Full edge-to-edge (no inset)
+      return { left: 0, top: 0, w: displayW, h: displayH };
     }
 
     function getVideoSourceRect(displayRect) {
@@ -173,12 +182,10 @@
       let scale, offsetX = 0, offsetY = 0;
 
       if (videoAspect > containerAspect) {
-        // video wider → cropped left/right
         scale = ch / vh;
         const displayedW = vw * scale;
         offsetX = (displayedW - cw) / 2;
       } else {
-        // video taller → cropped top/bottom (most common on phones)
         scale = cw / vw;
         const displayedH = vh * scale;
         offsetY = (displayedH - ch) / 2;
@@ -196,12 +203,11 @@
       const unitW = gw / 11;
       const unitH = gh / 7;
       ctx.lineCap = 'round';
-      ctx.strokeStyle = 'rgba(255,50,50,0.92)';
-      ctx.lineWidth = Math.max(2.2, gw / 400);
+      ctx.strokeStyle = 'rgba(255,50,50,0.95)';
+      ctx.lineWidth = Math.max(5.5, gw / 220);   // bolder lines
 
       // Left page (5 columns)
       const leftW = 5 * unitW;
-      // Horizontal lines - only over left page
       for (let i = 0; i <= 7; i++) {
         const y = gy + Math.round(i * unitH);
         ctx.beginPath();
@@ -209,7 +215,6 @@
         ctx.lineTo(gx + leftW, y);
         ctx.stroke();
       }
-      // Vertical lines for left page
       for (let i = 0; i <= 5; i++) {
         const x = gx + Math.round(i * unitW);
         ctx.beginPath();
@@ -221,7 +226,6 @@
       // Right page (5 columns)
       const rightStart = gx + 6 * unitW;
       const rightW = 5 * unitW;
-      // Horizontal lines - only over right page
       for (let i = 0; i <= 7; i++) {
         const y = gy + Math.round(i * unitH);
         ctx.beginPath();
@@ -229,7 +233,6 @@
         ctx.lineTo(rightStart + rightW, y);
         ctx.stroke();
       }
-      // Vertical lines for right page
       for (let i = 0; i <= 5; i++) {
         const x = rightStart + Math.round(i * unitW);
         ctx.beginPath();
@@ -285,7 +288,6 @@
         0, 0, sourceRect.w, sourceRect.h
       );
 
-      // Show exactly what the user aligned
       outputCanvas.width = sourceRect.w;
       outputCanvas.height = sourceRect.h;
       const outCtx = outputCanvas.getContext('2d');
@@ -305,7 +307,7 @@
 
       detectedDoodles = [];
       cellCanvases = [];
-      log("🚀 Detecting 70 doodles from exact live crop...");
+      log("🚀 Detecting 70 doodles from full-edge grid...");
 
       for (let r = 0; r < numRows; r++) {
         for (let c of playableCols) {
@@ -370,7 +372,7 @@
       }
     }
 
-    // Unchanged UI functions (showDoodlePopup, renderDetectedGrid, exportTrainingData)
+    // Unchanged UI functions below...
     let currentCellIndex = -1;
     function showDoodlePopup(index) {
       currentCellIndex = index;
