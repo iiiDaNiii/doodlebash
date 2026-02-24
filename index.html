@@ -7,33 +7,39 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
-    body { margin:0; background:#000; color:white; font-family:system-ui; overflow:hidden; }
+    body { margin:0; background:#000; color:white; font-family:system-ui; }
     .container { height:100dvh; display:flex; flex-direction:column; }
     .header { background:#7f2a8f; padding:3cqi; text-align:center; font-size:6cqi; }
     .content { flex:1; display:flex; flex-direction:column; align-items:center; padding:4cqi; gap:3cqi; transition:all .6s; }
-    .camera-container, #output-canvas, .debug, #console-log, #tweak-prompt, #snap-btn, #debug-cells { transition:all .6s; }
     .scoring-mode .camera-container,
     .scoring-mode #output-canvas,
     .scoring-mode .debug,
     .scoring-mode #console-log,
     .scoring-mode #tweak-prompt,
     .scoring-mode #snap-btn,
-    .scoring-mode #debug-cells { opacity:0; height:0; margin:0; overflow:hidden; }
-
+    .scoring-mode #debug-cells { display:none !important; }
     .camera-container { position:relative; width:90vw; max-width:520px; aspect-ratio: 11 / 7; border-radius:0; overflow:hidden; background:#111; border:4px solid #333; }
     #camera-preview { width:100%; height:100%; object-fit:cover; }
     #grid-overlay { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:2; }
-    #detected-grid { display:none; grid-template-columns:repeat(10,1fr); grid-template-rows:repeat(7,1fr); gap:3px; width:90vw; max-width:520px; background:#111; padding:8px; border-radius:12px; }
+    #output-canvas { max-width:90vw; border:3px solid #333; border-radius:12px; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
+    .status { font-size:4.5cqi; text-align:center; margin:10px 0; }
+    .debug { font-size:3.2cqi; color:#aaa; text-align:left; max-width:520px; padding:2cqi; background:rgba(255,255,255,0.05); border-radius:8px; }
+    .debug-cells { display:grid; grid-template-columns:repeat(10,1fr); gap:4px; width:90vw; max-width:520px; }
+    .debug-cell { border:2px solid #666; border-radius:8px; overflow:hidden; aspect-ratio:1/1; }
+    .debug-cell canvas { width:100%; height:100%; display:block; }
+    .console-log { width:90vw; max-width:520px; background:#222; color:#0f0; padding:12px; font-family:monospace; font-size:3.2cqi; line-height:1.5; border-radius:8px; white-space:pre-wrap; max-height:180px; overflow-y:auto; }
+    #tweak-prompt { display:none; text-align:center; font-size:4cqi; color:#ff0; background:rgba(0,0,0,0.6); padding:2cqi; border-radius:8px; width:90vw; max-width:520px; }
+    #detected-grid { display:none; grid-template-columns:repeat(10,1fr); grid-template-rows:repeat(7,1fr); gap:3px; width:90vw; max-width:520px; height:420px; background:#111; padding:8px; border-radius:12px; }
     .grid-cell { position:relative; aspect-ratio:1; background:transparent; border:none; background-size:contain; background-position:center; background-repeat:no-repeat; cursor:pointer; transition:transform .4s; }
     .grid-cell:hover { transform:scale(1.12); }
     .grid-cell.low-confidence { box-shadow:0 0 0 6px rgba(255,255,0,0.8); }
-    .grid-cell.scoring { transform:scale(1.25); z-index:5; }
-    .point-bubble { position:absolute; width:82px; height:82px; background-size:contain; background-repeat:no-repeat; background-position:center; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:bold; color:#fff; text-shadow:0 2px 6px #000; pointer-events:none; z-index:20; }
+    .grid-cell.scoring { transform:scale(1.25); }
+    .point-bubble { position:absolute; width:85px; height:85px; background-size:contain; background-repeat:no-repeat; background-position:center; display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:bold; color:#fff; text-shadow:0 2px 8px #000; pointer-events:none; z-index:30; transition:all .8s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
     #score-tally { display:none; width:90vw; max-width:520px; background:#1a1a1a; padding:15px; border-radius:16px; margin-top:15px; max-height:45vh; overflow-y:auto; }
     .tally-row { display:flex; align-items:center; background:#222; border-radius:12px; padding:10px 15px; margin-bottom:10px; }
     .tally-row img { width:55px; height:55px; object-fit:contain; margin-right:15px; }
     .tally-line { flex:1; height:3px; background:#555; margin:0 15px; border-radius:3px; }
-    .score-box { padding:8px 22px; background:#333; border-radius:9999px; font-size:5.2cqi; font-weight:bold; min-width:90px; text-align:center; }
+    .score-box { padding:8px 25px; background:#333; border-radius:9999px; font-size:5.2cqi; font-weight:bold; min-width:100px; text-align:center; }
     #score-btn, #export-btn, #new-scan-btn { background:#5fbae9; color:white; padding:3.5cqi 12cqi; font-size:5.5cqi; border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; }
     #final-total { font-size:10cqi; font-weight:bold; color:#ff0; margin:20px 0; text-align:center; }
     #doodle-popup { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.9); padding:4cqi; border-radius:16px; z-index:100; box-shadow:0 0 30px rgba(255,255,255,0.3); }
@@ -45,7 +51,7 @@
 <body>
   <div class="container">
     <div class="header">Doodle Notebook Scanner 8.0</div>
-    <div class="content" id="main-content">
+    <div class="content">
       <p>Align the two blue page grids with your notebook pages.<br>Fill the preview edge-to-edge then tap SNAP.</p>
       
       <div class="camera-container">
@@ -54,7 +60,7 @@
       </div>
 
       <canvas id="output-canvas"></canvas>
-      <div id="status" class="status">Align grids then SNAP</div>
+      <div id="status" class="status">Waiting for photo...</div>
       <div class="debug" id="debug-info">8.0 • Clean scoring mode</div>
       
       <div id="debug-cells" class="debug-cells"></div>
@@ -77,17 +83,15 @@
   </div>
 
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 8.0 ===");
+    console.log("=== DOODLE NOTEBOOK SCANNER 8.0 FULL ===");
 
     const LOW_CONFIDENCE_THRESHOLD = 0.75;
     const playableCols = [0,1,2,3,4,6,7,8,9,10];
-    const simpleTypes = ['turd','music','planet','star','flower','coin','heart','pizza','diamond','icecream','sword','present'];
 
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
     let statusEl = document.getElementById('status');
-    let mainContent = document.getElementById('main-content');
 
     let model = null;
     let classNames = [];
@@ -98,25 +102,192 @@
     let perCellScore = Array(7).fill().map(() => Array(11).fill(0));
     let gridCells = [];
 
-    function log(text) { /* same as before */ }
+    function log(text) {
+      const logEl = document.getElementById('console-log');
+      logEl.textContent += text + "\n";
+      logEl.scrollTop = logEl.scrollHeight;
+    }
 
-    async function loadModel() { /* same as before */ }
+    async function loadModel() {
+      log("Loading ML model...");
+      try {
+        model = await tf.loadLayersModel('models/doodle/model.json');
+        const metadata = await fetch('models/doodle/metadata.json');
+        const meta = await metadata.json();
+        classNames = meta.labels || meta.classNames || [];
+        log(`✅ Model loaded! ${classNames.length} classes`);
+      } catch (e) {
+        log("❌ ERROR loading model: " + e.message);
+      }
+    }
 
-    async function startCamera() { /* same as before */ }
+    async function startCamera() {
+      statusEl.textContent = "Requesting camera permission...";
+      console.log("startCamera called");
+      try {
+        console.log("Calling getUserMedia...");
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        console.log("getUserMedia succeeded");
+        video.srcObject = stream;
+        statusEl.textContent = "Camera stream attached – waiting for video data...";
+        video.onloadeddata = () => {
+          console.log("onloadeddata fired – camera ready");
+          document.getElementById('snap-btn').style.display = 'block';
+          initGridOverlay();
+          statusEl.textContent = "Camera ready! Point at notebook and SNAP";
+        };
+      } catch (e) {
+        console.error("getUserMedia failed:", e.name, e.message);
+        statusEl.textContent = `Camera error: ${e.name} – ${e.message || 'Check console'}. Make sure you're on localhost or https.`;
+      }
+    }
 
     function getCurrentGridRect(w, h) { return {left:0, top:0, w, h}; }
 
-    function getVideoSourceRect(displayRect) { /* same as before */ }
+    function getVideoSourceRect(displayRect) {
+      const vw = video.videoWidth, vh = video.videoHeight;
+      const cw = video.clientWidth, ch = video.clientHeight;
+      const videoAspect = vw / vh, containerAspect = cw / ch;
+      let scale, offsetX = 0, offsetY = 0;
+      if (videoAspect > containerAspect) {
+        scale = ch / vh;
+        offsetX = (vw * scale - cw) / 2;
+      } else {
+        scale = cw / vw;
+        offsetY = (vh * scale - ch) / 2;
+      }
+      return {
+        left: Math.round((displayRect.left + offsetX) / scale),
+        top: Math.round((displayRect.top + offsetY) / scale),
+        w: Math.round(displayRect.w / scale),
+        h: Math.round(displayRect.h / scale)
+      };
+    }
 
-    function drawOverlayGrid(ctx, gx, gy, gw, gh) { /* same as before */ }
+    function drawOverlayGrid(ctx, gx, gy, gw, gh) {
+      const unitW = gw / 11;
+      const unitH = gh / 7;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = 'rgba(95, 186, 233, 0.95)';
+      ctx.lineWidth = Math.max(2.8, gw / 380);
 
-    function initGridOverlay() { /* same as before */ }
+      const leftW = 5 * unitW;
+      for (let i = 0; i <= 7; i++) {
+        const y = gy + Math.round(i * unitH);
+        ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx + leftW, y); ctx.stroke();
+      }
+      for (let i = 0; i <= 5; i++) {
+        const x = gx + Math.round(i * unitW);
+        ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gh); ctx.stroke();
+      }
+      const rightStart = gx + 6 * unitW;
+      const rightW = 5 * unitW;
+      for (let i = 0; i <= 7; i++) {
+        const y = gy + Math.round(i * unitH);
+        ctx.beginPath(); ctx.moveTo(rightStart, y); ctx.lineTo(rightStart + rightW, y); ctx.stroke();
+      }
+      for (let i = 0; i <= 5; i++) {
+        const x = rightStart + Math.round(i * unitW);
+        ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gh); ctx.stroke();
+      }
+    }
 
-    document.getElementById('snap-btn').onclick = async () => { /* same capture + detectFromCropped as before */ };
+    function initGridOverlay() {
+      const overlay = document.getElementById('grid-overlay');
+      function redraw() {
+        overlay.width = video.clientWidth;
+        overlay.height = video.clientHeight;
+        const ctx = overlay.getContext('2d');
+        ctx.clearRect(0, 0, overlay.width, overlay.height);
+        const rect = getCurrentGridRect(overlay.width, overlay.height);
+        drawOverlayGrid(ctx, rect.left, rect.top, rect.w, rect.h);
+      }
+      redraw();
+      window.addEventListener('resize', redraw);
+    }
 
-    async function detectFromCropped(cropped) { /* same as before, calls buildBoard + renderDetectedGrid */ }
+    document.getElementById('snap-btn').onclick = async () => {
+      statusEl.textContent = "Capturing...";
+      const captured = document.createElement('canvas');
+      captured.width = video.videoWidth;
+      captured.height = video.videoHeight;
+      captured.getContext('2d').drawImage(video, 0, 0);
 
-    function buildBoard() { /* same */ }
+      const displayRect = getCurrentGridRect(video.clientWidth, video.clientHeight);
+      const sourceRect = getVideoSourceRect(displayRect);
+
+      const cropped = document.createElement('canvas');
+      cropped.width = sourceRect.w;
+      cropped.height = sourceRect.h;
+      cropped.getContext('2d').drawImage(captured, sourceRect.left, sourceRect.top, sourceRect.w, sourceRect.h, 0, 0, sourceRect.w, sourceRect.h);
+
+      outputCanvas.width = sourceRect.w;
+      outputCanvas.height = sourceRect.h;
+      const outCtx = outputCanvas.getContext('2d');
+      outCtx.drawImage(cropped, 0, 0);
+      drawOverlayGrid(outCtx, 0, 0, sourceRect.w, sourceRect.h);
+
+      await detectFromCropped(cropped);
+    };
+
+    async function detectFromCropped(cropped) {
+      const numCols = 11;
+      const numRows = 7;
+      const cellW = cropped.width / numCols;
+      const cellH = cropped.height / numRows;
+
+      detectedDoodles = [];
+      confidences = [];
+      cellCanvases = [];
+      log("🚀 Detecting 70 doodles...");
+
+      for (let r = 0; r < numRows; r++) {
+        for (let pc of playableCols) {
+          const cellCanvas = document.createElement('canvas');
+          cellCanvas.width = 224;
+          cellCanvas.height = 224;
+          const cellCtx = cellCanvas.getContext('2d');
+          cellCtx.drawImage(cropped, Math.round(pc * cellW), Math.round(r * cellH), Math.round(cellW), Math.round(cellH), 0, 0, 224, 224);
+          cellCanvases.push(cellCanvas);
+
+          const tensor = tf.browser.fromPixels(cellCanvas).expandDims(0).toFloat().div(255);
+          const prediction = model.predict(tensor);
+          const scores = await prediction.array();
+          let scoresArray = scores[0].slice();
+
+          let maxIndex = scoresArray.indexOf(Math.max(...scoresArray));
+          let predicted = classNames[maxIndex];
+          let confidence = scoresArray[maxIndex];
+
+          if (predicted === 'unknown' && scoresArray.length > 1) {
+            scoresArray[maxIndex] = -999;
+            maxIndex = scoresArray.indexOf(Math.max(...scoresArray));
+            predicted = classNames[maxIndex];
+            confidence = scoresArray[maxIndex];
+          }
+
+          log(`Cell [${r},${pc}] → ${predicted} (${(confidence*100).toFixed(1)}%)`);
+          detectedDoodles.push(predicted);
+          confidences.push(confidence);
+        }
+      }
+
+      buildBoard();
+      renderDetectedGrid();
+      document.getElementById('score-btn').style.display = 'block';
+      document.getElementById('export-btn').style.display = 'block';
+      statusEl.textContent = "Ready to score!";
+    }
+
+    function buildBoard() {
+      board = Array(7).fill().map(() => Array(11).fill(null));
+      let idx = 0;
+      for (let r = 0; r < 7; r++) {
+        for (let c of playableCols) {
+          board[r][c] = detectedDoodles[idx++];
+        }
+      }
+    }
 
     function renderDetectedGrid() {
       const grid = document.getElementById('detected-grid');
@@ -134,24 +305,394 @@
         grid.appendChild(cell);
         gridCells.push(cell);
       });
-      document.getElementById('score-btn').style.display = 'block';
     }
 
     let currentCellIndex = -1;
-    function showDoodlePopup(index) { /* same as before */ }
+    function showDoodlePopup(index) {
+      currentCellIndex = index;
+      const popup = document.getElementById('doodle-popup');
+      const grid = document.getElementById('popup-grid');
+      grid.innerHTML = '';
+      const opts = classNames.filter(name => name !== 'unknown');
+      opts.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'popup-item';
+        item.style.backgroundImage = `url('images/${d}.png')`;
+        item.onclick = () => {
+          const cell = document.querySelector(`.grid-cell[data-index="${index}"]`);
+          cell.dataset.doodle = d;
+          cell.className = `grid-cell ${d}`;
+          cell.style.backgroundImage = `url('images/${d}.png')`;
+          detectedDoodles[index] = d;
+          cell.classList.remove('low-confidence');
+          popup.style.display = 'none';
+        };
+        grid.appendChild(item);
+      });
+      popup.style.display = 'block';
+    }
 
-    async function exportTrainingData() { /* same as before */ }
+    async function exportTrainingData() {
+      const zip = new JSZip();
+      log("📦 Building training ZIP...");
+      detectedDoodles.forEach((doodle, i) => {
+        const className = doodle.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const randomNum = Math.floor(Math.random() * 900000) + 100000;
+        const filename = `${className}${randomNum}.png`;
+        cellCanvases[i].toBlob(blob => zip.file(filename, blob), 'image/png');
+      });
+      setTimeout(async () => {
+        const content = await zip.generateAsync({type: "blob"});
+        const url = URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `doodle-training-${new Date().toISOString().slice(0,10)}.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+        log(`✅ Exported ${detectedDoodles.length} images!`);
+      }, 500);
+    }
 
-    // ====================== SCORING ======================
-    const scoringRules = [ /* same full list as before */ ];
+    // SCORING RULES AND FUNCTIONS
 
-    function getSurrounding(r, c) { /* same */ }
+    const scoringRules = [
+      {type:'turd', base:-2},
+      {type:'music', base:1},
+      {type:'planet', base:1},
+      {type:'star', base:2},
+      {type:'flower', base:2},
+      {type:'coin', base:2},
+      {type:'heart', base:2},
+      {type:'pizza', base:3},
+      {type:'diamond', base:4},
+      {type:'icecream', base:4},
+      {type:'sword', base:5},
+      {type:'present', base:6},
+      {type:'3dset', calc:calculate3DSet},
+      {type:'chest', calc:calculateChest},
+      {type:'rocket', calc:calculateRocket},
+      {type:'cat', calc:calculateCat},
+      {type:'cloud', calc:calculateCloud},
+      {type:'umbrella', calc:calculateUmbrella},
+      {type:'mug', calc:calculateMug},
+      {type:'toiletpaper', calc:calculateToiletpaper},
+      {type:'house', calc:calculateHouse},
+      {type:'crown', calc:calculateCrown},
+      {type:'smiley', calc:calculateSmiley},
+      {type:'letter', calc:calculateLetter},
+      {type:'piano', calc:calculatePiano},
+      {type:'butterfly', calc:calculateButterfly},
+      {type:'fish', calc:calculateFish},
+      {type:'boat', calc:calculateBoat},
+      {type:'die', calc:calculateDie}
+    ];
 
-    function calculateBase(type, pts) { /* same */ }
+    function getSurrounding(r, c) {
+      const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+      let list = [];
+      for (let [dr,dc] of dirs) {
+        let nr = r+dr, nc = c+dc;
+        if (nr>=0 && nr<7 && nc>=0 && nc<11 && board[nr][nc] !== null) {
+          list.push({r:nr, c:nc, doodle:board[nr][nc]});
+        }
+      }
+      return list;
+    }
 
-    function calculate3DSet() { /* same */ }
+    function calculateBase(type, pts) {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === type) {
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
 
-    // ... all other calculateXXX functions remain exactly the same as in the previous full version
+    function calculate3DSet() {
+      let cubes = 0, pyramids = 0, cylinders = 0, positions = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        let d = board[r][c];
+        if (d==='cube') {cubes++; positions.push({r,c});}
+        else if (d==='pyramid') {pyramids++; positions.push({r,c});}
+        else if (d==='cylinder') {cylinders++; positions.push({r,c});}
+      }
+      let sets = Math.min(Math.floor(cubes/2), Math.floor(pyramids/3), Math.floor(cylinders/2));
+      return {total: sets*20, positions, isGlobal:true};
+    }
+
+    function calculateChest() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'chest') {
+          let count = getSurrounding(r, c).filter(s => ['coin','diamond','crown'].includes(s.doodle)).length;
+          let pts = count * 2;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateRocket() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'rocket') {
+          let count = 0;
+          for (let rr=0; rr<7; rr++) {
+            if (rr !== r && (board[rr][c] === 'planet' || board[rr][c] === 'star')) count++;
+          }
+          let pts = count * 3;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateCat() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'cat') {
+          let count = getSurrounding(r, c).filter(s => ['fish','turd'].includes(s.doodle)).length;
+          let pts = 3 + count * 2;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateCloud() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'cloud') {
+          let count = 0;
+          let isLeft = c < 5;
+          for (let rr = r+1; rr < 7; rr++) {
+            if (board[rr][c] === 'drop' && (c < 5 === isLeft)) count++;
+          }
+          let pts = count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateUmbrella() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'umbrella') {
+          let count = 0;
+          let isLeft = c < 5;
+          for (let rr = 0; rr < r; rr++) {
+            if (board[rr][c] === 'drop' && (c < 5 === isLeft)) count++;
+          }
+          let pts = count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateMug() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'mug') {
+          let hasDropAbove = (r > 0 && board[r-1][c] === 'drop');
+          let pts = 2 + (hasDropAbove ? 2 : 0);
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateToiletpaper() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'toiletpaper') {
+          let count = getSurrounding(r, c).filter(s => s.doodle === 'turd').length;
+          let pts = 1 + count * 7;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateHouse() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'house') {
+          let count = getSurrounding(r, c).filter(s => ['smiley','wifi'].includes(s.doodle)).length;
+          let pts = 1 + count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateCrown() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'crown') {
+          let hasSmileyBelow = (r < 6 && board[r+1][c] === 'smiley');
+          let pts = 3 + (hasSmileyBelow ? 1 : 0);
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateSmiley() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'smiley') {
+          let count = getSurrounding(r, c).filter(s => ['pizza','icecream'].includes(s.doodle)).length;
+          let pts = 1 + count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateLetter() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'letter') {
+          let hasHeartAbove = (r > 0 && board[r-1][c] === 'heart');
+          let pts = 1 + (hasHeartAbove ? 5 : 0);
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculatePiano() {
+      let columnsWithMusic = new Set();
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'music') columnsWithMusic.add(c);
+      }
+      let numCols = columnsWithMusic.size;
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'piano') {
+          let pts = numCols;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateButterfly() {
+      let visited = Array(7).fill().map(() => Array(11).fill(false));
+      let maxSize = 0;
+      const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+
+      function dfs(r, c) {
+        if (r<0 || r>=7 || c<0 || c>=11 || visited[r][c] || board[r][c] !== 'flower') return 0;
+        visited[r][c] = true;
+        let size = 1;
+        for (let [dr,dc] of dirs) size += dfs(r+dr, c+dc);
+        return size;
+      }
+
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'flower' && !visited[r][c]) {
+          maxSize = Math.max(maxSize, dfs(r, c));
+        }
+      }
+      let total = maxSize * 1;
+      return {total, positions: []};
+    }
+
+    function calculateFish() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'fish') {
+          let count = getSurrounding(r, c).filter(s => s.doodle === 'fish').length;
+          let pts = count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateBoat() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'boat') {
+          let count = 0;
+          let isLeft = c < 5;
+          for (let rr = r+1; rr < 7; rr++) {
+            if (board[rr][c] === 'fish' && (c < 5 === isLeft)) count++;
+          }
+          let pts = count * 2;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateDie() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'die') {
+          let neighbors = getSurrounding(r, c);
+          let maxNeighbor = 0;
+          for (let n of neighbors) {
+            maxNeighbor = Math.max(maxNeighbor, perCellScore[n.r][n.c]);
+          }
+          let pts = maxNeighbor;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
 
     async function animateCell(cell, pts) {
       cell.classList.add('scoring');
@@ -162,25 +703,23 @@
         bubble.textContent = pts > 0 ? `+${pts}` : pts;
         cell.appendChild(bubble);
 
-        // Jump up + spin
         bubble.style.transition = 'none';
         bubble.style.top = '50%';
         bubble.style.left = '50%';
         bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)';
         bubble.offsetHeight;
-        bubble.style.transition = 'transform 0.85s cubic-bezier(0.68, -0.55, 0.27, 1.55), top 0.85s, left 0.85s';
-        bubble.style.transform = 'translate(-50%, -220%) scale(1.35) rotate(360deg)';
+        bubble.style.transition = 'transform 0.9s cubic-bezier(0.68, -0.55, 0.27, 1.55), top 0.9s';
+        bubble.style.transform = 'translate(-50%, -220%) scale(1.4) rotate(360deg)';
         bubble.style.top = '15%';
 
-        // Settle to top-left corner small
         setTimeout(() => {
-          bubble.style.transition = 'transform 0.6s ease-out, top 0.6s, left 0.6s';
-          bubble.style.transform = 'translate(-50%, -50%) scale(0.32) rotate(360deg)';
-          bubble.style.top = '12%';
-          bubble.style.left = '12%';
-        }, 900);
+          bubble.style.transition = 'transform 0.7s ease-out, top 0.7s, left 0.7s';
+          bubble.style.transform = 'translate(-50%, -50%) scale(0.3) rotate(360deg)';
+          bubble.style.top = '10%';
+          bubble.style.left = '10%';
+        }, 950);
       }
-      await new Promise(r => setTimeout(r, 650));
+      await new Promise(r => setTimeout(r, 700));
       cell.classList.remove('scoring');
     }
 
@@ -188,23 +727,15 @@
       const tally = document.getElementById('score-tally');
       const row = document.createElement('div');
       row.className = 'tally-row';
-
       const img = document.createElement('img');
-      if (type === '3dset') {
-        img.src = 'images/cube.png';
-        img.style.opacity = '0.9';
-      } else if (type === 'variety') {
-        img.style.display = 'none';
-      } else {
-        img.src = `images/${type}.png`;
-      }
+      img.src = type === '3dset' ? 'images/cube.png' : type === 'variety' ? '' : `images/${type}.png`;
+      if (type === 'variety') img.style.display = 'none';
       const line = document.createElement('div');
       line.className = 'tally-line';
       const scoreBox = document.createElement('div');
       scoreBox.className = 'score-box';
       scoreBox.textContent = subtotal >= 0 ? `+${subtotal}` : subtotal;
       scoreBox.style.color = subtotal >= 0 ? '#5fbae9' : '#ff6666';
-
       row.append(img, line, scoreBox);
       tally.appendChild(row);
     }
@@ -214,8 +745,9 @@
       perCellScore = Array(7).fill().map(() => Array(11).fill(0));
 
       mainContent.classList.add('scoring-mode');
-      document.getElementById('score-tally').style.display = 'block';
-      document.getElementById('score-tally').innerHTML = '';
+      const tally = document.getElementById('score-tally');
+      tally.style.display = 'block';
+      tally.innerHTML = '';
 
       let total = 0;
 
@@ -233,28 +765,25 @@
           }));
         }
 
-        // Add tally row for this type
         const displayType = rule.type === '3dset' ? '3dset' : rule.type;
         addTallyRow(displayType, result.total || 0);
 
         await new Promise(r => setTimeout(r, 420));
       }
 
-      // Variety bonus
       const unique = new Set(detectedDoodles).size;
       let bonus = unique <=12 ? -10 : unique<=14 ? 1 : unique===15 ? 5 : unique===16 ? 10 : unique===17 ? 16 : unique===18 ? 23 : unique===19 ? 31 : 40;
       total += bonus;
       addTallyRow('variety', bonus);
 
-      // Final total row
       const totalRow = document.createElement('div');
-      totalRow.style.fontSize = '7cqi';
+      totalRow.style.fontSize = '7.5cqi';
       totalRow.style.fontWeight = 'bold';
       totalRow.style.color = '#ff0';
       totalRow.style.textAlign = 'center';
-      totalRow.style.marginTop = '20px';
+      totalRow.style.marginTop = '25px';
       totalRow.textContent = `TOTAL SCORE: ${total}`;
-      document.getElementById('score-tally').appendChild(totalRow);
+      tally.appendChild(totalRow);
 
       document.getElementById('new-scan-btn').style.display = 'block';
       document.getElementById('export-btn').style.display = 'block';
