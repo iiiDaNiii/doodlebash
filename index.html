@@ -327,6 +327,7 @@
     .guide-doodle {
       width: 8.7cqi;
       height: auto;
+      cursor: pointer;
     }
 
     #full-guide-btn {
@@ -336,7 +337,6 @@
       font-size: 5cqi;
       border-radius: 9999px;
       display: none;
-      cursor: pointer;
     }
 
     #full-guide-btn:hover { transform: scale(1.05); }
@@ -375,10 +375,6 @@
       height: auto;
       vertical-align: middle;
       margin: 0 0.15em -0.2em;
-      background: none;
-      box-shadow: none;
-      border: none;
-      padding: 0;
     }
 
     /* TOAST */
@@ -408,7 +404,19 @@
       opacity: 1;
     }
 
-    /* SCORE MODAL CAMERA FIX + CENTERING/SCROLL FIX */
+    /* SCORE MODAL STYLES (with fixes) */
+    #score-modal .scanner-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4cqi;
+      gap: 3cqi;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 25cqi;
+    }
+
     #score-modal .camera-container {
       position: relative;
       width: 90cqi;
@@ -428,50 +436,29 @@
       background: #000;
     }
 
-    #score-modal .scanner-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 4cqi;
-      gap: 3cqi;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding-bottom: 25cqi;
-    }
-
     #score-modal .scanner-content > * {
-      width: 90cqi;
-      max-width: 520px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    #score-modal #score-output-canvas,
-    #score-modal #score-detected-grid,
-    #score-modal #score-tally,
-    #score-modal #score-debug-cells,
-    #score-modal #score-console-log,
-    #score-modal #score-tweak-prompt {
       width: 90cqi;
       max-width: 520px;
       margin: 0 auto;
     }
-
-    /* (rest of your original score styles remain the same) */
   </style>
 </head>
 <body>
 
   <div id="game-container">
-    <!-- header, shuffle-zone, footer (with SCORE button) remain exactly as before -->
     <div id="header">
       <button id="guide-btn">GUIDE</button>
       <button id="learn-btn">LEARN</button>
     </div>
     
     <div id="shuffle-zone">
-      <!-- doodles and shuffle button -->
+      <div id="doodle-l1"></div>
+      <div id="doodle-l2"></div>
+      <div id="doodle-l3"></div>
+      <div id="doodle-r1"></div>
+      <div id="doodle-r2"></div>
+      <div id="doodle-r3"></div>
+      <button id="shuffle-btn">SHUFFLE</button>
     </div>
 
     <div id="footer">
@@ -479,9 +466,33 @@
       <button id="score-btn">SCORE</button>
     </div>
 
-    <!-- all your existing modals (Learn, Portfolio) remain unchanged -->
+    <!-- LEARN MODAL -->
+    <div id="learn-modal" class="modal learn">
+      <div class="modal-top learn">
+        <div class="title">Learn a Doodle</div>
+        <div class="buttons">
+          <button class="action-btn learn" id="modal-learn-btn">LEARN</button>
+          <button class="close-btn" id="close-learn">✕</button>
+        </div>
+      </div>
+      <div id="learn-grid" class="modal-grid"></div>
+      <div class="modal-bottom-spacer"></div>
+    </div>
 
-    <!-- GUIDE MODAL - now interactive -->
+    <!-- PORTFOLIO MODAL -->
+    <div id="portfolio-modal" class="modal portfolio">
+      <div class="modal-top portfolio">
+        <div class="title">Portfolio</div>
+        <div class="buttons">
+          <button class="action-btn remove" id="modal-remove-btn">REMOVE</button>
+          <button class="close-btn" id="close-portfolio">✕</button>
+        </div>
+      </div>
+      <div id="portfolio-grid" class="modal-grid"></div>
+      <div class="modal-bottom-spacer"></div>
+    </div>
+
+    <!-- GUIDE MODAL -->
     <div id="guide-modal" class="modal guide">
       <div class="modal-top guide">
         <div class="title">Doodle Guide</div>
@@ -494,17 +505,118 @@
       <div class="modal-bottom-spacer"></div>
     </div>
 
-    <!-- SCORE MODAL - with all previous fixes -->
+    <!-- SCORE MODAL (placeholder - add your full scanner HTML here if needed) -->
     <div id="score-modal" class="modal score">
-      <!-- full score modal content from before -->
+      <div class="modal-top score">
+        <div class="title">Score My Sheet</div>
+        <div class="buttons">
+          <button class="close-btn" id="close-score">✕</button>
+        </div>
+      </div>
+      <div id="score-content" class="scanner-content">
+        <p>Score modal content goes here (camera, snap, etc.)</p>
+        <!-- Add your full score scanner markup if you want it back -->
+      </div>
     </div>
 
-    <!-- tooltip and toast -->
+    <!-- TOOLTIP -->
+    <div id="tooltip">
+      <div class="tooltip-desc" id="tooltip-desc"></div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
   </div>
 
   <script>
-    /* all your original JS remains exactly the same until the guide section */
+    // ────────────────────────────────────────────────
+    // DECK & DATA
+    // ────────────────────────────────────────────────
+    let deck = { 
+      circle: 2, square: 2, triangle: 2, dot: 2, line: 2
+    };
 
+    const allPossibleDoodles = [
+      "circle", "square", "triangle", "line", "dot",
+      "lens", "halfcircle", "drop", "teeth", "cylinder",
+      "cube", "pyramid", "cloud", "coin", "smiley",
+      "letter", "house", "die", "piano", "pizza",
+      "star", "wireless", "music", "planet", "sword",
+      "fish", "umbrella", "boat", "butterfly", "heart",
+      "turd", "flower", "crown", "cat", "rocket",
+      "mug", "toiletpaper", "chest", "present", "diamond",
+      "icecream"
+    ];
+
+    const doodleMerges = [
+      { inputs: ["circle", "square"], output: "cylinder" },
+      { inputs: ["circle", "circle"], output: "lens" },
+      { inputs: ["circle", "line"], output: "halfcircle" },
+      { inputs: ["circle", "circle", "line"], output: "cloud" },
+      { inputs: ["circle", "line", "line"], output: "coin" },
+      { inputs: ["circle", "line", "dot", "dot"], output: "smiley" },
+      { inputs: ["square", "square"], output: "cube" },
+      { inputs: ["square", "line"], output: "letter" },
+      { inputs: ["square", "triangle", "dot"], output: "house" },
+      { inputs: ["square", "dot", "dot"], output: "die" },
+      { inputs: ["square", "square", "line", "line"], output: "piano" },
+      { inputs: ["triangle", "square"], output: "pyramid" },
+      { inputs: ["triangle", "circle"], output: "drop" },
+      { inputs: ["triangle", "triangle"], output: "teeth" },
+      { inputs: ["triangle", "line", "dot", "dot"], output: "pizza" },
+      { inputs: ["line", "line", "line"], output: "star" },
+      { inputs: ["dot", "line", "line"], output: "wireless" },
+      { inputs: ["dot", "dot", "line"], output: "music" },
+      { inputs: ["lens", "circle"], output: "planet" },
+      { inputs: ["lens", "dot", "line"], output: "sword" },
+      { inputs: ["lens", "triangle", "dot"], output: "fish" },
+      { inputs: ["halfcircle", "line"], output: "umbrella" },
+      { inputs: ["halfcircle", "line", "triangle"], output: "boat" },
+      { inputs: ["halfcircle", "halfcircle", "line"], output: "butterfly" },
+      { inputs: ["drop", "drop"], output: "heart" },
+      { inputs: ["drop", "circle"], output: "turd" },
+      { inputs: ["drop", "drop", "dot"], output: "flower" },
+      { inputs: ["teeth", "triangle", "dot"], output: "crown" },
+      { inputs: ["teeth", "smiley", "line"], output: "cat" },
+      { inputs: ["teeth", "lens", "dot", "line"], output: "rocket" },
+      { inputs: ["cylinder", "line"], output: "mug" },
+      { inputs: ["cylinder", "square", "dot"], output: "toiletpaper" },
+      { inputs: ["cube", "halfcircle", "dot"], output: "chest" },
+      { inputs: ["cube", "line", "heart"], output: "present" },
+      { inputs: ["pyramid", "line", "line"], output: "diamond" },
+      { inputs: ["pyramid", "line", "cloud"], output: "icecream" }
+    ];
+
+    // ────────────────────────────────────────────────
+    // HELPERS
+    // ────────────────────────────────────────────────
+    function formatName(name) {
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }
+
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (!modal) {
+        console.error(`Modal not found: ${modalId}`);
+        return;
+      }
+      modal.style.display = 'flex';
+      modal.offsetHeight; // force reflow
+      modal.classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (!modal) return;
+      modal.classList.remove('active');
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 400);
+    }
+
+    // ────────────────────────────────────────────────
+    // GUIDE (interactive filtering)
+    // ────────────────────────────────────────────────
     let currentGuideFilter = null;
 
     function renderGuide(filterDoodle = null) {
@@ -512,81 +624,95 @@
       const content = document.getElementById('guide-content');
       content.innerHTML = '';
 
-      const filteredMerges = doodleMerges.filter(merge => {
+      const filtered = doodleMerges.filter(m => {
         if (!filterDoodle) return true;
-        const lowerFilter = filterDoodle.toLowerCase();
-        return merge.inputs.includes(lowerFilter) || merge.output.toLowerCase() === lowerFilter;
+        const f = filterDoodle.toLowerCase();
+        return m.inputs.some(i => i.toLowerCase() === f) || m.output.toLowerCase() === f;
       });
 
-      if (filteredMerges.length === 0) {
-        const empty = document.createElement('div');
-        empty.style.padding = '20cqi';
-        empty.style.textAlign = 'center';
-        empty.style.color = '#666';
-        empty.style.fontSize = '5cqi';
-        empty.textContent = 'No recipes found for this doodle.';
-        content.appendChild(empty);
-        return;
+      if (filtered.length === 0 && filterDoodle) {
+        const msg = document.createElement('div');
+        msg.style.padding = '20cqi';
+        msg.style.textAlign = 'center';
+        msg.style.color = '#666';
+        msg.textContent = `No recipes found involving "${filterDoodle}"`;
+        content.appendChild(msg);
+      } else {
+        filtered.forEach(merge => {
+          const row = document.createElement('div');
+          row.className = 'merge-row';
+
+          const inputsDiv = document.createElement('div');
+          inputsDiv.className = 'inputs';
+          merge.inputs.forEach(d => inputsDiv.appendChild(makeGuideDoodle(d)));
+          row.appendChild(inputsDiv);
+
+          const arrow = document.createElement('div');
+          arrow.className = 'arrow-container';
+          arrow.innerHTML = '<div class="arrow-line"></div>';
+          row.appendChild(arrow);
+
+          const resultDiv = document.createElement('div');
+          resultDiv.className = 'result';
+          resultDiv.appendChild(makeGuideDoodle(merge.output));
+          row.appendChild(resultDiv);
+
+          content.appendChild(row);
+        });
       }
 
-      filteredMerges.forEach(merge => {
-        const row = document.createElement('div');
-        row.className = 'merge-row';
-
-        const inputsDiv = document.createElement('div');
-        inputsDiv.className = 'inputs';
-        merge.inputs.forEach(d => {
-          const img = createClickableDoodle(d);
-          inputsDiv.appendChild(img);
-        });
-        row.appendChild(inputsDiv);
-
-        const arrowContainer = document.createElement('div');
-        arrowContainer.className = 'arrow-container';
-        arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
-        row.appendChild(arrowContainer);
-
-        const resultDiv = document.createElement('div');
-        resultDiv.className = 'result';
-        const resultImg = createClickableDoodle(merge.output);
-        resultDiv.appendChild(resultImg);
-        row.appendChild(resultDiv);
-
-        content.appendChild(row);
-      });
-
-      document.getElementById('full-guide-btn').style.display = filterDoodle ? 'block' : 'none';
+      document.getElementById('full-guide-btn').style.display = filterDoodle ? 'inline-block' : 'none';
     }
 
-    function createClickableDoodle(doodleName) {
+    function makeGuideDoodle(name) {
       const img = document.createElement('img');
-      img.src = `images/${doodleName}.png`;
+      img.src = `images/${name}.png`;
       img.className = 'guide-doodle';
-      img.style.cursor = 'pointer';
-
-      img.addEventListener('click', () => renderGuide(doodleName));
-
-      // keep your rich tooltip system
-      setTimeout(() => addHoverListeners(img), 10);
-
+      img.alt = name;
+      img.title = name; // basic tooltip
+      img.addEventListener('click', () => renderGuide(name));
       return img;
     }
 
-    // updated guide open
+    // ────────────────────────────────────────────────
+    // EVENT LISTENERS
+    // ────────────────────────────────────────────────
     document.getElementById('guide-btn').addEventListener('click', () => {
-      renderGuide(); // start with full list
+      renderGuide(); // full list
       openModal('guide-modal');
     });
 
-    // full guide button
     document.getElementById('full-guide-btn').addEventListener('click', () => {
       renderGuide(null);
     });
 
-    /* all the rest of your original script (shuffle, score scanner, etc.) remains exactly as in the previous full file */
+    document.getElementById('close-guide').addEventListener('click', () => closeModal('guide-modal'));
 
-    populateLearnGrid();
-    attachMainDoodleTooltips();
+    document.getElementById('learn-btn').addEventListener('click', () => {
+      // placeholder - add your populateLearnGrid() call here if needed
+      openModal('learn-modal');
+    });
+    document.getElementById('close-learn').addEventListener('click', () => closeModal('learn-modal'));
+
+    document.getElementById('portfolio-btn').addEventListener('click', () => {
+      // placeholder - add your populatePortfolioGrid() call here
+      openModal('portfolio-modal');
+    });
+    document.getElementById('close-portfolio').addEventListener('click', () => closeModal('portfolio-modal'));
+
+    document.getElementById('score-btn').addEventListener('click', () => {
+      openModal('score-modal');
+      // initScoreScanner();  ← uncomment when you add the scanner back
+    });
+    document.getElementById('close-score').addEventListener('click', () => closeModal('score-modal'));
+
+    // Shuffle button (placeholder)
+    document.getElementById('shuffle-btn').addEventListener('click', () => {
+      alert("Shuffle clicked! (implement drawSix here)");
+    });
+
+    // Start with full guide on first open (optional)
+    // renderGuide();
   </script>
 </body>
 </html>
