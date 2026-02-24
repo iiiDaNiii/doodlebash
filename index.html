@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 6.3</title>
+  <title>Doodle Notebook Scanner 6.4</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
@@ -22,8 +22,8 @@
       position:relative;
       width:90vw;
       max-width:520px;
-      aspect-ratio: 11 / 7;   /* exact ratio for square cells when full-edge */
-      border-radius: 0;       /* removed rounding so grid reaches edges */
+      aspect-ratio: 11 / 7;
+      border-radius: 0;
       overflow:hidden;
       background:#111;
       border: 4px solid #333;
@@ -67,13 +67,19 @@
       background-repeat:no-repeat; cursor:pointer; transition:transform .2s;
     }
     .grid-cell:hover { transform:scale(1.12); }
+    
+    /* Low-confidence highlight */
+    .grid-cell.low-confidence {
+      border-color: #ff0 !important;
+      box-shadow: 0 0 0 5px rgba(255, 255, 0, 0.7);
+    }
+    
     #export-btn { 
       background:#4dbde5; color:white; padding:3cqi 10cqi; font-size:5cqi; 
       border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; 
       display:none; 
     }
     
-    /* SNAP button at bottom for thumb comfort */
     #snap-btn { 
       margin-top: auto; 
       width: 85%; 
@@ -103,7 +109,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Doodle Notebook Scanner 6.3</div>
+    <div class="header">Doodle Notebook Scanner 6.4</div>
     <div class="content">
       <p>Align the two red page grids with your notebook pages.<br>Fill the preview edge-to-edge then tap SNAP.</p>
       
@@ -114,15 +120,14 @@
 
       <canvas id="output-canvas"></canvas>
       <div id="status" class="status">Align grids then SNAP</div>
-      <div class="debug" id="debug-info">6.3 • Full-edge grid • Bold lines • Square cells</div>
+      <div class="debug" id="debug-info">6.4 • Yellow highlight on low-confidence cells (&lt;75%)</div>
       
       <div id="debug-cells" class="debug-cells"></div>
       <div id="console-log" class="console-log">Waiting for photo...</div>
-      <div id="tweak-prompt">Detected! Tap any wrong cell to correct</div>
+      <div id="tweak-prompt">Detected! Tap any wrong cell to correct (yellow = low confidence)</div>
       <div id="detected-grid"></div>
       <button id="export-btn">📤 EXPORT TRAINING ZIP</button>
 
-      <!-- SNAP button moved to bottom -->
       <button id="snap-btn" style="display:none;">SNAP NOW</button>
     </div>
   </div>
@@ -132,7 +137,9 @@
   </div>
 
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 6.3 - FULL-EDGE + BOTTOM SNAP ===");
+    console.log("=== DOODLE NOTEBOOK SCANNER 6.4 - LOW CONFIDENCE HIGHLIGHT ===");
+
+    const LOW_CONFIDENCE_THRESHOLD = 0.75;   // ← change this if you want a different cutoff
 
     // Shared state
     let stream = null;
@@ -140,10 +147,11 @@
     let outputCanvas = document.getElementById('output-canvas');
     let status = document.getElementById('status');
 
-    // ML
+    // ML + confidence tracking
     let model = null;
     let classNames = [];
     let detectedDoodles = [];
+    let confidences = [];      // new: parallel array of top confidence scores
     let cellCanvases = [];
 
     function log(text) {
@@ -166,7 +174,6 @@
     }
 
     function getCurrentGridRect(displayW, displayH) {
-      // Full edge-to-edge (no inset)
       return { left: 0, top: 0, w: displayW, h: displayH };
     }
 
@@ -204,57 +211,42 @@
       const unitH = gh / 7;
       ctx.lineCap = 'round';
       ctx.strokeStyle = 'rgba(255,50,50,0.95)';
-      ctx.lineWidth = Math.max(5.5, gw / 220);   // bolder lines
+      ctx.lineWidth = Math.max(5.5, gw / 220);
 
-      // Left page (5 columns)
+      // Left page
       const leftW = 5 * unitW;
       for (let i = 0; i <= 7; i++) {
         const y = gy + Math.round(i * unitH);
-        ctx.beginPath();
-        ctx.moveTo(gx, y);
-        ctx.lineTo(gx + leftW, y);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx + leftW, y); ctx.stroke();
       }
       for (let i = 0; i <= 5; i++) {
         const x = gx + Math.round(i * unitW);
-        ctx.beginPath();
-        ctx.moveTo(x, gy);
-        ctx.lineTo(x, gy + gh);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gh); ctx.stroke();
       }
 
-      // Right page (5 columns)
+      // Right page
       const rightStart = gx + 6 * unitW;
       const rightW = 5 * unitW;
       for (let i = 0; i <= 7; i++) {
         const y = gy + Math.round(i * unitH);
-        ctx.beginPath();
-        ctx.moveTo(rightStart, y);
-        ctx.lineTo(rightStart + rightW, y);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(rightStart, y); ctx.lineTo(rightStart + rightW, y); ctx.stroke();
       }
       for (let i = 0; i <= 5; i++) {
         const x = rightStart + Math.round(i * unitW);
-        ctx.beginPath();
-        ctx.moveTo(x, gy);
-        ctx.lineTo(x, gy + gh);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gh); ctx.stroke();
       }
     }
 
     function initGridOverlay() {
       const overlay = document.getElementById('grid-overlay');
-      
       function redraw() {
         overlay.width = video.clientWidth;
         overlay.height = video.clientHeight;
         const ctx = overlay.getContext('2d');
         ctx.clearRect(0, 0, overlay.width, overlay.height);
-        
         const rect = getCurrentGridRect(overlay.width, overlay.height);
         drawOverlayGrid(ctx, rect.left, rect.top, rect.w, rect.h);
       }
-      
       redraw();
       window.addEventListener('resize', redraw);
     }
@@ -282,11 +274,7 @@
       const cropped = document.createElement('canvas');
       cropped.width = sourceRect.w;
       cropped.height = sourceRect.h;
-      cropped.getContext('2d').drawImage(
-        captured,
-        sourceRect.left, sourceRect.top, sourceRect.w, sourceRect.h,
-        0, 0, sourceRect.w, sourceRect.h
-      );
+      cropped.getContext('2d').drawImage(captured, sourceRect.left, sourceRect.top, sourceRect.w, sourceRect.h, 0, 0, sourceRect.w, sourceRect.h);
 
       outputCanvas.width = sourceRect.w;
       outputCanvas.height = sourceRect.h;
@@ -306,8 +294,9 @@
       const playableCols = [0,1,2,3,4,6,7,8,9,10];
 
       detectedDoodles = [];
+      confidences = [];
       cellCanvases = [];
-      log("🚀 Detecting 70 doodles from full-edge grid...");
+      log("🚀 Detecting 70 doodles...");
 
       for (let r = 0; r < numRows; r++) {
         for (let c of playableCols) {
@@ -316,31 +305,28 @@
           cellCanvas.height = 224;
           const cellCtx = cellCanvas.getContext('2d');
 
-          cellCtx.drawImage(
-            cropped,
-            Math.round(c * cellW),
-            Math.round(r * cellH),
-            Math.round(cellW),
-            Math.round(cellH),
-            0, 0, 224, 224
-          );
-
+          cellCtx.drawImage(cropped, Math.round(c * cellW), Math.round(r * cellH), Math.round(cellW), Math.round(cellH), 0, 0, 224, 224);
           cellCanvases.push(cellCanvas);
 
           const tensor = tf.browser.fromPixels(cellCanvas).expandDims(0).toFloat().div(255);
           const prediction = model.predict(tensor);
           const scores = await prediction.array();
+          let scoresArray = scores[0].slice();                     // copy for safe mutation
 
-          let maxIndex = scores[0].indexOf(Math.max(...scores[0]));
+          let maxIndex = scoresArray.indexOf(Math.max(...scoresArray));
           let predicted = classNames[maxIndex];
-          if (predicted === 'unknown' && scores[0].length > 1) {
-            scores[0][maxIndex] = -999;
-            maxIndex = scores[0].indexOf(Math.max(...scores[0]));
+          let confidence = scoresArray[maxIndex];
+
+          if (predicted === 'unknown' && scoresArray.length > 1) {
+            scoresArray[maxIndex] = -999;
+            maxIndex = scoresArray.indexOf(Math.max(...scoresArray));
             predicted = classNames[maxIndex];
+            confidence = scoresArray[maxIndex];
           }
 
-          log(`Cell [${r},${c}] → ${predicted}`);
+          log(`Cell [${r},${c}] → ${predicted} (${(confidence*100).toFixed(1)}%)`);
           detectedDoodles.push(predicted);
+          confidences.push(confidence);
         }
       }
 
@@ -348,6 +334,58 @@
       renderDebugCells(cropped);
       document.getElementById('tweak-prompt').style.display = 'block';
       status.textContent = `✅ Scanned ${detectedDoodles.length} cells!`;
+    }
+
+    function renderDetectedGrid() {
+      const grid = document.getElementById('detected-grid');
+      grid.innerHTML = '';
+      grid.style.display = 'grid';
+    
+      detectedDoodles.forEach((d, i) => {
+        const cell = document.createElement('div');
+        cell.className = `grid-cell ${d}`;
+        cell.dataset.index = i;
+        cell.dataset.doodle = d;
+        cell.style.backgroundImage = `url('images/${d}.png')`;
+        
+        // Yellow highlight for low confidence
+        if (confidences[i] < LOW_CONFIDENCE_THRESHOLD) {
+          cell.classList.add('low-confidence');
+        }
+        
+        cell.addEventListener('click', () => showDoodlePopup(i));
+        grid.appendChild(cell);
+      });
+      document.getElementById('export-btn').style.display = 'block';
+    }
+
+    let currentCellIndex = -1;
+    function showDoodlePopup(index) {
+      currentCellIndex = index;
+      const popup = document.getElementById('doodle-popup');
+      const grid = document.getElementById('popup-grid');
+      grid.innerHTML = '';
+     
+      const opts = classNames.filter(name => name !== 'unknown');
+      opts.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'popup-item';
+        item.style.backgroundImage = `url('images/${d}.png')`;
+        item.onclick = () => {
+          const cell = document.querySelector(`.grid-cell[data-index="${index}"]`);
+          cell.dataset.doodle = d;
+          cell.className = `grid-cell ${d}`;
+          cell.style.backgroundImage = `url('images/${d}.png')`;
+          detectedDoodles[index] = d;
+          
+          // Remove yellow highlight once corrected
+          cell.classList.remove('low-confidence');
+          
+          popup.style.display = 'none';
+        };
+        grid.appendChild(item);
+      });
+      popup.style.display = 'block';
     }
 
     function renderDebugCells(cropped) {
@@ -360,8 +398,7 @@
       for (let r = 0; r < 7; r++) {
         for (let c of playableCols) {
           const thumb = document.createElement('canvas');
-          thumb.width = 80;
-          thumb.height = 80;
+          thumb.width = 80; thumb.height = 80;
           const tctx = thumb.getContext('2d');
           tctx.drawImage(cropped, Math.round(c * cellW), Math.round(r * cellH), Math.round(cellW), Math.round(cellH), 0, 0, 80, 80);
           const div = document.createElement('div');
@@ -370,47 +407,6 @@
           container.appendChild(div);
         }
       }
-    }
-
-    // Unchanged UI functions below...
-    let currentCellIndex = -1;
-    function showDoodlePopup(index) {
-      currentCellIndex = index;
-      const popup = document.getElementById('doodle-popup');
-      const grid = document.getElementById('popup-grid');
-      grid.innerHTML = '';
-      const opts = classNames.filter(name => name !== 'unknown');
-      opts.forEach(d => {
-        const item = document.createElement('div');
-        item.className = 'popup-item';
-        item.style.backgroundImage = `url('images/${d}.png')`;
-        item.onclick = () => {
-          const cell = document.querySelector(`.grid-cell[data-index="${index}"]`);
-          cell.dataset.doodle = d;
-          cell.className = `grid-cell ${d}`;
-          cell.style.backgroundImage = `url('images/${d}.png')`;
-          detectedDoodles[index] = d;
-          popup.style.display = 'none';
-        };
-        grid.appendChild(item);
-      });
-      popup.style.display = 'block';
-    }
-
-    function renderDetectedGrid() {
-      const grid = document.getElementById('detected-grid');
-      grid.innerHTML = '';
-      grid.style.display = 'grid';
-      detectedDoodles.forEach((d, i) => {
-        const cell = document.createElement('div');
-        cell.className = `grid-cell ${d}`;
-        cell.dataset.index = i;
-        cell.dataset.doodle = d;
-        cell.style.backgroundImage = `url('images/${d}.png')`;
-        cell.addEventListener('click', () => showDoodlePopup(i));
-        grid.appendChild(cell);
-      });
-      document.getElementById('export-btn').style.display = 'block';
     }
 
     async function exportTrainingData() {
