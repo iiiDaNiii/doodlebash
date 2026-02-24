@@ -1,157 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 5.13</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  
-  <!-- Pure JavaScript ArUco2 - this is the one that actually works -->
-  <script src="https://cdn.jsdelivr.net/npm/js-aruco2@1.0.0/dist/js-aruco2.min.js" 
-          onload="log('✅ JS-ArUco2 library loaded successfully')"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doodle Notebook Scanner 5.13</title>
 
-  <style>
-    body { margin:0; background:#000; color:white; font-family:system-ui; }
-    .container { height:100dvh; display:flex; flex-direction:column; }
-    .header { background:#7f2a8f; padding:3cqi; text-align:center; font-size:6cqi; }
-    .content { flex:1; display:flex; flex-direction:column; align-items:center; padding:4cqi; gap:3cqi; }
-    .camera-container { position:relative; width:90vw; max-width:520px; aspect-ratio: 3 / 2; border-radius:16px; overflow:hidden; }
-    #camera-preview { width:100%; height:100%; object-fit:cover; }
-    #output-canvas { max-width:90vw; border:3px solid #333; border-radius:12px; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
-    .status { font-size:4.5cqi; text-align:center; margin:10px 0; }
-    .debug { font-size:3.2cqi; color:#aaa; text-align:left; max-width:520px; padding:2cqi; background:rgba(255,255,255,0.05); border-radius:8px; }
-    .console-log { width: 90vw; max-width: 520px; background: #222; color: #0f0; padding: 12px; font-family: monospace; font-size: 3.2cqi; line-height: 1.5; border-radius: 8px; white-space: pre-wrap; max-height: 180px; overflow-y: auto; }
-    #tweak-prompt { display:none; text-align:center; font-size:4cqi; color:#ff0; background:rgba(0,0,0,0.6); padding:2cqi; border-radius:8px; width:90vw; max-width:520px; }
-    #detected-grid { display: none; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(7, 1fr); gap: 3px; width: 90vw; max-width: 520px; height: 420px; background: #111; padding: 8px; border-radius: 12px; }
-    .grid-cell { aspect-ratio: 1; background: #f0f0f0; border: 3px solid #ccc; border-radius: 8px; background-size: contain; background-position: center; background-repeat: no-repeat; cursor: pointer; }
-    #export-btn { background:#4dbde5; color:white; padding:3cqi 10cqi; font-size:5cqi; border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; display:none; }
-  </style>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<!-- Pure JS ArUco -->
+<script src="https://cdn.jsdelivr.net/npm/js-aruco2@1.0.0/dist/js-aruco2.min.js"></script>
+
+<style>
+body { margin:0; background:#000; color:white; font-family:system-ui; }
+.container { height:100dvh; display:flex; flex-direction:column; }
+.header { background:#7f2a8f; padding:12px; text-align:center; font-size:22px; }
+.content { flex:1; display:flex; flex-direction:column; align-items:center; gap:12px; padding:12px; }
+.camera-container { position:relative; width:90vw; max-width:520px; aspect-ratio: 3/2; overflow:hidden; border-radius:12px; }
+video { width:100%; height:100%; object-fit:cover; }
+canvas { max-width:90vw; border:3px solid #333; background:#fff; }
+.console-log { width:90vw; max-width:520px; background:#111; color:#0f0; padding:10px; font-family:monospace; font-size:13px; max-height:200px; overflow-y:auto; }
+button { padding:12px 24px; font-size:18px; }
+</style>
 </head>
+
 <body>
-  <div class="container">
-    <div class="header">Doodle Notebook Scanner 5.13</div>
-    <div class="content">
-      <p>Point camera at your notebook (markers in frame!)</p>
-      <div class="camera-container">
-        <video id="camera-preview" autoplay playsinline muted></video>
-      </div>
-      <button id="snap-btn" style="display:none; padding:3cqi 8cqi; font-size:5.5cqi;">SNAP NOW</button>
-      <canvas id="output-canvas"></canvas>
-      <div id="status" class="status">Waiting for photo...</div>
-      <div class="debug" id="debug-info">Grid debug will appear here after scan...</div>
-      <div id="console-log" class="console-log">Waiting for photo...</div>
-      <div id="tweak-prompt">Detected! Tap any wrong cell to select</div>
-      <div id="detected-grid"></div>
-      <button id="export-btn">📤 EXPORT TRAINING ZIP</button>
+<div class="container">
+  <div class="header">Doodle Notebook Scanner 5.13</div>
+  <div class="content">
+    <div class="camera-container">
+      <video id="camera" autoplay playsinline muted></video>
     </div>
+    <button id="snap">SNAP</button>
+    <canvas id="canvas"></canvas>
+    <div id="console" class="console-log">Ready…</div>
   </div>
+</div>
 
-  <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 5.13 LOADED ===");
+<script>
+const video = document.getElementById("camera");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const logEl = document.getElementById("console");
 
-    let stream = null;
-    let video = document.getElementById('camera-preview');
-    let outputCanvas = document.getElementById('output-canvas');
-    let status = document.getElementById('status');
-    let debugInfo = document.getElementById('debug-info');
+function log(msg) {
+  logEl.textContent += msg + "\n";
+  logEl.scrollTop = logEl.scrollHeight;
+}
 
-    let model = null;
-    let classNames = [];
-    let detectedDoodles = [];
-    let cellCanvases = [];
+// --- START CAMERA ---
+async function startCamera() {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "environment" }
+  });
+  video.srcObject = stream;
+  await video.play();
+  log("✅ Camera started");
+}
 
-    function log(text) {
-      const logEl = document.getElementById('console-log');
-      logEl.textContent += text + "\n";
-      logEl.scrollTop = logEl.scrollHeight;
-    }
+// --- SNAP ---
+document.getElementById("snap").onclick = () => {
+  if (video.videoWidth === 0) {
+    log("⚠️ Video not ready");
+    return;
+  }
 
-    async function loadModel() {
-      log("Loading ML model...");
-      try {
-        model = await tf.loadLayersModel('models/doodle/model.json');
-        const metadata = await fetch('models/doodle/metadata.json');
-        const meta = await metadata.json();
-        classNames = meta.labels || meta.classNames || [];
-        log(`✅ Model loaded! ${classNames.length} classes`);
-      } catch (e) {
-        log("❌ ERROR loading model: " + e.message);
-      }
-    }
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  ctx.drawImage(video, 0, 0);
 
-    async function startCamera() {
-      log("Starting camera...");
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        video.srcObject = stream;
-        video.onloadeddata = () => {
-          document.getElementById('snap-btn').style.display = 'block';
-          log("✅ Camera preview loaded!");
-        };
-      } catch (e) {
-        log("❌ Camera access error: " + e.message);
-      }
-    }
+  requestAnimationFrame(() => detectAruco());
+};
 
-    document.getElementById('snap-btn').onclick = () => {
-      status.textContent = "Capturing photo...";
-      const ctx = outputCanvas.getContext('2d');
-      outputCanvas.width = video.videoWidth;
-      outputCanvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0);
+// --- DETECT ---
+function detectAruco() {
+  log("🔍 Detecting ArUco markers...");
 
-      status.textContent = "Detecting markers with pure JS ArUco...";
-      setTimeout(() => processWithArUco(outputCanvas), 150);
-    };
+  const DetectorClass =
+    window.AR?.Detector ||
+    window.aruco?.Detector;
 
-    async function processWithArUco(canvas) {
-      try {
-        if (typeof AR === 'undefined') {
-          log("⏳ ArUco library still loading — try again in 1 second");
-          status.textContent = "Library still loading... tap SNAP again";
-          return;
-        }
+  if (!DetectorClass) {
+    log("❌ ArUco detector not found");
+    return;
+  }
 
-        log("🚀 Starting pure JS ArUco2 detection...");
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-        const detector = new AR.Detector();
-        const imageData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
-        const markers = detector.detect(imageData);
+  // Convert to grayscale (important!)
+  for (let i = 0; i < imageData.data.length; i += 4) {
+    const g =
+      imageData.data[i] * 0.299 +
+      imageData.data[i + 1] * 0.587 +
+      imageData.data[i + 2] * 0.114;
+    imageData.data[i] =
+    imageData.data[i + 1] =
+    imageData.data[i + 2] = g;
+  }
 
-        log(`Found ${markers.length} markers`);
+  const detector = new DetectorClass();
+  const markers = detector.detect(imageData);
 
-        let markerMap = {};
-        for (let m of markers) {
-          if (m.id >= 0 && m.id <= 3) {
-            markerMap[m.id] = m.corners;
-          }
-        }
+  log(`📌 Found ${markers.length} marker(s)`);
 
-        if (Object.keys(markerMap).length === 4) {
-          log("✅ Found all 4 markers!");
-          status.textContent = "✅ Markers found — warping grid...";
+  markers.forEach(m => {
+    log(`➡️ ID ${m.id} | corners: ${JSON.stringify(m.corners)}`);
 
-          // <<< PASTE YOUR ORIGINAL WARPING CODE HERE >>>
-          // (the part that starts with orderPoints, insetFactor, perspectiveTransform, etc.)
-          // You can copy it from your previous working version
+    // draw outline
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    m.corners.forEach((c, i) => {
+      if (i === 0) ctx.moveTo(c.x, c.y);
+      else ctx.lineTo(c.x, c.y);
+    });
+    ctx.closePath();
+    ctx.stroke();
 
-        } else {
-          log(`❌ Only ${Object.keys(markerMap).length} markers found — need all 4`);
-          status.textContent = "Markers not detected - try again with all corners visible";
-        }
+    ctx.fillStyle = "red";
+    ctx.font = "30px system-ui";
+    ctx.fillText(m.id, m.corners[0].x, m.corners[0].y - 10);
+  });
 
-      } catch (e) {
-        log('❌ ArUco error: ' + e.message);
-        status.textContent = "Error during marker detection";
-      }
-    }
+  const found = markers.filter(m => m.id >= 0 && m.id <= 3).length;
+  if (found === 4) {
+    log("✅ All 4 corner markers detected!");
+  } else {
+    log(`❌ Need 4 markers (found ${found})`);
+  }
+}
 
-    window.onload = async () => {
-      log("Loading page...");
-      await loadModel();
-      startCamera();
-    };
-  </script>
+// --- INIT ---
+window.onload = startCamera;
+</script>
 </body>
 </html>
