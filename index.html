@@ -1251,12 +1251,20 @@ function getVideoSourceRect(displayRect) {
       document.getElementById('score-new-scan-btn').style.display = 'block';
     };
 
-    function initScoreScanner() {
-      scoreVideo = document.getElementById('score-camera-preview');
-      scoreOutputCanvas = document.getElementById('score-output-canvas');
-      scoreStatusEl = document.getElementById('score-status');
-      scoreLoadModel().then(() => scoreStartCamera());
-    }
+   function initScoreScanner() {
+  scoreVideo = document.getElementById('score-camera-preview');
+  scoreOutputCanvas = document.getElementById('score-output-canvas');
+  scoreStatusEl = document.getElementById('score-status');
+
+  // Make sure overlay is ready before camera starts
+  scoreVideo.addEventListener('play', () => {
+    scoreInitGridOverlay();
+  }, { once: true });
+
+  scoreLoadModel().then(() => {
+    scoreStartCamera();
+  });
+}
 
     // ────────────────────────────────────────────────
     // INITIALIZATION
