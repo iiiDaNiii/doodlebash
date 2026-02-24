@@ -418,23 +418,32 @@
     }
 
     #score-modal .camera-container {
-      position: relative;
-      width: 90cqi;
-      max-width: 520px;
-      aspect-ratio: 11 / 7;
-      border-radius: 18px;
-      overflow: hidden;
-      background: #111;
-      border: 4px solid #333;
-      margin: 0 auto;
-    }
+  position: relative;
+  width: 90%;
+  max-width: 520px;
+  aspect-ratio: 11 / 7;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #111;
+  border: 4px solid #333;
+  margin: 0 auto;
+}
 
-    #score-modal #score-camera-preview {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: #000;
-    }
+#score-modal #score-camera-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;          /* changed back to cover for full fill + crop feel */
+  background: #000;
+}
+
+    #score-modal #score-grid-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
 
     #score-modal .scanner-content > * {
       width: 90cqi;
@@ -1034,46 +1043,52 @@
     }
 
     function scoreInitGridOverlay() {
-      const overlay = document.getElementById('score-grid-overlay');
-      function redraw() {
-        overlay.width = scoreVideo.clientWidth;
-        overlay.height = scoreVideo.clientHeight;
-        const ctx = overlay.getContext('2d');
-        ctx.clearRect(0, 0, overlay.width, overlay.height);
-        const rect = {left:0, top:0, w: overlay.width, h: overlay.height};
-        drawOverlayGrid(ctx, rect.left, rect.top, rect.w, rect.h);
-      }
-      redraw();
-      window.addEventListener('resize', redraw);
-    }
+  const overlay = document.getElementById('score-grid-overlay');
+  if (!overlay) return;
 
-    function drawOverlayGrid(ctx, gx, gy, gw, gh) {
-      const unitW = gw / 11;
-      const unitH = gh / 7;
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = 'rgba(95, 186, 233, 0.95)';
-      ctx.lineWidth = Math.max(2.8, gw / 380);
-      // left page
-      for (let i = 0; i <= 7; i++) {
-        const y = gy + Math.round(i * unitH);
-        ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx + 5*unitW, y); ctx.stroke();
-      }
-      for (let i = 0; i <= 5; i++) {
-        const x = gx + Math.round(i * unitW);
-        ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gh); ctx.stroke();
-      }
-      // right page
-      const rightStart = gx + 6 * unitW;
-      for (let i = 0; i <= 7; i++) {
-        const y = gy + Math.round(i * unitH);
-        ctx.beginPath(); ctx.moveTo(rightStart, y); ctx.lineTo(rightStart + 5*unitW, y); ctx.stroke();
-      }
-      for (let i = 0; i <= 5; i++) {
-        const x = rightStart + Math.round(i * unitW);
-        ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gh); ctx.stroke();
-      }
-    }
+  function redraw() {
+    overlay.width = scoreVideo.clientWidth;
+    overlay.height = scoreVideo.clientHeight;
+    const ctx = overlay.getContext('2d');
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
+    const rect = getCurrentGridRect(overlay.width, overlay.height);
+    drawOverlayGrid(ctx, rect.left, rect.top, rect.w, rect.h);
+  }
 
+  redraw();
+  window.addEventListener('resize', redraw);
+  // Also redraw when video metadata is loaded (important for initial size)
+  scoreVideo.addEventListener('loadedmetadata', redraw);
+}
+
+   function drawOverlayGrid(ctx, gx, gy, gw, gh) {
+  const unitW = gw / 11;
+  const unitH = gh / 7;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = 'rgba(95, 186, 233, 0.95)';  // blue guide lines
+  ctx.lineWidth = Math.max(2.8, gw / 380);
+
+  // Left page (columns 0-4)
+  for (let i = 0; i <= 7; i++) {
+    const y = gy + Math.round(i * unitH);
+    ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx + 5 * unitW, y); ctx.stroke();
+  }
+  for (let i = 0; i <= 5; i++) {
+    const x = gx + Math.round(i * unitW);
+    ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gh); ctx.stroke();
+  }
+
+  // Right page (columns 6-10)
+  const rightStart = gx + 6 * unitW;
+  for (let i = 0; i <= 7; i++) {
+    const y = gy + Math.round(i * unitH);
+    ctx.beginPath(); ctx.moveTo(rightStart, y); ctx.lineTo(rightStart + 5 * unitW, y); ctx.stroke();
+  }
+  for (let i = 0; i <= 5; i++) {
+    const x = rightStart + Math.round(i * unitW);
+    ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gh); ctx.stroke();
+  }
+}
     document.getElementById('score-snap-btn').onclick = async () => {
       scoreStatusEl.textContent = "Capturing...";
       const captured = document.createElement('canvas');
@@ -1094,25 +1109,29 @@
       await scoreDetectFromCropped(cropped);
     };
 
-    function getVideoSourceRect(displayRect) {
-      const vw = scoreVideo.videoWidth, vh = scoreVideo.videoHeight;
-      const cw = scoreVideo.clientWidth, ch = scoreVideo.clientHeight;
-      const videoAspect = vw / vh, containerAspect = cw / ch;
-      let scale, offsetX = 0, offsetY = 0;
-      if (videoAspect > containerAspect) {
-        scale = ch / vh;
-        offsetX = (vw * scale - cw) / 2;
-      } else {
-        scale = cw / vw;
-        offsetY = (vh * scale - ch) / 2;
-      }
-      return {
-        left: Math.round((displayRect.left + offsetX) / scale),
-        top: Math.round((displayRect.top + offsetY) / scale),
-        w: Math.round(displayRect.w / scale),
-        h: Math.round(displayRect.h / scale)
-      };
-    }
+   function getCurrentGridRect(w, h) {
+  return { left: 0, top: 0, w, h };
+}
+
+function getVideoSourceRect(displayRect) {
+  const vw = scoreVideo.videoWidth, vh = scoreVideo.videoHeight;
+  const cw = scoreVideo.clientWidth, ch = scoreVideo.clientHeight;
+  const videoAspect = vw / vh, containerAspect = cw / ch;
+  let scale, offsetX = 0, offsetY = 0;
+  if (videoAspect > containerAspect) {
+    scale = ch / vh;
+    offsetX = (vw * scale - cw) / 2;
+  } else {
+    scale = cw / vw;
+    offsetY = (vh * scale - ch) / 2;
+  }
+  return {
+    left: Math.round((displayRect.left + offsetX) / scale),
+    top: Math.round((displayRect.top + offsetY) / scale),
+    w: Math.round(displayRect.w / scale),
+    h: Math.round(displayRect.h / scale)
+  };
+}
 
     async function scoreDetectFromCropped(cropped) {
       const numCols = 11;
