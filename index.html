@@ -40,7 +40,8 @@
     .tally-row img { width:55px; height:55px; object-fit:contain; margin-right:15px; }
     .tally-line { flex:1; height:3px; background:#555; margin:0 15px; border-radius:3px; }
     .score-box { padding:8px 25px; background:#333; border-radius:9999px; font-size:5.2cqi; font-weight:bold; min-width:100px; text-align:center; }
-    #score-btn, #export-btn, #new-scan-btn { background:#5fbae9; color:white; padding:3.5cqi 12cqi; font-size:5.5cqi; border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; }
+    #score-btn, #export-btn, #new-scan-btn { background:#5fbae9; color:white; padding:4cqi 14cqi; font-size:6cqi; border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; }
+    #snap-btn { margin-top:auto; width:85%; max-width:520px; padding:5cqi 12cqi; font-size:7cqi; font-weight:bold; }
     #final-total { font-size:10cqi; font-weight:bold; color:#ff0; margin:20px 0; text-align:center; }
     #doodle-popup { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.9); padding:4cqi; border-radius:16px; z-index:100; box-shadow:0 0 30px rgba(255,255,255,0.3); }
     .popup-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1.5cqi; max-width:90vw; max-height:80vh; overflow-y:auto; }
@@ -243,4 +244,559 @@
 
       for (let r = 0; r < numRows; r++) {
         for (let pc of playableCols) {
-          const cellCanvas = document.createElement('
+          const cellCanvas = document.createElement('canvas');
+          cellCanvas.width = 224;
+          cellCanvas.height = 224;
+          const cellCtx = cellCanvas.getContext('2d');
+          cellCtx.drawImage(cropped, Math.round(pc * cellW), Math.round(r * cellH), Math.round(cellW), Math.round(cellH), 0, 0, 224, 224);
+          cellCanvases.push(cellCanvas);
+
+          const tensor = tf.browser.fromPixels(cellCanvas).expandDims(0).toFloat().div(255);
+          const prediction = model.predict(tensor);
+          const scores = await prediction.array();
+          let scoresArray = scores[0].slice();
+
+          let maxIndex = scoresArray.indexOf(Math.max(...scoresArray));
+          let predicted = classNames[maxIndex];
+          let confidence = scoresArray[maxIndex];
+
+          if (predicted === 'unknown' && scoresArray.length > 1) {
+            scoresArray[maxIndex] = -999;
+            maxIndex = scoresArray.indexOf(Math.max(...scoresArray));
+            predicted = classNames[maxIndex];
+            confidence = scoresArray[maxIndex];
+          }
+
+          log(`Cell [${r},${pc}] → ${predicted} (${(confidence*100).toFixed(1)}%)`);
+          detectedDoodles.push(predicted);
+          confidences.push(confidence);
+        }
+      }
+
+      buildBoard();
+      renderDetectedGrid();
+      document.getElementById('score-btn').style.display = 'block';
+      document.getElementById('export-btn').style.display = 'block';
+      statusEl.textContent = "Ready to score!";
+    }
+
+    function buildBoard() {
+      board = Array(7).fill().map(() => Array(11).fill(null));
+      let idx = 0;
+      for (let r = 0; r < 7; r++) {
+        for (let c of playableCols) {
+          board[r][c] = detectedDoodles[idx++];
+        }
+      }
+    }
+
+    function renderDetectedGrid() {
+      const grid = document.getElementById('detected-grid');
+      grid.innerHTML = '';
+      grid.style.display = 'grid';
+      gridCells = [];
+      detectedDoodles.forEach((d, i) => {
+        const cell = document.createElement('div');
+        cell.className = `grid-cell ${d}`;
+        cell.dataset.index = i;
+        cell.dataset.doodle = d;
+        cell.style.backgroundImage = `url('images/${d}.png')`;
+        if (confidences[i] < LOW_CONFIDENCE_THRESHOLD) cell.classList.add('low-confidence');
+        cell.addEventListener('click', () => showDoodlePopup(i));
+        grid.appendChild(cell);
+        gridCells.push(cell);
+      });
+    }
+
+    let currentCellIndex = -1;
+    function showDoodlePopup(index) {
+      currentCellIndex = index;
+      const popup = document.getElementById('doodle-popup');
+      const grid = document.getElementById('popup-grid');
+      grid.innerHTML = '';
+      const opts = classNames.filter(name => name !== 'unknown');
+      opts.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'popup-item';
+        item.style.backgroundImage = `url('images/${d}.png')`;
+        item.onclick = () => {
+          const cell = document.querySelector(`.grid-cell[data-index="${index}"]`);
+          cell.dataset.doodle = d;
+          cell.className = `grid-cell ${d}`;
+          cell.style.backgroundImage = `url('images/${d}.png')`;
+          detectedDoodles[index] = d;
+          cell.classList.remove('low-confidence');
+          popup.style.display = 'none';
+        };
+        grid.appendChild(item);
+      });
+      popup.style.display = 'block';
+    }
+
+    async function exportTrainingData() {
+      const zip = new JSZip();
+      log("📦 Building training ZIP...");
+      detectedDoodles.forEach((doodle, i) => {
+        const className = doodle.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const randomNum = Math.floor(Math.random() * 900000) + 100000;
+        const filename = `${className}${randomNum}.png`;
+        cellCanvases[i].toBlob(blob => zip.file(filename, blob), 'image/png');
+      });
+      setTimeout(async () => {
+        const content = await zip.generateAsync({type: "blob"});
+        const url = URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `doodle-training-${new Date().toISOString().slice(0,10)}.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+        log(`✅ Exported ${detectedDoodles.length} images!`);
+      }, 500);
+    }
+
+    // ====================== SCORING ======================
+    const scoringRules = [
+      {type:'turd', base:-2},
+      {type:'music', base:1},
+      {type:'planet', base:1},
+      {type:'star', base:2},
+      {type:'flower', base:2},
+      {type:'coin', base:2},
+      {type:'heart', base:2},
+      {type:'pizza', base:3},
+      {type:'diamond', base:4},
+      {type:'icecream', base:4},
+      {type:'sword', base:5},
+      {type:'present', base:6},
+      {type:'3dset', calc:calculate3DSet},
+      {type:'chest', calc:calculateChest},
+      {type:'rocket', calc:calculateRocket},
+      {type:'cat', calc:calculateCat},
+      {type:'cloud', calc:calculateCloud},
+      {type:'umbrella', calc:calculateUmbrella},
+      {type:'mug', calc:calculateMug},
+      {type:'toiletpaper', calc:calculateToiletpaper},
+      {type:'house', calc:calculateHouse},
+      {type:'crown', calc:calculateCrown},
+      {type:'smiley', calc:calculateSmiley},
+      {type:'letter', calc:calculateLetter},
+      {type:'piano', calc:calculatePiano},
+      {type:'butterfly', calc:calculateButterfly},
+      {type:'fish', calc:calculateFish},
+      {type:'boat', calc:calculateBoat},
+      {type:'die', calc:calculateDie}
+    ];
+
+    function getSurrounding(r, c) {
+      const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+      let list = [];
+      for (let [dr,dc] of dirs) {
+        let nr = r+dr, nc = c+dc;
+        if (nr>=0 && nr<7 && nc>=0 && nc<11 && board[nr][nc] !== null) {
+          list.push({r:nr, c:nc, doodle:board[nr][nc]});
+        }
+      }
+      return list;
+    }
+
+    function calculateBase(type, pts) {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === type) {
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculate3DSet() {
+      let cubes = 0, pyramids = 0, cylinders = 0, positions = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        let d = board[r][c];
+        if (d==='cube') {cubes++; positions.push({r,c});}
+        else if (d==='pyramid') {pyramids++; positions.push({r,c});}
+        else if (d==='cylinder') {cylinders++; positions.push({r,c});}
+      }
+      let sets = Math.min(Math.floor(cubes/2), Math.floor(pyramids/3), Math.floor(cylinders/2));
+      return {total: sets*20, positions, isGlobal:true};
+    }
+
+    function calculateChest() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'chest') {
+          let count = getSurrounding(r, c).filter(s => ['coin','diamond','crown'].includes(s.doodle)).length;
+          let pts = count * 2;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateRocket() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'rocket') {
+          let count = 0;
+          for (let rr=0; rr<7; rr++) {
+            if (rr !== r && (board[rr][c] === 'planet' || board[rr][c] === 'star')) count++;
+          }
+          let pts = count * 3;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateCat() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'cat') {
+          let count = getSurrounding(r, c).filter(s => ['fish','turd'].includes(s.doodle)).length;
+          let pts = 3 + count * 2;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateCloud() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'cloud') {
+          let count = 0;
+          let isLeft = c < 5;
+          for (let rr = r+1; rr < 7; rr++) {
+            if (board[rr][c] === 'drop' && (c < 5 === isLeft)) count++;
+          }
+          let pts = count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateUmbrella() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'umbrella') {
+          let count = 0;
+          let isLeft = c < 5;
+          for (let rr = 0; rr < r; rr++) {
+            if (board[rr][c] === 'drop' && (c < 5 === isLeft)) count++;
+          }
+          let pts = count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateMug() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'mug') {
+          let hasDropAbove = (r > 0 && board[r-1][c] === 'drop');
+          let pts = 2 + (hasDropAbove ? 2 : 0);
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateToiletpaper() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'toiletpaper') {
+          let count = getSurrounding(r, c).filter(s => s.doodle === 'turd').length;
+          let pts = 1 + count * 7;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateHouse() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'house') {
+          let count = getSurrounding(r, c).filter(s => ['smiley','wifi'].includes(s.doodle)).length;
+          let pts = 1 + count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateCrown() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'crown') {
+          let hasSmileyBelow = (r < 6 && board[r+1][c] === 'smiley');
+          let pts = 3 + (hasSmileyBelow ? 1 : 0);
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateSmiley() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'smiley') {
+          let count = getSurrounding(r, c).filter(s => ['pizza','icecream'].includes(s.doodle)).length;
+          let pts = 1 + count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateLetter() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'letter') {
+          let hasHeartAbove = (r > 0 && board[r-1][c] === 'heart');
+          let pts = 1 + (hasHeartAbove ? 5 : 0);
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculatePiano() {
+      let columnsWithMusic = new Set();
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'music') columnsWithMusic.add(c);
+      }
+      let numCols = columnsWithMusic.size;
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'piano') {
+          let pts = numCols;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateButterfly() {
+      let visited = Array(7).fill().map(() => Array(11).fill(false));
+      let maxSize = 0;
+      const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+
+      function dfs(r, c) {
+        if (r<0 || r>=7 || c<0 || c>=11 || visited[r][c] || board[r][c] !== 'flower') return 0;
+        visited[r][c] = true;
+        let size = 1;
+        for (let [dr,dc] of dirs) size += dfs(r+dr, c+dc);
+        return size;
+      }
+
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'flower' && !visited[r][c]) {
+          maxSize = Math.max(maxSize, dfs(r, c));
+        }
+      }
+      let total = maxSize * 1;
+      return {total, positions: []};
+    }
+
+    function calculateFish() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'fish') {
+          let count = getSurrounding(r, c).filter(s => s.doodle === 'fish').length;
+          let pts = count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateBoat() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'boat') {
+          let count = 0;
+          let isLeft = c < 5;
+          for (let rr = r+1; rr < 7; rr++) {
+            if (board[rr][c] === 'fish' && (c < 5 === isLeft)) count++;
+          }
+          let pts = count * 2;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateDie() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'die') {
+          let neighbors = getSurrounding(r, c);
+          let maxNeighbor = 0;
+          for (let n of neighbors) {
+            maxNeighbor = Math.max(maxNeighbor, perCellScore[n.r][n.c]);
+          }
+          let pts = maxNeighbor;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    async function animateCell(cell, pts) {
+      cell.classList.add('scoring');
+      if (pts !== null && pts !== 0) {
+        const bubble = document.createElement('div');
+        bubble.className = 'point-bubble';
+        bubble.style.backgroundImage = pts < 0 ? "url('images/blackpointbubble.png')" : "url('images/purplepointbubble.png')";
+        bubble.textContent = pts > 0 ? `+${pts}` : pts;
+        cell.appendChild(bubble);
+
+        bubble.style.transition = 'none';
+        bubble.style.top = '50%';
+        bubble.style.left = '50%';
+        bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)';
+        bubble.offsetHeight;
+        bubble.style.transition = 'transform 0.9s cubic-bezier(0.68, -0.55, 0.27, 1.55), top 0.9s';
+        bubble.style.transform = 'translate(-50%, -220%) scale(1.4) rotate(360deg)';
+        bubble.style.top = '15%';
+
+        setTimeout(() => {
+          bubble.style.transition = 'transform 0.7s ease-out, top 0.7s, left 0.7s';
+          bubble.style.transform = 'translate(-50%, -50%) scale(0.3) rotate(360deg)';
+          bubble.style.top = '10%';
+          bubble.style.left = '10%';
+        }, 950);
+      }
+      await new Promise(r => setTimeout(r, 700));
+      cell.classList.remove('scoring');
+    }
+
+    function addTallyRow(type, subtotal) {
+      const tally = document.getElementById('score-tally');
+      const row = document.createElement('div');
+      row.className = 'tally-row';
+      const img = document.createElement('img');
+      img.src = type === '3dset' ? 'images/cube.png' : type === 'variety' ? '' : `images/${type}.png`;
+      if (type === 'variety') img.style.display = 'none';
+      const line = document.createElement('div');
+      line.className = 'tally-line';
+      const scoreBox = document.createElement('div');
+      scoreBox.className = 'score-box';
+      scoreBox.textContent = subtotal >= 0 ? `+${subtotal}` : subtotal;
+      scoreBox.style.color = subtotal >= 0 ? '#5fbae9' : '#ff6666';
+      row.append(img, line, scoreBox);
+      tally.appendChild(row);
+    }
+
+    async function runScoringAnimation() {
+      buildBoard();
+      perCellScore = Array(7).fill().map(() => Array(11).fill(0));
+
+      mainContent.classList.add('scoring-mode');
+      const tally = document.getElementById('score-tally');
+      tally.style.display = 'block';
+      tally.innerHTML = '';
+
+      let total = 0;
+
+      for (let rule of scoringRules) {
+        let result = rule.base !== undefined ? calculateBase(rule.type, rule.base) : rule.calc();
+        total += result.total || 0;
+
+        const items = result.perCellList || result.positions || [];
+        if (items.length > 0) {
+          await Promise.all(items.map(item => {
+            const flat = item.r * 10 + playableCols.indexOf(item.c);
+            const cell = gridCells[flat];
+            if (cell) return animateCell(cell, item.pts !== undefined ? item.pts : null);
+            return Promise.resolve();
+          }));
+        }
+
+        const displayType = rule.type === '3dset' ? '3dset' : rule.type;
+        addTallyRow(displayType, result.total || 0);
+
+        await new Promise(r => setTimeout(r, 420));
+      }
+
+      const unique = new Set(detectedDoodles).size;
+      let bonus = unique <=12 ? -10 : unique<=14 ? 1 : unique===15 ? 5 : unique===16 ? 10 : unique===17 ? 16 : unique===18 ? 23 : unique===19 ? 31 : 40;
+      total += bonus;
+      addTallyRow('variety', bonus);
+
+      const totalRow = document.createElement('div');
+      totalRow.style.fontSize = '7.5cqi';
+      totalRow.style.fontWeight = 'bold';
+      totalRow.style.color = '#ff0';
+      totalRow.style.textAlign = 'center';
+      totalRow.style.marginTop = '25px';
+      totalRow.textContent = `TOTAL SCORE: ${total}`;
+      tally.appendChild(totalRow);
+
+      document.getElementById('new-scan-btn').style.display = 'block';
+      document.getElementById('export-btn').style.display = 'block';
+    }
+
+    document.getElementById('score-btn').onclick = runScoringAnimation;
+    document.getElementById('new-scan-btn').onclick = () => location.reload();
+    document.getElementById('export-btn').onclick = exportTrainingData;
+
+    window.onload = async () => {
+      await loadModel();
+      startCamera();
+    };
+  </script>
+</body>
+</html>
