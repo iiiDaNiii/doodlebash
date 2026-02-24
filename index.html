@@ -440,6 +440,33 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
 
+    /* === CENTER + SCROLL FIX FOR SCORE MODAL === */
+#score-modal .scanner-content {
+  align-items: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 25cqi;        /* extra breathing room at bottom */
+}
+
+#score-modal .scanner-content > * {
+  width: 90cqi;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Force these key elements to stay centered */
+#score-modal #score-output-canvas,
+#score-modal #score-detected-grid,
+#score-modal #score-tally,
+#score-modal #score-debug-cells,
+#score-modal #score-console-log,
+#score-modal #score-tweak-prompt {
+  width: 90cqi;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
     #score-modal .status {
       font-size: 4.5cqi;
       text-align: center;
