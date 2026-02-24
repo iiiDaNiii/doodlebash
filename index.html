@@ -691,42 +691,46 @@
     }
 
     async function runScoringAnimation() {
-      const panel = document.getElementById('scoring-panel');
-      const totalEl = document.getElementById('running-total');
-      const finalEl = document.getElementById('final-score');
-      panel.style.display = 'block';
-      document.getElementById('score-btn').style.display = 'none';
-      document.getElementById('tweak-prompt').style.display = 'none';
-      document.getElementById('export-btn').style.display = 'none';
+  // Rebuild board from the latest (possibly corrected) doodles
+  buildBoard();
+  perCellScore = Array(7).fill().map(() => Array(11).fill(0));
 
-      let total = 0;
-      totalEl.textContent = `Total: ${total}`;
+  const panel = document.getElementById('scoring-panel');
+  const totalEl = document.getElementById('running-total');
+  const finalEl = document.getElementById('final-score');
+  panel.style.display = 'block';
+  document.getElementById('score-btn').style.display = 'none';
+  document.getElementById('tweak-prompt').style.display = 'none';
+  document.getElementById('export-btn').style.display = 'none';
 
-      for (let rule of scoringRules) {
-        let result = rule.base !== undefined ? calculateBase(rule.type, rule.base) : rule.calc();
+  let total = 0;
+  totalEl.textContent = `Total: ${total}`;
 
-        total += result.total || 0;
-        totalEl.textContent = `Total: ${total}`;
+  for (let rule of scoringRules) {
+    let result = rule.base !== undefined ? calculateBase(rule.type, rule.base) : rule.calc();
 
-        const items = result.perCellList || result.positions || [];
-        for (let item of items) {
-          const flat = item.r * 10 + playableCols.indexOf(item.c);
-          const cell = gridCells[flat];
-          if (cell) await animateCell(cell, item.pts !== undefined ? item.pts : null);
-        }
-        await new Promise(r => setTimeout(r, 650));
-      }
+    total += result.total || 0;
+    totalEl.textContent = `Total: ${total}`;
 
-      const unique = new Set(detectedDoodles).size;
-      let bonus = unique <=12 ? -10 : unique<=14 ? 1 : unique===15 ? 5 : unique===16 ? 10 : unique===17 ? 16 : unique===18 ? 23 : unique===19 ? 31 : 40;
-      total += bonus;
-      totalEl.textContent = `Total: ${total}`;
-      finalEl.textContent = `FINAL SCORE\n${total}`;
-      finalEl.style.display = 'block';
-
-      document.getElementById('export-btn').style.display = 'block';
+    const items = result.perCellList || result.positions || [];
+    for (let item of items) {
+      const flat = item.r * 10 + playableCols.indexOf(item.c);
+      const cell = gridCells[flat];
+      if (cell) await animateCell(cell, item.pts !== undefined ? item.pts : null);
     }
+    await new Promise(r => setTimeout(r, 650));
+  }
 
+  // Variety bonus
+  const unique = new Set(detectedDoodles).size;
+  let bonus = unique <=12 ? -10 : unique<=14 ? 1 : unique===15 ? 5 : unique===16 ? 10 : unique===17 ? 16 : unique===18 ? 23 : unique===19 ? 31 : 40;
+  total += bonus;
+  totalEl.textContent = `Total: ${total}`;
+  finalEl.textContent = `FINAL SCORE\n${total}`;
+  finalEl.style.display = 'block';
+
+  document.getElementById('export-btn').style.display = 'block';
+}
     async function animateCell(cell, pts) {
       cell.classList.add('scoring');
       if (pts !== null) {
