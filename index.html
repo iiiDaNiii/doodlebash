@@ -404,24 +404,26 @@
       opacity: 1;
     }
 
-    /* SCORE MODAL STYLES */
-    #score-modal .scanner-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 4cqi;
-      gap: 3cqi;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding-bottom: 25cqi;
-    }
+   /* ==================== SCORE MODAL STYLES - CLEANED & FIXED ==================== */
 
-    #score-modal .camera-container {
+#score-modal .scanner-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4cqi 3cqi;
+  gap: 3cqi;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 30cqi;           /* extra space so SCORE button is always reachable */
+}
+
+/* CAMERA - EXACT 11:7 RATIO + CQI SIZING */
+#score-modal .camera-container {
   position: relative;
-  width: 90%;
+  width: 90cqi;                    /* scales beautifully with modal */
   max-width: 520px;
-  aspect-ratio: 11 / 7;
+  aspect-ratio: 11 / 7;            /* strict notebook ratio → square cells */
   border-radius: 18px;
   overflow: hidden;
   background: #111;
@@ -432,58 +434,246 @@
 #score-modal #score-camera-preview {
   width: 100%;
   height: 100%;
-  object-fit: cover;          /* changed back to cover for full fill + crop feel */
+  object-fit: cover;               /* fills area, crops edges naturally */
   background: #000;
 }
 
-    #score-modal #score-grid-overlay {
+#score-modal #score-grid-overlay {
   position: absolute;
-  top: 0; left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
   z-index: 2;
 }
 
-    #score-modal .scanner-content > * {
-      width: 90cqi;
-      max-width: 520px;
-      margin: 0 auto;
-    }
+/* CENTER ALL CHILDREN CONSISTENTLY */
+#score-modal .scanner-content > * {
+  width: 90cqi;
+  max-width: 520px;
+  margin: 0 auto;
+}
 
-    #score-modal #score-output-canvas,
-    #score-modal #score-detected-grid,
-    #score-modal #score-tally,
-    #score-modal #score-debug-cells,
-    #score-modal #score-console-log,
-    #score-modal #score-tweak-prompt {
-      width: 90cqi;
-      max-width: 520px;
-      margin: 0 auto;
-    }
+/* SPECIFIC ELEMENTS THAT NEED EXACT SIZING */
+#score-modal #score-output-canvas,
+#score-modal #score-detected-grid,
+#score-modal #score-tally,
+#score-modal #score-debug-cells,
+#score-modal #score-console-log,
+#score-modal #score-tweak-prompt {
+  width: 90cqi;
+  max-width: 520px;
+  margin: 0 auto;
+}
 
-    #score-modal .status { font-size: 4.5cqi; text-align: center; margin: 10px 0; }
-    #score-modal .debug { font-size: 3.2cqi; color: #aaa; text-align: left; padding: 2cqi; background: rgba(255,255,255,0.05); border-radius: 8px; }
-    #score-modal .console-log { width: 90%; max-width: 520px; background: #222; color: #0f0; padding: 12px; font-family: monospace; font-size: 3.2cqi; border-radius: 8px; white-space: pre-wrap; max-height: 180px; overflow-y: auto; }
-    #score-modal .tweak-prompt { display:none; text-align:center; font-size:4cqi; color:#ff0; background:rgba(0,0,0,0.6); padding:2cqi; border-radius:8px; width:90%; max-width:520px; }
-    #score-modal #score-detected-grid { display:none; grid-template-columns:repeat(10,1fr); grid-template-rows:repeat(7,1fr); gap:3px; width:90%; max-width:520px; height:420px; background:#111; padding:8px; border-radius:12px; }
-    #score-modal .grid-cell { position:relative; aspect-ratio:1; background:transparent; border:none; background-size:contain; background-position:center; background-repeat:no-repeat; cursor:pointer; transition:transform .4s; }
-    #score-modal .grid-cell:hover { transform:scale(1.12); }
-    #score-modal .grid-cell.low-confidence { box-shadow:0 0 0 6px rgba(255,255,0,0.8); }
-    #score-modal .grid-cell.scoring { transform:scale(1.25); }
-    #score-modal .point-bubble { position:absolute; width:85px; height:85px; background-size:contain; background-repeat:no-repeat; background-position:center; display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:bold; color:#fff; text-shadow:0 2px 8px #000; pointer-events:none; z-index:30; transition:all .8s cubic-bezier(0.68,-0.55,0.27,1.55); }
-    #score-modal #score-tally { display:none; width:90%; max-width:520px; background:#1a1a1a; padding:15px; border-radius:16px; margin-top:15px; max-height:45vh; overflow-y:auto; }
-    #score-modal .tally-row { display:flex; align-items:center; background:#222; border-radius:12px; padding:10px 15px; margin-bottom:10px; }
-    #score-modal .tally-row img { width:55px; height:55px; object-fit:contain; margin-right:15px; }
-    #score-modal .tally-line { flex:1; height:3px; background:#555; margin:0 15px; border-radius:3px; }
-    #score-modal .score-box { padding:8px 25px; background:#333; border-radius:9999px; font-size:5.2cqi; font-weight:bold; min-width:100px; text-align:center; }
-    #score-modal button { background:#5fbae9; color:white; padding:4cqi 14cqi; font-size:6cqi; border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; }
-    #score-modal #score-snap-btn { margin-top:auto; width:85%; max-width:520px; padding:5cqi 12cqi; font-size:7cqi; font-weight:bold; }
-    #score-modal #score-final-total { font-size:10cqi; font-weight:bold; color:#ff0; margin:20px 0; text-align:center; }
-    #score-modal #score-doodle-popup { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.9); padding:4cqi; border-radius:16px; z-index:200; box-shadow:0 0 30px rgba(255,255,255,0.3); }
-    #score-modal .popup-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1.5cqi; max-width:90vw; max-height:80vh; overflow-y:auto; }
-    #score-modal .popup-item { width:8cqi; height:8cqi; background:#f0f0f0; border:2px solid #ccc; border-radius:8px; background-size:contain; background-position:center; background-repeat:no-repeat; cursor:pointer; }
-    #score-modal .popup-item:hover { border-color:#ff0; }
+/* GENERAL SCORE UI STYLES */
+#score-modal .status {
+  font-size: 4.5cqi;
+  text-align: center;
+  margin: 10px 0;
+  color: #fff;
+}
+
+#score-modal .debug {
+  font-size: 3.2cqi;
+  color: #aaa;
+  text-align: left;
+  padding: 2cqi;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+}
+
+#score-modal .console-log {
+  width: 90cqi;
+  max-width: 520px;
+  background: #222;
+  color: #0f0;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 3.2cqi;
+  line-height: 1.5;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+#score-modal .tweak-prompt {
+  display: none;
+  text-align: center;
+  font-size: 4cqi;
+  color: #ff0;
+  background: rgba(0,0,0,0.6);
+  padding: 2cqi;
+  border-radius: 8px;
+  width: 90cqi;
+  max-width: 520px;
+}
+
+/* DETECTED GRID */
+#score-modal #score-detected-grid {
+  display: none;
+  grid-template-columns: repeat(10,1fr);
+  grid-template-rows: repeat(7,1fr);
+  gap: 3px;
+  width: 90cqi;
+  max-width: 520px;
+  height: 420px;
+  background: #111;
+  padding: 8px;
+  border-radius: 12px;
+}
+
+/* GRID CELLS & SCORING ANIMATION */
+#score-modal .grid-cell {
+  position: relative;
+  aspect-ratio: 1;
+  background: transparent;
+  border: none;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  transition: transform .4s;
+}
+
+#score-modal .grid-cell:hover { transform: scale(1.12); }
+#score-modal .grid-cell.low-confidence { box-shadow: 0 0 0 6px rgba(255,255,0,0.8); }
+#score-modal .grid-cell.scoring { transform: scale(1.25); }
+
+#score-modal .point-bubble {
+  position: absolute;
+  width: 85px;
+  height: 85px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 2px 8px #000;
+  pointer-events: none;
+  z-index: 30;
+  transition: all .8s cubic-bezier(0.68,-0.55,0.27,1.55);
+}
+
+/* TALLY / SCORE DISPLAY */
+#score-modal #score-tally {
+  display: none;
+  width: 90cqi;
+  max-width: 520px;
+  background: #1a1a1a;
+  padding: 15px;
+  border-radius: 16px;
+  margin-top: 15px;
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+#score-modal .tally-row {
+  display: flex;
+  align-items: center;
+  background: #222;
+  border-radius: 12px;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+}
+
+#score-modal .tally-row img {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+  margin-right: 15px;
+}
+
+#score-modal .tally-line {
+  flex: 1;
+  height: 3px;
+  background: #555;
+  margin: 0 15px;
+  border-radius: 3px;
+}
+
+#score-modal .score-box {
+  padding: 8px 25px;
+  background: #333;
+  border-radius: 9999px;
+  font-size: 5.2cqi;
+  font-weight: bold;
+  min-width: 100px;
+  text-align: center;
+}
+
+/* BUTTONS */
+#score-modal button {
+  background: #5fbae9;
+  color: white;
+  padding: 4cqi 14cqi;
+  font-size: 6cqi;
+  border: none;
+  border-radius: 9999px;
+  margin-top: 2cqi;
+  cursor: pointer;
+}
+
+#score-modal #score-snap-btn {
+  margin-top: auto;
+  width: 85%;
+  max-width: 520px;
+  padding: 5cqi 12cqi;
+  font-size: 7cqi;
+  font-weight: bold;
+}
+
+#score-modal #score-final-total {
+  font-size: 10cqi;
+  font-weight: bold;
+  color: #ff0;
+  margin: 20px 0;
+  text-align: center;
+}
+
+/* DOODLE CORRECTION POPUP */
+#score-modal #score-doodle-popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.9);
+  padding: 4cqi;
+  border-radius: 16px;
+  z-index: 200;
+  box-shadow: 0 0 30px rgba(255,255,255,0.3);
+}
+
+#score-modal .popup-grid {
+  display: grid;
+  grid-template-columns: repeat(7,1fr);
+  gap: 1.5cqi;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+#score-modal .popup-item {
+  width: 8cqi;
+  height: 8cqi;
+  background: #f0f0f0;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+#score-modal .popup-item:hover {
+  border-color: #ff0;
+}
   </style>
 </head>
 <body>
@@ -1042,25 +1232,32 @@
       }
     }
 
-    function scoreInitGridOverlay() {
+ function scoreInitGridOverlay() {
   const overlay = document.getElementById('score-grid-overlay');
   if (!overlay) return;
 
   function redraw() {
-    overlay.width = scoreVideo.clientWidth;
-    overlay.height = scoreVideo.clientHeight;
+    // Make canvas exactly match the container size
+    overlay.width = overlay.clientWidth;
+    overlay.height = overlay.clientHeight;
+
     const ctx = overlay.getContext('2d');
     ctx.clearRect(0, 0, overlay.width, overlay.height);
-    const rect = getCurrentGridRect(overlay.width, overlay.height);
+
+    // Draw perfect 11×7 grid
+    const rect = { left: 0, top: 0, w: overlay.width, h: overlay.height };
     drawOverlayGrid(ctx, rect.left, rect.top, rect.w, rect.h);
   }
 
+  // Redraw immediately and on any size change
   redraw();
   window.addEventListener('resize', redraw);
-  // Also redraw when video metadata is loaded (important for initial size)
-  scoreVideo.addEventListener('loadedmetadata', redraw);
-}
 
+  // Also redraw when the video actually starts playing (important for initial load)
+  scoreVideo.addEventListener('loadedmetadata', redraw, { once: true });
+  scoreVideo.addEventListener('play', redraw, { once: true });
+}
+    
    function drawOverlayGrid(ctx, gx, gy, gw, gh) {
   const unitW = gw / 11;
   const unitH = gh / 7;
