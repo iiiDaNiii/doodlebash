@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 6.0</title>
+  <title>Doodle Notebook Scanner 6.1</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
@@ -81,9 +81,9 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Doodle Notebook Scanner 6.0</div>
+    <div class="header">Doodle Notebook Scanner 6.1</div>
     <div class="content">
-      <p>Line up your notebook so the <strong>red grid</strong> perfectly matches the printed grid.<br>Fill the frame edge-to-edge then tap SNAP.</p>
+      <p>Line up your notebook so the <strong>red grids</strong> match the printed pages.<br>Fill the inset area edge-to-edge then tap SNAP.</p>
       
       <div class="camera-container">
         <video id="camera-preview" autoplay playsinline muted></video>
@@ -92,8 +92,8 @@
       
       <button id="snap-btn" style="display:none; padding:3cqi 8cqi; font-size:5.5cqi;">SNAP NOW</button>
       <canvas id="output-canvas"></canvas>
-      <div id="status" class="status">Align grid then SNAP</div>
-      <div class="debug" id="debug-info">Manual grid mode • 11×7 overlay • No auto-warp</div>
+      <div id="status" class="status">Align grids then SNAP</div>
+      <div class="debug" id="debug-info">6.1 • Inset grid • Split pages • Perfect square cells</div>
       
       <div id="debug-cells" class="debug-cells"></div>
       <div id="console-log" class="console-log">Waiting for photo...</div>
@@ -108,14 +108,15 @@
   </div>
 
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 6.0 - GRID ALIGN MODE ===");
+    console.log("=== DOODLE NOTEBOOK SCANNER 6.1 - INSET + SPLIT PAGES ===");
+
+    const OVERLAY_INSET = 0.07; // ← tweak this for more/less padding
 
     // Shared state
     let stream = null;
     let video = document.getElementById('camera-preview');
     let outputCanvas = document.getElementById('output-canvas');
     let status = document.getElementById('status');
-    let debugInfo = document.getElementById('debug-info');
 
     // ML
     let model = null;
@@ -142,32 +143,59 @@
       }
     }
 
-    function drawGridLines(ctx, w, h) {
+    function getCurrentGridRect(displayW, displayH) {
+      let availW = displayW * (1 - 2 * OVERLAY_INSET);
+      let availH = displayH * (1 - 2 * OVERLAY_INSET);
+      const targetRatio = 11 / 7;
+
+      let gridW = availW;
+      let gridH = availH;
+      if (gridW / gridH > targetRatio) {
+        gridW = gridH * targetRatio;
+      } else {
+        gridH = gridW / targetRatio;
+      }
+      const left = (displayW - gridW) / 2;
+      const top = (displayH - gridH) / 2;
+      return {
+        left: Math.round(left),
+        top: Math.round(top),
+        w: Math.round(gridW),
+        h: Math.round(gridH)
+      };
+    }
+
+    function drawOverlayGrid(ctx, gx, gy, gw, gh) {
+      const unitW = gw / 11;
+      const unitH = gh / 7;
       ctx.lineCap = 'round';
-      // Vertical lines (11 columns → 12 lines)
-      for (let i = 0; i <= 11; i++) {
-        const x = Math.round(i * w / 11);
+
+      // Horizontal lines (full width, across both pages + gutter)
+      ctx.strokeStyle = 'rgba(255,50,50,0.92)';
+      ctx.lineWidth = Math.max(2.2, gw / 400);
+      for (let i = 0; i <= 7; i++) {
+        const y = gy + Math.round(i * unitH);
         ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, h);
-        
-        if (i === 5) {
-          ctx.strokeStyle = 'rgba(255,255,0,0.85)'; // yellow divider
-          ctx.lineWidth = Math.max(4.5, w / 180);
-        } else {
-          ctx.strokeStyle = 'rgba(255,50,50,0.92)';
-          ctx.lineWidth = Math.max(2.2, w / 400);
-        }
+        ctx.moveTo(gx, y);
+        ctx.lineTo(gx + gw, y);
         ctx.stroke();
       }
-      // Horizontal lines (7 rows → 8 lines)
-      ctx.strokeStyle = 'rgba(255,50,50,0.92)';
-      ctx.lineWidth = Math.max(2.2, w / 400);
-      for (let i = 0; i <= 7; i++) {
-        const y = Math.round(i * h / 7);
+
+      // Left page vertical lines (cols 0-4 → 6 lines)
+      for (let i = 0; i <= 5; i++) {
+        const x = gx + Math.round(i * unitW);
         ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
+        ctx.moveTo(x, gy);
+        ctx.lineTo(x, gy + gh);
+        ctx.stroke();
+      }
+
+      // Right page vertical lines (cols 6-10 → 6 lines)
+      for (let i = 0; i <= 5; i++) {
+        const x = gx + Math.round((6 + i) * unitW);
+        ctx.beginPath();
+        ctx.moveTo(x, gy);
+        ctx.lineTo(x, gy + gh);
         ctx.stroke();
       }
     }
@@ -179,7 +207,10 @@
         overlay.width = video.clientWidth;
         overlay.height = video.clientHeight;
         const ctx = overlay.getContext('2d');
-        drawGridLines(ctx, overlay.width, overlay.height);
+        ctx.clearRect(0, 0, overlay.width, overlay.height);
+        
+        const rect = getCurrentGridRect(overlay.width, overlay.height);
+        drawOverlayGrid(ctx, rect.left, rect.top, rect.w, rect.h);
       }
       
       redraw();
@@ -187,9 +218,7 @@
     }
 
     async function startCamera() {
-      stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
-      });
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       video.srcObject = stream;
       video.onloadeddata = () => {
         document.getElementById('snap-btn').style.display = 'block';
@@ -197,35 +226,57 @@
       };
     }
 
-    // ========== NEW SNAP & DETECTION (raw capture + grid split) ==========
+    // ==================== SNAP & PROCESS ====================
     document.getElementById('snap-btn').onclick = async () => {
-      status.textContent = "Capturing raw photo...";
+      status.textContent = "Capturing & cropping to grid...";
+
+      // Full raw capture
       const captured = document.createElement('canvas');
       captured.width = video.videoWidth;
       captured.height = video.videoHeight;
       captured.getContext('2d').drawImage(video, 0, 0);
 
-      // Show captured image + grid on output canvas for confirmation
-      outputCanvas.width = captured.width;
-      outputCanvas.height = captured.height;
-      const outCtx = outputCanvas.getContext('2d');
-      outCtx.drawImage(captured, 0, 0);
-      drawGridLines(outCtx, outputCanvas.width, outputCanvas.height);
+      // Get exact inset rectangle from live overlay
+      const displayRect = getCurrentGridRect(video.clientWidth, video.clientHeight);
+      const scaleX = video.videoWidth / video.clientWidth;
+      const scaleY = video.videoHeight / video.clientHeight;
 
-      status.textContent = "Splitting into 70 cells & classifying...";
-      await detectFromRawCapture(captured);
+      const nativeLeft = Math.round(displayRect.left * scaleX);
+      const nativeTop = Math.round(displayRect.top * scaleY);
+      const nativeW = Math.round(displayRect.w * scaleX);
+      const nativeH = Math.round(displayRect.h * scaleY);
+
+      // Crop to the exact aligned grid area (perfect 11:7)
+      const cropped = document.createElement('canvas');
+      cropped.width = nativeW;
+      cropped.height = nativeH;
+      cropped.getContext('2d').drawImage(
+        captured,
+        nativeLeft, nativeTop, nativeW, nativeH,
+        0, 0, nativeW, nativeH
+      );
+
+      // Show clean cropped result on output with grid
+      outputCanvas.width = nativeW;
+      outputCanvas.height = nativeH;
+      const outCtx = outputCanvas.getContext('2d');
+      outCtx.drawImage(cropped, 0, 0);
+      drawOverlayGrid(outCtx, 0, 0, nativeW, nativeH);
+
+      status.textContent = "Detecting 70 doodles...";
+      await detectFromCropped(cropped);
     };
 
-    async function detectFromRawCapture(captured) {
+    async function detectFromCropped(cropped) {
       const numCols = 11;
       const numRows = 7;
-      const cellW = captured.width / numCols;
-      const cellH = captured.height / numRows;
+      const cellW = cropped.width / numCols;
+      const cellH = cropped.height / numRows;
       const playableCols = [0,1,2,3,4,6,7,8,9,10];
 
       detectedDoodles = [];
       cellCanvases = [];
-      log("🚀 Detecting 70 doodles (raw grid split)...");
+      log("🚀 Detecting 70 doodles from cropped grid...");
 
       for (let r = 0; r < numRows; r++) {
         for (let c of playableCols) {
@@ -235,7 +286,7 @@
           const cellCtx = cellCanvas.getContext('2d');
 
           cellCtx.drawImage(
-            captured,
+            cropped,
             Math.round(c * cellW),
             Math.round(r * cellH),
             Math.round(cellW),
@@ -263,18 +314,17 @@
       }
 
       renderDetectedGrid();
-      renderDebugCells(captured);
+      renderDebugCells(cropped);
       document.getElementById('tweak-prompt').style.display = 'block';
-      document.getElementById('console-log').scrollTop = 999999;
       status.textContent = `✅ Scanned ${detectedDoodles.length} cells!`;
     }
 
-    function renderDebugCells(captured) {
+    function renderDebugCells(cropped) {
       const container = document.getElementById('debug-cells');
       container.innerHTML = '';
       const playableCols = [0,1,2,3,4,6,7,8,9,10];
-      const cellW = captured.width / 11;
-      const cellH = captured.height / 7;
+      const cellW = cropped.width / 11;
+      const cellH = cropped.height / 7;
 
       for (let r = 0; r < 7; r++) {
         for (let c of playableCols) {
@@ -283,7 +333,7 @@
           thumb.height = 80;
           const tctx = thumb.getContext('2d');
           tctx.drawImage(
-            captured,
+            cropped,
             Math.round(c * cellW), Math.round(r * cellH),
             Math.round(cellW), Math.round(cellH),
             0, 0, 80, 80
@@ -296,7 +346,7 @@
       }
     }
 
-    // (All the old UI functions below are unchanged — showDoodlePopup, renderDetectedGrid, exportTrainingData, etc.)
+    // ==================== UNCHANGED UI FUNCTIONS ====================
     let currentCellIndex = -1;
     function showDoodlePopup(index) {
       currentCellIndex = index;
@@ -348,8 +398,7 @@
         const randomNum = Math.floor(Math.random() * 900000) + 100000;
         const filename = `${className}${randomNum}.png`;
        
-        const cellCanvas = cellCanvases[i];
-        cellCanvas.toBlob(blob => {
+        cellCanvases[i].toBlob(blob => {
           zip.file(filename, blob);
         }, 'image/png');
       });
