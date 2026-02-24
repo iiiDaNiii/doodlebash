@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doodle Notebook Scanner 7.0</title>
+  <title>Doodle Notebook Scanner 7.0 - Full Debug</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
@@ -18,7 +18,7 @@
     #camera-preview { width:100%; height:100%; object-fit:cover; }
     #grid-overlay { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:2; }
     #output-canvas { max-width:90vw; border:3px solid #333; border-radius:12px; background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
-    .status { font-size:4.5cqi; text-align:center; margin:10px 0; }
+    .status { font-size:4.5cqi; text-align:center; margin:10px 0; color:#5fbae9; font-weight:bold; }
     .debug { font-size:3.2cqi; color:#aaa; text-align:left; max-width:520px; padding:2cqi; background:rgba(255,255,255,0.05); border-radius:8px; }
     .debug-cells { display:grid; grid-template-columns:repeat(10,1fr); gap:4px; width:90vw; max-width:520px; }
     .debug-cell { border:2px solid #666; border-radius:8px; overflow:hidden; aspect-ratio:1/1; }
@@ -44,7 +44,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">Doodle Notebook Scanner 7.0</div>
+    <div class="header">Doodle Notebook Scanner 7.0 - Full Debug</div>
     <div class="content">
       <p>Align the two blue page grids with your notebook pages.<br>Fill the preview edge-to-edge then tap SNAP.</p>
       
@@ -54,8 +54,8 @@
       </div>
 
       <canvas id="output-canvas"></canvas>
-      <div id="status" class="status">Align grids then SNAP</div>
-      <div class="debug" id="debug-info">7.0 • Auto-scoring + animation</div>
+      <div id="status" class="status">Waiting for photo...</div>
+      <div class="debug" id="debug-info">7.0 Full Debug Build</div>
       
       <div id="debug-cells" class="debug-cells"></div>
       <div id="console-log" class="console-log">Waiting for photo...</div>
@@ -78,7 +78,7 @@
   </div>
 
   <script>
-    console.log("=== DOODLE NOTEBOOK SCANNER 7.0 - FULL AUTO-SCORING ===");
+    console.log("=== DOODLE NOTEBOOK SCANNER 7.0 FULL DEBUG BUILD ===");
 
     const LOW_CONFIDENCE_THRESHOLD = 0.75;
     const playableCols = [0,1,2,3,4,6,7,8,9,10];
@@ -113,6 +113,27 @@
         log(`✅ Model loaded! ${classNames.length} classes`);
       } catch (e) {
         log("❌ ERROR loading model: " + e.message);
+      }
+    }
+
+    async function startCamera() {
+      statusEl.textContent = "Requesting camera permission...";
+      console.log("startCamera called");
+      try {
+        console.log("Calling getUserMedia...");
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        console.log("getUserMedia succeeded");
+        video.srcObject = stream;
+        statusEl.textContent = "Camera stream attached – waiting for video data...";
+        video.onloadeddata = () => {
+          console.log("onloadeddata fired – camera ready");
+          document.getElementById('snap-btn').style.display = 'block';
+          initGridOverlay();
+          statusEl.textContent = "Camera ready! Point at notebook and SNAP";
+        };
+      } catch (e) {
+        console.error("getUserMedia failed:", e.name, e.message);
+        statusEl.textContent = `Camera error: ${e.name} – ${e.message || 'Check console'}. Make sure you're on localhost or https.`;
       }
     }
 
@@ -178,23 +199,6 @@
       }
       redraw();
       window.addEventListener('resize', redraw);
-    }
-
-    async function startCamera() {
-      try {
-        console.log("Requesting camera...");
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        console.log("Camera stream obtained");
-        video.srcObject = stream;
-        video.onloadeddata = () => {
-          document.getElementById('snap-btn').style.display = 'block';
-          initGridOverlay();
-          statusEl.textContent = "Camera ready – align & SNAP";
-        };
-      } catch (e) {
-        console.error("Camera error:", e);
-        statusEl.textContent = "Camera access denied or unavailable";
-      }
     }
 
     document.getElementById('snap-btn').onclick = async () => {
@@ -299,6 +303,52 @@
       });
     }
 
+    let currentCellIndex = -1;
+    function showDoodlePopup(index) {
+      currentCellIndex = index;
+      const popup = document.getElementById('doodle-popup');
+      const grid = document.getElementById('popup-grid');
+      grid.innerHTML = '';
+      const opts = classNames.filter(name => name !== 'unknown');
+      opts.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'popup-item';
+        item.style.backgroundImage = `url('images/${d}.png')`;
+        item.onclick = () => {
+          const cell = document.querySelector(`.grid-cell[data-index="${index}"]`);
+          cell.dataset.doodle = d;
+          cell.className = `grid-cell ${d}`;
+          cell.style.backgroundImage = `url('images/${d}.png')`;
+          detectedDoodles[index] = d;
+          cell.classList.remove('low-confidence');
+          popup.style.display = 'none';
+        };
+        grid.appendChild(item);
+      });
+      popup.style.display = 'block';
+    }
+
+    async function exportTrainingData() {
+      const zip = new JSZip();
+      log("📦 Building training ZIP...");
+      detectedDoodles.forEach((doodle, i) => {
+        const className = doodle.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const randomNum = Math.floor(Math.random() * 900000) + 100000;
+        const filename = `${className}${randomNum}.png`;
+        cellCanvases[i].toBlob(blob => zip.file(filename, blob), 'image/png');
+      });
+      setTimeout(async () => {
+        const content = await zip.generateAsync({type: "blob"});
+        const url = URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `doodle-training-${new Date().toISOString().slice(0,10)}.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+        log(`✅ Exported ${detectedDoodles.length} images!`);
+      }, 500);
+    }
+
     // ====================== SCORING ======================
     const scoringRules = [
       {type:'turd', base:-2},
@@ -350,7 +400,7 @@
       for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
         if (board[r][c] === type) {
           total += pts;
-          perCellList.push({r,c,pts});
+          perCellList.push({r, c, pts});
           perCellScore[r][c] += pts;
         }
       }
@@ -369,7 +419,276 @@
       return {total: sets*20, positions, isGlobal:true};
     }
 
-    // (All other calculate functions are implemented exactly as per your rules — chest, rocket, cat, cloud, umbrella, mug, toiletpaper, house, crown, smiley, letter, piano, butterfly, fish, boat, die. The full versions are in the file below.)
+    function calculateChest() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'chest') {
+          let count = getSurrounding(r, c).filter(s => ['coin','diamond','crown'].includes(s.doodle)).length;
+          let pts = count * 2;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateRocket() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'rocket') {
+          let count = 0;
+          for (let rr=0; rr<7; rr++) {
+            if (rr !== r && (board[rr][c] === 'planet' || board[rr][c] === 'star')) count++;
+          }
+          let pts = count * 3;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateCat() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'cat') {
+          let count = getSurrounding(r, c).filter(s => ['fish','turd'].includes(s.doodle)).length;
+          let pts = 3 + count * 2;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateCloud() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'cloud') {
+          let count = 0;
+          let isLeft = c < 5;
+          for (let rr = r+1; rr < 7; rr++) {
+            if (board[rr][c] === 'drop' && (c < 5 === isLeft)) count++;
+          }
+          let pts = count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateUmbrella() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'umbrella') {
+          let count = 0;
+          let isLeft = c < 5;
+          for (let rr = 0; rr < r; rr++) {
+            if (board[rr][c] === 'drop' && (c < 5 === isLeft)) count++;
+          }
+          let pts = count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateMug() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'mug') {
+          let hasDropAbove = (r > 0 && board[r-1][c] === 'drop');
+          let pts = 2 + (hasDropAbove ? 2 : 0);
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateToiletpaper() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'toiletpaper') {
+          let count = getSurrounding(r, c).filter(s => s.doodle === 'turd').length;
+          let pts = 1 + count * 7;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateHouse() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'house') {
+          let count = getSurrounding(r, c).filter(s => ['smiley','wifi'].includes(s.doodle)).length;
+          let pts = 1 + count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateCrown() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'crown') {
+          let hasSmileyBelow = (r < 6 && board[r+1][c] === 'smiley');
+          let pts = 3 + (hasSmileyBelow ? 1 : 0);
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateSmiley() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'smiley') {
+          let count = getSurrounding(r, c).filter(s => ['pizza','icecream'].includes(s.doodle)).length;
+          let pts = 1 + count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateLetter() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'letter') {
+          let hasHeartAbove = (r > 0 && board[r-1][c] === 'heart');
+          let pts = 1 + (hasHeartAbove ? 5 : 0);
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculatePiano() {
+      let columnsWithMusic = new Set();
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'music') columnsWithMusic.add(c);
+      }
+      let numCols = columnsWithMusic.size;
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'piano') {
+          let pts = numCols;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateButterfly() {
+      // Simple largest orthogonal group of flowers (4-connected)
+      let visited = Array(7).fill().map(() => Array(11).fill(false));
+      let maxSize = 0;
+      const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+
+      function dfs(r, c) {
+        if (r<0 || r>=7 || c<0 || c>=11 || visited[r][c] || board[r][c] !== 'flower') return 0;
+        visited[r][c] = true;
+        let size = 1;
+        for (let [dr,dc] of dirs) size += dfs(r+dr, c+dc);
+        return size;
+      }
+
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'flower' && !visited[r][c]) {
+          maxSize = Math.max(maxSize, dfs(r, c));
+        }
+      }
+      let total = maxSize * 1;
+      return {total, positions: []}; // we scale all flowers for visual
+    }
+
+    function calculateFish() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'fish') {
+          let count = getSurrounding(r, c).filter(s => s.doodle === 'fish').length;
+          let pts = count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateBoat() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'boat') {
+          let count = 0;
+          let isLeft = c < 5;
+          for (let rr = r+1; rr < 7; rr++) {
+            if (board[rr][c] === 'fish' && (c < 5 === isLeft)) count++;
+          }
+          let pts = count * 2;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateDie() {
+      let total = 0;
+      let perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (board[r][c] === 'die') {
+          let neighbors = getSurrounding(r, c);
+          let maxNeighbor = 0;
+          for (let n of neighbors) {
+            maxNeighbor = Math.max(maxNeighbor, perCellScore[n.r][n.c]);
+          }
+          let pts = maxNeighbor;
+          total += pts;
+          perCellList.push({r, c, pts});
+          perCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
 
     async function runScoringAnimation() {
       const panel = document.getElementById('scoring-panel');
@@ -398,7 +717,6 @@
         await new Promise(r => setTimeout(r, 650));
       }
 
-      // Variety bonus
       const unique = new Set(detectedDoodles).size;
       let bonus = unique <=12 ? -10 : unique<=14 ? 1 : unique===15 ? 5 : unique===16 ? 10 : unique===17 ? 16 : unique===18 ? 23 : unique===19 ? 31 : 40;
       total += bonus;
@@ -416,21 +734,18 @@
         f.className = 'points-float';
         f.textContent = pts >= 0 ? `+${pts}` : pts;
         cell.appendChild(f);
-        setTimeout(() => { f.style.opacity='0'; f.style.transform='translate(-50%, -90px)'; }, 80);
+        setTimeout(() => { f.style.opacity = '0'; f.style.transform = 'translate(-50%, -90px)'; }, 80);
         setTimeout(() => f.remove(), 900);
       }
       await new Promise(r => setTimeout(r, 520));
       cell.classList.remove('scoring');
     }
 
-    function showDoodlePopup(index) { /* unchanged from previous versions */ }
-
-    async function exportTrainingData() { /* unchanged */ }
-
     document.getElementById('score-btn').onclick = runScoringAnimation;
     document.getElementById('export-btn').onclick = exportTrainingData;
 
     window.onload = async () => {
+      console.log("Page loaded – starting app");
       await loadModel();
       startCamera();
     };
