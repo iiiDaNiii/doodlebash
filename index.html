@@ -690,8 +690,8 @@
       return {total, perCellList};
     }
 
-    async function runScoringAnimation() {
-  // Rebuild board from the latest (possibly corrected) doodles
+async function runScoringAnimation() {
+  // Always use the final corrected grid
   buildBoard();
   perCellScore = Array(7).fill().map(() => Array(11).fill(0));
 
@@ -718,13 +718,54 @@
       const cell = gridCells[flat];
       if (cell) await animateCell(cell, item.pts !== undefined ? item.pts : null);
     }
-    await new Promise(r => setTimeout(r, 650));
+
+    // Special global bonus display for 3D sets
+    if (result.isGlobal) {
+      const bonusDiv = document.createElement('div');
+      bonusDiv.style.position = 'fixed';
+      bonusDiv.style.top = '35%';
+      bonusDiv.style.left = '50%';
+      bonusDiv.style.transform = 'translate(-50%, -50%)';
+      bonusDiv.style.fontSize = '7cqi';
+      bonusDiv.style.fontWeight = 'bold';
+      bonusDiv.style.color = '#5fbae9';
+      bonusDiv.style.textShadow = '0 0 15px #000';
+      bonusDiv.style.zIndex = '200';
+      bonusDiv.style.opacity = '0';
+      bonusDiv.textContent = `+${result.total} (3D sets)`;
+      document.body.appendChild(bonusDiv);
+
+      setTimeout(() => { bonusDiv.style.transition = 'all 0.6s'; bonusDiv.style.opacity = '1'; bonusDiv.style.top = '30%'; }, 50);
+      setTimeout(() => { bonusDiv.style.opacity = '0'; }, 1200);
+      setTimeout(() => bonusDiv.remove(), 1800);
+    }
+
+    await new Promise(r => setTimeout(r, 400));   // snappier pace
   }
 
-  // Variety bonus
+  // Variety bonus with big pop-up
   const unique = new Set(detectedDoodles).size;
   let bonus = unique <=12 ? -10 : unique<=14 ? 1 : unique===15 ? 5 : unique===16 ? 10 : unique===17 ? 16 : unique===18 ? 23 : unique===19 ? 31 : 40;
   total += bonus;
+
+  const varietyDiv = document.createElement('div');
+  varietyDiv.style.position = 'fixed';
+  varietyDiv.style.top = '40%';
+  varietyDiv.style.left = '50%';
+  varietyDiv.style.transform = 'translate(-50%, -50%)';
+  varietyDiv.style.fontSize = '8cqi';
+  varietyDiv.style.fontWeight = 'bold';
+  varietyDiv.style.color = '#ff0';
+  varietyDiv.style.textShadow = '0 0 15px #000';
+  varietyDiv.style.zIndex = '200';
+  varietyDiv.style.opacity = '0';
+  varietyDiv.textContent = `+${bonus} Variety Bonus`;
+  document.body.appendChild(varietyDiv);
+
+  setTimeout(() => { varietyDiv.style.transition = 'all 0.6s'; varietyDiv.style.opacity = '1'; varietyDiv.style.top = '35%'; }, 100);
+  setTimeout(() => { varietyDiv.style.opacity = '0'; }, 1400);
+  setTimeout(() => varietyDiv.remove(), 2000);
+
   totalEl.textContent = `Total: ${total}`;
   finalEl.textContent = `FINAL SCORE\n${total}`;
   finalEl.style.display = 'block';
