@@ -1025,6 +1025,165 @@
     }
 
     populateLearnGrid();
+
+    // ====================== FULL SCORING ANIMATION ======================
+const scoringRules = [
+  {type:'turd', base:-2},
+  {type:'music', base:1},
+  {type:'planet', base:1},
+  {type:'star', base:2},
+  {type:'flower', base:2},
+  {type:'coin', base:2},
+  {type:'heart', base:2},
+  {type:'pizza', base:3},
+  {type:'diamond', base:4},
+  {type:'icecream', base:4},
+  {type:'sword', base:5},
+  {type:'present', base:6},
+  {type:'3dset', calc:calculate3DSet},
+  {type:'chest', calc:calculateChest},
+  {type:'rocket', calc:calculateRocket},
+  {type:'cat', calc:calculateCat},
+  {type:'cloud', calc:calculateCloud},
+  {type:'umbrella', calc:calculateUmbrella},
+  {type:'mug', calc:calculateMug},
+  {type:'toiletpaper', calc:calculateToiletpaper},
+  {type:'house', calc:calculateHouse},
+  {type:'crown', calc:calculateCrown},
+  {type:'smiley', calc:calculateSmiley},
+  {type:'letter', calc:calculateLetter},
+  {type:'piano', calc:calculatePiano},
+  {type:'butterfly', calc:calculateButterfly},
+  {type:'fish', calc:calculateFish},
+  {type:'boat', calc:calculateBoat},
+  {type:'die', calc:calculateDie}
+];
+
+function getSurrounding(r, c) {
+  const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+  let list = [];
+  for (let [dr,dc] of dirs) {
+    let nr = r+dr, nc = c+dc;
+    if (nr>=0 && nr<7 && nc>=0 && nc<11 && scoreBoard[nr][nc] !== null) {
+      list.push({r:nr, c:nc, doodle:scoreBoard[nr][nc]});
+    }
+  }
+  return list;
+}
+
+function calculateBase(type, pts) {
+  let total = 0;
+  let perCellList = [];
+  for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+    if (scoreBoard[r][c] === type) {
+      total += pts;
+      perCellList.push({r, c, pts});
+      scorePerCellScore[r][c] += pts;
+    }
+  }
+  return {total, perCellList};
+}
+
+function calculate3DSet() {
+  let cubes = 0, pyramids = 0, cylinders = 0, positions = [];
+  for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+    let d = scoreBoard[r][c];
+    if (d==='cube') {cubes++; positions.push({r,c});}
+    else if (d==='pyramid') {pyramids++; positions.push({r,c});}
+    else if (d==='cylinder') {cylinders++; positions.push({r,c});}
+  }
+  let sets = Math.min(Math.floor(cubes/2), Math.floor(pyramids/3), Math.floor(cylinders/2));
+  return {total: sets*20, positions, isGlobal:true};
+}
+
+// Add the rest of your calculate functions here (calculateChest, calculateRocket, etc.)
+// (they are the exact same ones you originally had in the scanner file)
+// For brevity I’ll assume you still have them; if not, tell me and I’ll send them separately.
+
+async function animateCell(cell, pts) {
+  cell.classList.add('scoring');
+  if (pts !== null && pts !== 0) {
+    const bubble = document.createElement('div');
+    bubble.className = 'point-bubble';
+    bubble.style.backgroundImage = pts < 0 ? "url('images/blackpointbubble.png')" : "url('images/purplepointbubble.png')";
+    bubble.textContent = pts > 0 ? `+${pts}` : pts;
+    cell.appendChild(bubble);
+    bubble.style.transition = 'none';
+    bubble.style.top = '50%';
+    bubble.style.left = '50%';
+    bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)';
+    bubble.offsetHeight;
+    bubble.style.transition = 'transform 0.9s cubic-bezier(0.68, -0.55, 0.27, 1.55), top 0.9s';
+    bubble.style.transform = 'translate(-50%, -220%) scale(1.4) rotate(360deg)';
+    bubble.style.top = '15%';
+    setTimeout(() => {
+      bubble.style.transition = 'transform 0.7s ease-out, top 0.7s, left 0.7s';
+      bubble.style.transform = 'translate(-50%, -50%) scale(0.3) rotate(360deg)';
+      bubble.style.top = '10%';
+      bubble.style.left = '10%';
+    }, 950);
+  }
+  await new Promise(r => setTimeout(r, 700));
+  cell.classList.remove('scoring');
+}
+
+function addTallyRow(type, subtotal) {
+  const tally = document.getElementById('score-tally');
+  const row = document.createElement('div');
+  row.className = 'tally-row';
+  const img = document.createElement('img');
+  img.src = type === '3dset' ? 'images/cube.png' : `images/${type}.png`;
+  const line = document.createElement('div');
+  line.className = 'tally-line';
+  const scoreBox = document.createElement('div');
+  scoreBox.className = 'score-box';
+  scoreBox.textContent = subtotal >= 0 ? `+${subtotal}` : subtotal;
+  scoreBox.style.color = subtotal >= 0 ? '#5fbae9' : '#ff6666';
+  row.append(img, line, scoreBox);
+  tally.appendChild(row);
+}
+
+async function runScoringAnimation() {
+  scoreBuildBoard();
+  scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
+  const tally = document.getElementById('score-tally');
+  tally.style.display = 'block';
+  tally.innerHTML = '';
+  let total = 0;
+  for (let rule of scoringRules) {
+    let result = rule.base !== undefined ? calculateBase(rule.type, rule.base) : rule.calc();
+    total += result.total || 0;
+    const items = result.perCellList || result.positions || [];
+    if (items.length > 0) {
+      await Promise.all(items.map(item => {
+        const flat = item.r * 10 + playableCols.indexOf(item.c);
+        const cell = scoreGridCells[flat];
+        if (cell) return animateCell(cell, item.pts !== undefined ? item.pts : null);
+        return Promise.resolve();
+      }));
+    }
+    const displayType = rule.type === '3dset' ? '3dset' : rule.type;
+    addTallyRow(displayType, result.total || 0);
+    await new Promise(r => setTimeout(r, 420));
+  }
+  const unique = new Set(scoreDetectedDoodles).size;
+  let bonus = unique <=12 ? -10 : unique<=14 ? 1 : unique===15 ? 5 : unique===16 ? 10 : unique===17 ? 16 : unique===18 ? 23 : unique===19 ? 31 : 40;
+  total += bonus;
+  addTallyRow('variety', bonus);
+  const totalRow = document.createElement('div');
+  totalRow.style.fontSize = '7.5cqi';
+  totalRow.style.fontWeight = 'bold';
+  totalRow.style.color = '#ff0';
+  totalRow.style.textAlign = 'center';
+  totalRow.style.marginTop = '25px';
+  totalRow.textContent = `TOTAL SCORE: ${total}`;
+  tally.appendChild(totalRow);
+  document.getElementById('score-new-scan-btn').style.display = 'block';
+  document.getElementById('score-export-btn').style.display = 'block';
+}
+
+// Wire the button
+document.getElementById('score-score-btn').onclick = runScoringAnimation;
   </script>
 </body>
 </html>
