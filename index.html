@@ -85,7 +85,6 @@
       width: 100%;
       border-radius: 9999px;
     }
-    /* MODALS */
     .modal {
       position: absolute;
       inset: 0;
@@ -227,7 +226,6 @@
       0% { transform: scale(1) rotate(0deg); opacity: 1; }
       100% { transform: scale(0.1) rotate(720deg); opacity: 0; }
     }
-    /* GUIDE MODAL */
     #guide-content {
       flex: 1;
       overflow-y: auto;
@@ -292,8 +290,6 @@
       border-radius: 9999px;
       display: none;
     }
-    #full-guide-btn:hover { transform: scale(1.05); }
-    /* TOOLTIP */
     #tooltip {
       position: absolute;
       background: #ccecf8;
@@ -325,7 +321,6 @@
       vertical-align: middle;
       margin: 0 0.15em -0.2em;
     }
-    /* TOAST */
     #toast {
       position: absolute;
       top: 50%;
@@ -350,8 +345,6 @@
     #toast.show {
       opacity: 1;
     }
-
-    /* ==================== SCORE MODAL - CAMERA FIXED (11:7) ==================== */
     #score-modal .scanner-content {
       flex: 1;
       display: flex;
@@ -363,27 +356,24 @@
       overflow-x: hidden;
       padding-bottom: 30cqi;
     }
-
     #score-modal .camera-container {
       position: relative;
       width: 90cqi;
       max-width: 520px;
       aspect-ratio: 11 / 7;
-      flex-shrink: 0;               /* ← prevents vertical squish */
+      flex-shrink: 0;
       border-radius: 18px;
       overflow: hidden;
       background: #111;
       border: 4px solid #333;
       margin: 0 auto;
     }
-
     #score-modal #score-camera-preview {
       width: 100%;
       height: 100%;
       object-fit: cover;
       background: #000;
     }
-
     #score-modal #score-grid-overlay {
       position: absolute;
       inset: 0;
@@ -392,13 +382,11 @@
       pointer-events: none;
       z-index: 2;
     }
-
     #score-modal .scanner-content > * {
       width: 90cqi;
       max-width: 520px;
       margin: 0 auto;
     }
-
     #score-modal #score-output-canvas,
     #score-modal #score-detected-grid,
     #score-modal #score-tally,
@@ -409,7 +397,6 @@
       max-width: 520px;
       margin: 0 auto;
     }
-
     #score-modal .status { font-size: 4.5cqi; text-align: center; margin: 10px 0; color: #fff; }
     #score-modal .debug { font-size: 3.2cqi; color: #aaa; text-align: left; padding: 2cqi; background: rgba(255,255,255,0.05); border-radius: 8px; }
     #score-modal .console-log { width: 90cqi; max-width: 520px; background: #222; color: #0f0; padding: 12px; font-family: monospace; font-size: 3.2cqi; line-height: 1.5; border-radius: 8px; white-space: pre-wrap; max-height: 180px; overflow-y: auto; }
@@ -440,7 +427,7 @@
       <button id="guide-btn">GUIDE</button>
       <button id="learn-btn">LEARN</button>
     </div>
-   
+  
     <div id="shuffle-zone">
       <div id="doodle-l1"></div>
       <div id="doodle-l2"></div>
@@ -504,7 +491,7 @@
       </div>
       <div id="score-content" class="scanner-content">
         <p>Align the two blue page grids with your notebook pages.<br>Fill the preview edge-to-edge then tap SNAP.</p>
-       
+      
         <div class="camera-container">
           <video id="score-camera-preview" autoplay playsinline muted></video>
           <canvas id="score-grid-overlay"></canvas>
@@ -512,12 +499,12 @@
         <canvas id="score-output-canvas"></canvas>
         <div id="score-status" class="status">Waiting for photo...</div>
         <div class="debug" id="score-debug-info">8.0 • Clean scoring mode</div>
-       
+      
         <div id="score-debug-cells" class="debug-cells"></div>
         <div id="score-console-log" class="console-log">Waiting for photo...</div>
         <div id="score-tweak-prompt" class="tweak-prompt">Detected! Tap any wrong cell to correct (yellow = low confidence)</div>
         <div id="score-detected-grid"></div>
-       
+      
         <button id="score-score-btn" style="display:none;">SCORE SHEET</button>
         <button id="score-export-btn" style="display:none;">📤 EXPORT TRAINING ZIP</button>
         <button id="score-snap-btn" style="display:none;">SNAP NOW</button>
@@ -534,7 +521,6 @@
     <div id="tooltip">
       <div class="tooltip-desc" id="tooltip-desc"></div>
     </div>
-
     <!-- TOAST -->
     <div id="toast"></div>
   </div>
@@ -560,7 +546,6 @@
     ];
     const doodleDescriptions = { /* your full descriptions */ };
     const doodleMerges = [ /* your full merges */ ];
-
     function formatName(name) {
       return name.charAt(0).toUpperCase() + name.slice(1);
     }
@@ -577,7 +562,6 @@
         return key;
       });
     }
-
     let currentGuideFilter = null;
     function renderGuide(filterDoodle = null) {
       currentGuideFilter = filterDoodle;
@@ -627,7 +611,6 @@
       }
       document.getElementById('full-guide-btn').style.display = filterDoodle ? 'block' : 'none';
     }
-
     function openModal(modalId) {
       const modal = document.getElementById(modalId);
       if (!modal) return;
@@ -641,7 +624,6 @@
       modal.classList.remove('active');
       setTimeout(() => modal.style.display = 'none', 400);
     }
-
     document.getElementById('guide-btn').addEventListener('click', () => { renderGuide(); openModal('guide-modal'); });
     document.getElementById('full-guide-btn').addEventListener('click', () => renderGuide(null));
     document.getElementById('close-guide').addEventListener('click', () => closeModal('guide-modal'));
@@ -683,7 +665,6 @@
         });
       }, 325);
     });
-
     function populateLearnGrid() {
       const grid = document.getElementById('learn-grid');
       grid.innerHTML = '';
@@ -791,7 +772,6 @@
     let scoreGridCells = [];
     const LOW_CONFIDENCE_THRESHOLD = 0.75;
     const playableCols = [0,1,2,3,4,6,7,8,9,10];
-
     function scoreLog(text) { document.getElementById('score-console-log').textContent += text + "\n"; }
     async function scoreLoadModel() {
       scoreLog("Loading ML model...");
@@ -819,11 +799,9 @@
         scoreStatusEl.textContent = `Camera error: ${e.name}`;
       }
     }
-
     function scoreInitGridOverlay() {
       const overlay = document.getElementById('score-grid-overlay');
       if (!overlay) return;
-
       function redraw() {
         overlay.width = overlay.clientWidth;
         overlay.height = overlay.clientHeight;
@@ -832,12 +810,10 @@
         const rect = { left: 0, top: 0, w: overlay.width, h: overlay.height };
         drawOverlayGrid(ctx, rect.left, rect.top, rect.w, rect.h);
       }
-
       redraw();
       window.addEventListener('resize', redraw);
       scoreVideo.addEventListener('play', () => setTimeout(redraw, 150), { once: true });
     }
-
     function drawOverlayGrid(ctx, gx, gy, gw, gh) {
       const unitW = gw / 11;
       const unitH = gh / 7;
@@ -862,7 +838,6 @@
         ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gh); ctx.stroke();
       }
     }
-
     document.getElementById('score-snap-btn').onclick = async () => {
       scoreStatusEl.textContent = "Capturing...";
       const captured = document.createElement('canvas');
@@ -882,7 +857,6 @@
       drawOverlayGrid(outCtx, 0, 0, sourceRect.w, sourceRect.h);
       await scoreDetectFromCropped(cropped);
     };
-
     function getCurrentGridRect(w, h) { return { left: 0, top: 0, w, h }; }
     function getVideoSourceRect(displayRect) {
       const vw = scoreVideo.videoWidth, vh = scoreVideo.videoHeight;
@@ -903,7 +877,6 @@
         h: Math.round(displayRect.h / scale)
       };
     }
-
     async function scoreDetectFromCropped(cropped) {
       const numCols = 11;
       const numRows = 7;
@@ -1010,12 +983,6 @@
       a.click();
       URL.revokeObjectURL(url);
     }
-    document.getElementById('score-score-btn').onclick = () => {
-      document.getElementById('score-tally').innerHTML = '<p>Scoring animation placeholder</p>';
-      document.getElementById('score-tally').style.display = 'block';
-      document.getElementById('score-new-scan-btn').style.display = 'block';
-    };
-
     function initScoreScanner() {
       scoreVideo = document.getElementById('score-camera-preview');
       scoreOutputCanvas = document.getElementById('score-output-canvas');
@@ -1024,135 +991,404 @@
       scoreLoadModel().then(() => scoreStartCamera());
     }
 
-    populateLearnGrid();
-
     // ====================== FULL SCORING ANIMATION ======================
-// ====================== FULL SCORING ANIMATION (add this at the very end) ======================
-const scoringRules = [
-  {type:'turd', base:-2}, {type:'music', base:1}, {type:'planet', base:1},
-  {type:'star', base:2}, {type:'flower', base:2}, {type:'coin', base:2},
-  {type:'heart', base:2}, {type:'pizza', base:3}, {type:'diamond', base:4},
-  {type:'icecream', base:4}, {type:'sword', base:5}, {type:'present', base:6},
-  {type:'3dset', calc:calculate3DSet}, {type:'chest', calc:calculateChest},
-  {type:'rocket', calc:calculateRocket}, {type:'cat', calc:calculateCat},
-  {type:'cloud', calc:calculateCloud}, {type:'umbrella', calc:calculateUmbrella},
-  {type:'mug', calc:calculateMug}, {type:'toiletpaper', calc:calculateToiletpaper},
-  {type:'house', calc:calculateHouse}, {type:'crown', calc:calculateCrown},
-  {type:'smiley', calc:calculateSmiley}, {type:'letter', calc:calculateLetter},
-  {type:'piano', calc:calculatePiano}, {type:'butterfly', calc:calculateButterfly},
-  {type:'fish', calc:calculateFish}, {type:'boat', calc:calculateBoat},
-  {type:'die', calc:calculateDie}
-];
+    const scoringRules = [
+      {type:'turd', base:-2}, {type:'music', base:1}, {type:'planet', base:1},
+      {type:'star', base:2}, {type:'flower', base:2}, {type:'coin', base:2},
+      {type:'heart', base:2}, {type:'pizza', base:3}, {type:'diamond', base:4},
+      {type:'icecream', base:4}, {type:'sword', base:5}, {type:'present', base:6},
+      {type:'3dset', calc:calculate3DSet}, {type:'chest', calc:calculateChest},
+      {type:'rocket', calc:calculateRocket}, {type:'cat', calc:calculateCat},
+      {type:'cloud', calc:calculateCloud}, {type:'umbrella', calc:calculateUmbrella},
+      {type:'mug', calc:calculateMug}, {type:'toiletpaper', calc:calculateToiletpaper},
+      {type:'house', calc:calculateHouse}, {type:'crown', calc:calculateCrown},
+      {type:'smiley', calc:calculateSmiley}, {type:'letter', calc:calculateLetter},
+      {type:'piano', calc:calculatePiano}, {type:'butterfly', calc:calculateButterfly},
+      {type:'fish', calc:calculateFish}, {type:'boat', calc:calculateBoat},
+      {type:'die', calc:calculateDie}
+    ];
 
-function getSurrounding(r, c) {
-  const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-  let list = [];
-  for (let [dr,dc] of dirs) {
-    let nr = r+dr, nc = c+dc;
-    if (nr>=0 && nr<7 && nc>=0 && nc<11 && scoreBoard[nr][nc] !== null) {
-      list.push({r:nr, c:nc, doodle:scoreBoard[nr][nc]});
+    function getSurrounding(r, c) {
+      const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+      let list = [];
+      for (let [dr,dc] of dirs) {
+        let nr = r+dr, nc = c+dc;
+        if (nr>=0 && nr<7 && nc>=0 && nc<11 && scoreBoard[nr][nc] !== null) {
+          list.push({r:nr, c:nc, doodle:scoreBoard[nr][nc]});
+        }
+      }
+      return list;
     }
-  }
-  return list;
-}
 
-function calculateBase(type, pts) {
-  let total = 0, perCellList = [];
-  for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
-    if (scoreBoard[r][c] === type) {
-      total += pts;
-      perCellList.push({r, c, pts});
-      scorePerCellScore[r][c] += pts;
+    function calculateBase(type, pts) {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === type) {
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
     }
-  }
-  return {total, perCellList};
-}
 
-// Add your other calculate functions here if they are missing (calculateChest, calculateRocket, etc.)
-// If you don't have them, tell me and I'll send the full set in the next message.
-
-async function animateCell(cell, pts) {
-  cell.classList.add('scoring');
-  if (pts !== null && pts !== 0) {
-    const bubble = document.createElement('div');
-    bubble.className = 'point-bubble';
-    bubble.style.backgroundImage = pts < 0 ? "url('images/blackpointbubble.png')" : "url('images/purplepointbubble.png')";
-    bubble.textContent = pts > 0 ? `+${pts}` : pts;
-    cell.appendChild(bubble);
-    bubble.style.transition = 'none';
-    bubble.style.top = '50%'; bubble.style.left = '50%';
-    bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)';
-    bubble.offsetHeight;
-    bubble.style.transition = 'transform 0.9s cubic-bezier(0.68, -0.55, 0.27, 1.55), top 0.9s';
-    bubble.style.transform = 'translate(-50%, -220%) scale(1.4) rotate(360deg)';
-    bubble.style.top = '15%';
-    setTimeout(() => {
-      bubble.style.transition = 'transform 0.7s ease-out, top 0.7s, left 0.7s';
-      bubble.style.transform = 'translate(-50%, -50%) scale(0.3) rotate(360deg)';
-      bubble.style.top = '10%';
-      bubble.style.left = '10%';
-    }, 950);
-  }
-  await new Promise(r => setTimeout(r, 700));
-  cell.classList.remove('scoring');
-}
-
-function addTallyRow(type, subtotal) {
-  const tally = document.getElementById('score-tally');
-  const row = document.createElement('div');
-  row.className = 'tally-row';
-  const img = document.createElement('img');
-  img.src = type === '3dset' ? 'images/cube.png' : `images/${type}.png`;
-  const line = document.createElement('div'); line.className = 'tally-line';
-  const scoreBox = document.createElement('div');
-  scoreBox.className = 'score-box';
-  scoreBox.textContent = subtotal >= 0 ? `+${subtotal}` : subtotal;
-  scoreBox.style.color = subtotal >= 0 ? '#5fbae9' : '#ff6666';
-  row.append(img, line, scoreBox);
-  tally.appendChild(row);
-}
-
-async function runScoringAnimation() {
-  console.log("SCORE SHEET clicked - starting animation");
-  scoreBuildBoard();
-  scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
-  const tally = document.getElementById('score-tally');
-  tally.style.display = 'block';
-  tally.innerHTML = '';
-  let total = 0;
-  for (let rule of scoringRules) {
-    let result = rule.base !== undefined ? calculateBase(rule.type, rule.base) : (rule.calc ? rule.calc() : {total:0});
-    total += result.total || 0;
-    const items = result.perCellList || result.positions || [];
-    if (items.length > 0) {
-      await Promise.all(items.map(item => {
-        const flat = item.r * 10 + playableCols.indexOf(item.c);
-        const cell = scoreGridCells[flat];
-        if (cell) return animateCell(cell, item.pts !== undefined ? item.pts : null);
-        return Promise.resolve();
-      }));
+    function calculate3DSet() {
+      let cubes = 0, pyramids = 0, cylinders = 0, positions = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        let d = scoreBoard[r][c];
+        if (d==='cube') {cubes++; positions.push({r,c});}
+        else if (d==='pyramid') {pyramids++; positions.push({r,c});}
+        else if (d==='cylinder') {cylinders++; positions.push({r,c});}
+      }
+      let sets = Math.min(Math.floor(cubes/2), Math.floor(pyramids/3), Math.floor(cylinders/2));
+      return {total: sets*20, positions, isGlobal:true};
     }
-    const displayType = rule.type === '3dset' ? '3dset' : rule.type;
-    addTallyRow(displayType, result.total || 0);
-    await new Promise(r => setTimeout(r, 420));
-  }
-  const unique = new Set(scoreDetectedDoodles).size;
-  let bonus = unique <=12 ? -10 : unique<=14 ? 1 : unique===15 ? 5 : unique===16 ? 10 : unique===17 ? 16 : unique===18 ? 23 : unique===19 ? 31 : 40;
-  total += bonus;
-  addTallyRow('variety', bonus);
-  const totalRow = document.createElement('div');
-  totalRow.style.fontSize = '7.5cqi';
-  totalRow.style.fontWeight = 'bold';
-  totalRow.style.color = '#ff0';
-  totalRow.style.textAlign = 'center';
-  totalRow.style.marginTop = '25px';
-  totalRow.textContent = `TOTAL SCORE: ${total}`;
-  tally.appendChild(totalRow);
-  document.getElementById('score-new-scan-btn').style.display = 'block';
-}
 
-document.getElementById('score-score-btn').onclick = runScoringAnimation;
-console.log("SCORE SHEET button wired successfully");
+    function calculateChest() {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'chest') {
+          let count = getSurrounding(r, c).filter(s => ['coin','diamond','crown'].includes(s.doodle)).length;
+          let pts = count * 2;
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateRocket() {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'rocket') {
+          let count = 0;
+          for (let rr=0; rr<7; rr++) {
+            if (rr !== r && (scoreBoard[rr][c] === 'planet' || scoreBoard[rr][c] === 'star')) count++;
+          }
+          let pts = count * 3;
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateCat() {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'cat') {
+          let count = getSurrounding(r, c).filter(s => ['fish','turd'].includes(s.doodle)).length;
+          let pts = 3 + count * 2;
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateCloud() {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'cloud') {
+          let count = 0;
+          let isLeft = c < 5;
+          for (let rr = r+1; rr < 7; rr++) {
+            if (scoreBoard[rr][c] === 'drop' && (c < 5 === isLeft)) count++;
+          }
+          let pts = count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateUmbrella() {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'umbrella') {
+          let count = 0;
+          let isLeft = c < 5;
+          for (let rr = 0; rr < r; rr++) {
+            if (scoreBoard[rr][c] === 'drop' && (c < 5 === isLeft)) count++;
+          }
+          let pts = count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateMug() {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'mug') {
+          let hasDropAbove = (r > 0 && scoreBoard[r-1][c] === 'drop');
+          let pts = 2 + (hasDropAbove ? 2 : 0);
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateToiletpaper() {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'toiletpaper') {
+          let count = getSurrounding(r, c).filter(s => s.doodle === 'turd').length;
+          let pts = 1 + count * 7;
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateHouse() {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'house') {
+          let count = getSurrounding(r, c).filter(s => ['smiley','wifi'].includes(s.doodle)).length;
+          let pts = 1 + count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateCrown() {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'crown') {
+          let hasSmileyBelow = (r < 6 && scoreBoard[r+1][c] === 'smiley');
+          let pts = 3 + (hasSmileyBelow ? 1 : 0);
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateSmiley() {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'smiley') {
+          let count = getSurrounding(r, c).filter(s => ['pizza','icecream'].includes(s.doodle)).length;
+          let pts = 1 + count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateLetter() {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'letter') {
+          let hasHeartAbove = (r > 0 && scoreBoard[r-1][c] === 'heart');
+          let pts = 1 + (hasHeartAbove ? 5 : 0);
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculatePiano() {
+      let columnsWithMusic = new Set();
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'music') columnsWithMusic.add(c);
+      }
+      let numCols = columnsWithMusic.size;
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'piano') {
+          let pts = numCols;
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateButterfly() {
+      let visited = Array(7).fill().map(() => Array(11).fill(false));
+      let maxSize = 0;
+      const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+      function dfs(r, c) {
+        if (r<0 || r>=7 || c<0 || c>=11 || visited[r][c] || scoreBoard[r][c] !== 'flower') return 0;
+        visited[r][c] = true;
+        let size = 1;
+        for (let [dr,dc] of dirs) size += dfs(r+dr, c+dc);
+        return size;
+      }
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'flower' && !visited[r][c]) {
+          maxSize = Math.max(maxSize, dfs(r, c));
+        }
+      }
+      let total = maxSize * 1;
+      return {total, positions: []};
+    }
+
+    function calculateFish() {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'fish') {
+          let count = getSurrounding(r, c).filter(s => s.doodle === 'fish').length;
+          let pts = count * 1;
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateBoat() {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'boat') {
+          let count = 0;
+          let isLeft = c < 5;
+          for (let rr = r+1; rr < 7; rr++) {
+            if (scoreBoard[rr][c] === 'fish' && (c < 5 === isLeft)) count++;
+          }
+          let pts = count * 2;
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    function calculateDie() {
+      let total = 0, perCellList = [];
+      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+        if (scoreBoard[r][c] === 'die') {
+          let neighbors = getSurrounding(r, c);
+          let maxNeighbor = 0;
+          for (let n of neighbors) {
+            maxNeighbor = Math.max(maxNeighbor, scorePerCellScore[n.r][n.c]);
+          }
+          let pts = maxNeighbor;
+          total += pts;
+          perCellList.push({r, c, pts});
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return {total, perCellList};
+    }
+
+    async function animateCell(cell, pts) {
+      cell.classList.add('scoring');
+      if (pts !== null && pts !== 0) {
+        const bubble = document.createElement('div');
+        bubble.className = 'point-bubble';
+        bubble.style.backgroundImage = pts < 0 ? "url('images/blackpointbubble.png')" : "url('images/purplepointbubble.png')";
+        bubble.textContent = pts > 0 ? `+${pts}` : pts;
+        cell.appendChild(bubble);
+        bubble.style.transition = 'none';
+        bubble.style.top = '50%'; bubble.style.left = '50%';
+        bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)';
+        bubble.offsetHeight;
+        bubble.style.transition = 'transform 0.9s cubic-bezier(0.68, -0.55, 0.27, 1.55), top 0.9s';
+        bubble.style.transform = 'translate(-50%, -220%) scale(1.4) rotate(360deg)';
+        bubble.style.top = '15%';
+        setTimeout(() => {
+          bubble.style.transition = 'transform 0.7s ease-out, top 0.7s, left 0.7s';
+          bubble.style.transform = 'translate(-50%, -50%) scale(0.3) rotate(360deg)';
+          bubble.style.top = '10%';
+          bubble.style.left = '10%';
+        }, 950);
+      }
+      await new Promise(r => setTimeout(r, 700));
+      cell.classList.remove('scoring');
+    }
+
+    function addTallyRow(type, subtotal) {
+      const tally = document.getElementById('score-tally');
+      const row = document.createElement('div');
+      row.className = 'tally-row';
+      const img = document.createElement('img');
+      img.src = type === '3dset' ? 'images/cube.png' : type === 'variety' ? '' : `images/${type}.png`;
+      if (type === 'variety') img.style.display = 'none';
+      const line = document.createElement('div'); line.className = 'tally-line';
+      const scoreBox = document.createElement('div');
+      scoreBox.className = 'score-box';
+      scoreBox.textContent = subtotal >= 0 ? `+${subtotal}` : subtotal;
+      scoreBox.style.color = subtotal >= 0 ? '#5fbae9' : '#ff6666';
+      row.append(img, line, scoreBox);
+      tally.appendChild(row);
+    }
+
+    async function runScoringAnimation() {
+      console.log("SCORE SHEET clicked – starting full animation");
+      scoreBuildBoard();
+      scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
+      const tally = document.getElementById('score-tally');
+      tally.style.display = 'block';
+      tally.innerHTML = '';
+      let total = 0;
+      for (let rule of scoringRules) {
+        let result = rule.base !== undefined ? calculateBase(rule.type, rule.base) : rule.calc();
+        total += result.total || 0;
+        const items = result.perCellList || result.positions || [];
+        if (items.length > 0) {
+          await Promise.all(items.map(item => {
+            const flat = item.r * 10 + playableCols.indexOf(item.c);
+            const cell = scoreGridCells[flat];
+            if (cell) return animateCell(cell, item.pts !== undefined ? item.pts : null);
+            return Promise.resolve();
+          }));
+        }
+        const displayType = rule.type === '3dset' ? '3dset' : rule.type;
+        addTallyRow(displayType, result.total || 0);
+        await new Promise(r => setTimeout(r, 420));
+      }
+      const unique = new Set(scoreDetectedDoodles).size;
+      let bonus = unique <=12 ? -10 : unique<=14 ? 1 : unique===15 ? 5 : unique===16 ? 10 : unique===17 ? 16 : unique===18 ? 23 : unique===19 ? 31 : 40;
+      total += bonus;
+      addTallyRow('variety', bonus);
+      const totalRow = document.createElement('div');
+      totalRow.style.fontSize = '7.5cqi';
+      totalRow.style.fontWeight = 'bold';
+      totalRow.style.color = '#ff0';
+      totalRow.style.textAlign = 'center';
+      totalRow.style.marginTop = '25px';
+      totalRow.textContent = `TOTAL SCORE: ${total}`;
+      tally.appendChild(totalRow);
+      document.getElementById('score-new-scan-btn').style.display = 'block';
+    }
+
+    document.getElementById('score-score-btn').onclick = runScoringAnimation;
+    console.log("✅ SCORE SHEET button wired successfully with full animation!");
+
+    document.getElementById('score-new-scan-btn').onclick = () => {
+      const tally = document.getElementById('score-tally');
+      tally.style.display = 'none';
+      tally.innerHTML = '';
+      document.getElementById('score-new-scan-btn').style.display = 'none';
+    };
+
+    initScoreScanner();
   </script>
 </body>
 </html>
