@@ -762,8 +762,6 @@
       }
       return shuffle([...deckArray]).slice(0, 6);
     }
-
-    // SCORE SCANNER
     let scoreStream = null;
     let scoreVideo, scoreOutputCanvas, scoreStatusEl, scoreModel = null;
     let scoreClassNames = [], scoreDetectedDoodles = [], scoreConfidences = [], scoreCellCanvases = [];
@@ -990,6 +988,7 @@
       scoreVideo.addEventListener('play', () => scoreInitGridOverlay(), { once: true });
       scoreLoadModel().then(() => scoreStartCamera());
     }
+    populateLearnGrid();
 
     // ====================== FULL SCORING ANIMATION ======================
     const scoringRules = [
