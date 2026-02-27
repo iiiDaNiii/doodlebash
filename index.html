@@ -10,6 +10,48 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    #header-bg, #footer-bg {
+  position: absolute;
+  left: 0;
+  width: 100vw;
+  overflow: hidden;
+  z-index: 5;               /* behind game container */
+  pointer-events: none;
+}
+
+#header-bg { top: 0; }
+#footer-bg { bottom: 0; }
+
+#header-bg img, #footer-bg img {
+  position: absolute;
+  left: 50vh;                    /* your starting centered point */
+  height: 100%;
+  width: auto;
+  transform: translateX(-50%);  
+  display: block;
+}
+
+/* Header: faster, moves right first (your current direction) */
+#header-bg img {
+  animation: slideHeader 10s ease-in-out infinite alternate;
+}
+
+/* Footer: slower, starts on the right and moves left (opposite direction) */
+#footer-bg img {
+  animation: slideFooter 15s ease-in-out infinite alternate;
+}
+
+/* Header keyframes (left → right) */
+@keyframes slideHeader {
+  from { left: calc(50% - 10vh); }
+  to { left: calc(50% + 10vh); }
+}
+
+/* Footer keyframes (right → left) */
+@keyframes slideFooter {
+  from { left: calc(50% + 10vh); }
+  to { left: calc(50% - 10vh); }
+}
     
     #game-container {
       position: absolute;
@@ -35,7 +77,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #f5f5f5;
       gap: 4cqi;
     }
     #shuffle-zone {
@@ -76,18 +117,71 @@
       padding: 3cqi 9cqi;
       border-radius: 9999px;
     }
-    #header button { background: #7f2a8f; color: white; }
-    #footer button { background: #fbb065; color: #000; }
-    #footer #score-btn { background: #5fbae9; color: #000; }
-    #shuffle-btn {
-      grid-column: 2;
-      grid-row: 3;
-      background: #4dbde5;
-      color: white;
-      font-size: 6.5cqi;
-      width: 100%;
-      border-radius: 9999px;
-    }
+    
+/* Nav image buttons */
+.nav-btn {
+  cursor: pointer;
+  transition: transform 0.2s;
+  height: 20cqi;           /* ← this controls the size */
+  width: auto;
+  padding: 3cqi;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.nav-btn:hover {
+  transform: scale(1.05);
+}
+
+/* Remove the old button styles that no longer apply */
+#header button, #footer button {
+  display: none;   /* just in case any old rules linger */
+}
+    
+#shuffle-container {
+  grid-column: 2;
+  grid-row: 3;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  cursor: pointer;
+}
+
+#shuffle-container img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+#shuffle-main { z-index: 1; }
+#shuffle-outline { z-index: 2; }
+
+/* === SINGLE SEAMLESS CURVE === */
+#shuffle-container.spinning #shuffle-main {
+  animation: spinMain 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+}
+
+#shuffle-container.spinning #shuffle-outline {
+  animation: spinOutline 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+}
+
+@keyframes spinMain {
+  0%   { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+  50%  { transform: translate(-50%, -50%) rotate(360deg) scale(0.5); }
+  100% { transform: translate(-50%, -50%) rotate(720deg) scale(1); }
+}
+
+@keyframes spinOutline {
+  0%   { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+  50%  { transform: translate(-50%, -50%) rotate(-360deg) scale(1.2); }
+  100% { transform: translate(-50%, -50%) rotate(-720deg) scale(1); }
+}
+
     .modal {
       position: absolute;
       inset: 0;
@@ -461,24 +555,36 @@
   </style>
 </head>
 <body>
+  <!-- ANIMATED BACKGROUND IMAGES -->
+  <div id="header-bg">
+    <img src="images/greyheader.png" alt="">
+  </div>
+  <div id="footer-bg">
+    <img src="images/yellowfooter.png" alt="">
+  </div>
   <div id="game-container">
     <div id="header">
-      <button id="guide-btn">GUIDE</button>
-      <button id="learn-btn">LEARN</button>
+      <img id="guide-btn" src="images/guidebutton.png" class="nav-btn" alt="Guide">
+  <img id="learn-btn" src="images/learnbutton.png" class="nav-btn" alt="Learn">
     </div>
   
     <div id="shuffle-zone">
-      <div id="doodle-l1"></div>
-      <div id="doodle-l2"></div>
-      <div id="doodle-l3"></div>
-      <div id="doodle-r1"></div>
-      <div id="doodle-r2"></div>
-      <div id="doodle-r3"></div>
-      <button id="shuffle-btn">SHUFFLE</button>
-    </div>
+  <div id="doodle-l1"></div>
+  <div id="doodle-l2"></div>
+  <div id="doodle-l3"></div>
+  <div id="doodle-r1"></div>
+  <div id="doodle-r2"></div>
+  <div id="doodle-r3"></div>
+  
+  <!-- NEW SPINNING SHUFFLE BUTTON -->
+  <div id="shuffle-container">
+    <img id="shuffle-main" src="images/shufflebutton.png" alt="Shuffle">
+    <img id="shuffle-outline" src="images/shufflebuttonoutline.png" alt="">
+  </div>
+</div>
     <div id="footer">
-      <button id="portfolio-btn">PORTFOLIO</button>
-      <button id="score-btn">SCORE</button>
+      <img id="portfolio-btn" src="images/portfoliobutton.png" class="nav-btn" alt="Portfolio">
+  <img id="score-btn" src="images/scorebutton.png" class="nav-btn" alt="Score">
     </div>
 
     <!-- LEARN MODAL -->
@@ -802,38 +908,58 @@ function renderDescription(text) {
       closeModal('score-modal');
       if (scoreStream) { scoreStream.getTracks().forEach(t => t.stop()); scoreStream = null; }
     });
-    
-    document.getElementById('shuffle-btn').addEventListener('click', () => {
-      hideTooltip();
-      const drawn = drawSix();
-      if (!drawn) return;
-      const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
-      order.forEach((id, i) => {
-        const div = document.getElementById(id);
-        if (div && div.style.backgroundImage) {
-          setTimeout(() => {
-            div.style.transition = 'transform 0.175s ease-in';
-            div.style.transform = 'translateY(120dvh) rotate(-720deg)';
-          }, i * 50);
-        }
-      });
+  
+    const shuffleContainer = document.getElementById('shuffle-container');
+
+shuffleContainer.addEventListener('click', () => {
+  // Add the spinning class to trigger both animations
+  shuffleContainer.classList.add('spinning');
+
+  // Remove the class after the animation finishes so it can spin again
+  setTimeout(() => {
+    shuffleContainer.classList.remove('spinning');
+  }, 1350);
+
+  // Original shuffle logic (unchanged)
+  const drawn = drawSix();
+  if (!drawn) return;
+
+  const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
+  order.forEach((id, i) => {
+    const div = document.getElementById(id);
+    if (div && div.style.backgroundImage) {
       setTimeout(() => {
-        order.forEach((id, i) => {
-          const div = document.getElementById(id);
-          if (!div) return;
-          div.style.transition = 'none';
-          div.style.transform = 'translateY(100dvh) rotate(720deg)';
-          div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
-          div.dataset.doodle = drawn[i];
-          void div.offsetWidth;
-          setTimeout(() => {
-            div.style.transition = 'transform 0.175s ease-out';
-            div.style.transform = 'translateY(0) rotate(0deg)';
-          }, i * 50);
-        });
-      }, 325);
-    });
-    
+        // Outgoing doodles
+div.style.transition = 'transform 0.28s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
+        div.style.transform = 'translateY(120dvh) rotate(-720deg)';
+      }, i * 80);
+    }
+  });
+
+  setTimeout(() => {
+  order.forEach((id, i) => {
+    const div = document.getElementById(id);
+    if (!div) return;
+
+    div.style.transition = 'none';
+    div.style.transform = 'translateY(100dvh) rotate(720deg)';
+    div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
+    div.dataset.doodle = drawn[i];
+    void div.offsetWidth;
+
+    // === ORGANIC RANDOM SETTLE IN CQI ===
+    const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi';   // ±1.2 cqi left/right
+    const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi';   // ±0.8 cqi up/down
+    const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg';       // ±2° rotation
+
+    setTimeout(() => {
+      div.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      div.style.transform = `translate(${rx}, ${ry}) rotate(${rr})`;
+    }, i * 50);
+  });
+}, 280);
+});
+
     // Make main doodles selectable on click/tap (so tooltip works there too)
 const mainDoodleContainers = document.querySelectorAll('#shuffle-zone > div[id^="doodle-"]');
 mainDoodleContainers.forEach(div => {
@@ -1711,6 +1837,50 @@ document.addEventListener('click', (e) => {
     }
   }
 });
+
+function updateAnimatedBackgrounds() {
+  const shuffle = document.getElementById('shuffle-zone');
+  if (!shuffle) return;
+
+  const shuffleRect = shuffle.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  // Use the ACTUAL image width (this fixes overshooting)
+  const headerImg = document.querySelector('#header-bg img');
+  const footerImg = document.querySelector('#footer-bg img');
+
+  const headerWidth = headerImg.naturalWidth || 3840;
+  const footerWidth = footerImg.naturalWidth || 3840;
+
+  const maxTranslate = -(Math.max(headerWidth, footerWidth) - vw + 4); // small buffer to ensure full coverage
+
+  // Header
+  const headerBg = document.getElementById('header-bg');
+  headerBg.style.height = `${shuffleRect.top}px`;
+  headerBg.style.setProperty('--max-translate', `${maxTranslate}px`);
+
+  // Footer
+  const footerBg = document.getElementById('footer-bg');
+  footerBg.style.height = `${vh - shuffleRect.bottom}px`;
+  footerBg.style.top = `${shuffleRect.bottom}px`;
+  footerBg.style.setProperty('--max-translate', `${maxTranslate}px`);
+}
+
+// Make sure the animation uses the correct values once images are loaded
+const headerImg = document.querySelector('#header-bg img');
+const footerImg = document.querySelector('#footer-bg img');
+
+if (headerImg.complete && footerImg.complete) {
+  updateAnimatedBackgrounds();
+} else {
+  headerImg.onload = footerImg.onload = updateAnimatedBackgrounds;
+}
+
+// Initial + resize + orientation
+window.addEventListener('load', updateAnimatedBackgrounds);
+window.addEventListener('resize', updateAnimatedBackgrounds);
+window.addEventListener('orientationchange', () => setTimeout(updateAnimatedBackgrounds, 120));
 
     initScoreScanner();
   </script>
