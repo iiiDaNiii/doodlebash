@@ -1,58 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Doodle Bash</title>
-  <link href="https://fonts.googleapis.com/css2?family=Covered+By+Your+Grace&family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Covered+By+Your+Grace&family=Fira+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    #header-bg, #footer-bg {
-  position: absolute;
-  left: 0;
-  width: 100vw;
-  overflow: hidden;
-  z-index: 5;               /* behind game container */
-  pointer-events: none;
-}
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      /* optional: also disables long-press menu on iOS */
+    }
 
-#header-bg { top: 0; }
-#footer-bg { bottom: 0; }
+    body {
+      overflow: hidden;
+    }
 
-#header-bg img, #footer-bg img {
-  position: absolute;
-  left: 50vh;                    /* your starting centered point */
-  height: 100%;
-  width: auto;
-  transform: translateX(-50%);  
-  display: block;
-}
+    #header-bg,
+    #footer-bg {
+      position: absolute;
+      left: 0;
+      width: 100vw;
+      overflow: hidden;
+      z-index: 5;
+      /* behind game container */
+      pointer-events: none;
+    }
 
-/* Header: faster, moves right first (your current direction) */
-#header-bg img {
-  animation: slideHeader 10s ease-in-out infinite alternate;
-}
+    #header-bg {
+      top: 0;
+    }
 
-/* Footer: slower, starts on the right and moves left (opposite direction) */
-#footer-bg img {
-  animation: slideFooter 15s ease-in-out infinite alternate;
-}
+    #footer-bg {
+      bottom: 0;
+    }
 
-/* Header keyframes (left → right) */
-@keyframes slideHeader {
-  from { left: calc(50% - 10vh); }
-  to { left: calc(50% + 10vh); }
-}
+    #header-bg img,
+    #footer-bg img {
+      position: absolute;
+      left: 50vh;
+      /* your starting centered point */
+      height: 100%;
+      width: auto;
+      transform: translateX(-50%);
+      display: block;
+    }
 
-/* Footer keyframes (right → left) */
-@keyframes slideFooter {
-  from { left: calc(50% + 10vh); }
-  to { left: calc(50% - 10vh); }
-}
-    
+    /* Header: faster, moves right first (your current direction) */
+    #header-bg img {
+      animation: slideHeader 10s ease-in-out infinite alternate;
+    }
+
+    /* Footer: slower, starts on the right and moves left (opposite direction) */
+    #footer-bg img {
+      animation: slideFooter 15s ease-in-out infinite alternate;
+    }
+
+    /* Header keyframes (left → right) */
+    @keyframes slideHeader {
+      from {
+        left: calc(50% - 10vh);
+      }
+
+      to {
+        left: calc(50% + 10vh);
+      }
+    }
+
+    /* Footer keyframes (right → left) */
+    @keyframes slideFooter {
+      from {
+        left: calc(50% + 10vh);
+      }
+
+      to {
+        left: calc(50% - 10vh);
+      }
+    }
+
     #game-container {
       position: absolute;
       left: 50%;
@@ -62,23 +98,26 @@
       height: 100dvh;
       display: grid;
       grid-template-rows: 1fr 3fr 1fr;
-      overflow: hidden;
       container-type: inline-size;
-      z-index:10;
+      z-index: 10;
     }
+
     @media (max-aspect-ratio: 9/16) {
       #game-container {
         width: 100vw;
         height: calc(100vw * 16 / 9);
       }
     }
-    #header, #footer {
+
+    #header,
+    #footer {
       container-type: inline-size;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 4cqi;
     }
+
     #shuffle-zone {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -86,16 +125,44 @@
       height: 100%;
       width: 100%;
       container-type: inline-size;
-      overflow: hidden;
     }
-    #doodle-l1 { grid-column:1; grid-row:2; }
-    #doodle-l2 { grid-column:1; grid-row:3; }
-    #doodle-l3 { grid-column:1; grid-row:4; }
-    #doodle-r1 { grid-column:3; grid-row:2; }
-    #doodle-r2 { grid-column:3; grid-row:3; }
-    #doodle-r3 { grid-column:3; grid-row:4; }
-    #doodle-l1, #doodle-l2, #doodle-l3,
-    #doodle-r1, #doodle-r2, #doodle-r3 {
+
+    #doodle-l1 {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    #doodle-l2 {
+      grid-column: 1;
+      grid-row: 3;
+    }
+
+    #doodle-l3 {
+      grid-column: 1;
+      grid-row: 4;
+    }
+
+    #doodle-r1 {
+      grid-column: 3;
+      grid-row: 2;
+    }
+
+    #doodle-r2 {
+      grid-column: 3;
+      grid-row: 3;
+    }
+
+    #doodle-r3 {
+      grid-column: 3;
+      grid-row: 4;
+    }
+
+    #doodle-l1,
+    #doodle-l2,
+    #doodle-l3,
+    #doodle-r1,
+    #doodle-r2,
+    #doodle-r3 {
       background-size: auto 75%;
       background-position: center;
       background-repeat: no-repeat;
@@ -104,6 +171,7 @@
       transform: translateY(100dvh) rotate(0deg);
       cursor: pointer;
     }
+
     button {
       border: none;
       font-family: 'Covered By Your Grace', cursive;
@@ -111,118 +179,168 @@
       cursor: pointer;
       transition: transform 0.2s;
     }
-    button:hover { transform: scale(1.05); }
-    #header button, #footer button {
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    #header button,
+    #footer button {
       font-size: 6.5cqi;
       padding: 3cqi 9cqi;
       border-radius: 9999px;
     }
-    
-/* Nav image buttons */
-.nav-btn {
-  cursor: pointer;
-  transition: transform 0.2s;
-  height: 20cqi;           /* ← this controls the size */
-  width: auto;
-  padding: 3cqi;
-  max-width: 100%;
-  object-fit: contain;
-}
 
-.nav-btn:hover {
-  transform: scale(1.05);
-}
+    /* Nav image buttons */
+    .nav-btn {
+      cursor: pointer;
+      transition: transform 0.2s;
+      height: 20cqi;
+      /* ← this controls the size */
+      width: auto;
+      padding: 3cqi;
+      max-width: 100%;
+      object-fit: contain;
+    }
 
-/* Remove the old button styles that no longer apply */
-#header button, #footer button {
-  display: none;   /* just in case any old rules linger */
-}
-    
-#shuffle-container {
-  grid-column: 2;
-  grid-row: 3;
-  width: 100%;
-  height: 100%;
-  position: relative;
-  cursor: pointer;
-}
+    .nav-btn:hover {
+      transform: scale(1.05);
+    }
 
-#shuffle-container img {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  pointer-events: none;
-}
+    /* Remove the old button styles that no longer apply */
+    #header button,
+    #footer button {
+      display: none;
+      /* just in case any old rules linger */
+    }
 
-#shuffle-main { z-index: 1; }
-#shuffle-outline { z-index: 2; }
+    #shuffle-container {
+      grid-column: 2;
+      grid-row: 3;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      cursor: pointer;
+    }
 
-/* === SINGLE SEAMLESS CURVE === */
-#shuffle-container.spinning #shuffle-main {
-  animation: spinMain 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
-}
+    #shuffle-container img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+    }
 
-#shuffle-container.spinning #shuffle-outline {
-  animation: spinOutline 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
-}
+    #shuffle-main {
+      z-index: 1;
+    }
 
-@keyframes spinMain {
-  0%   { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
-  50%  { transform: translate(-50%, -50%) rotate(360deg) scale(0.5); }
-  100% { transform: translate(-50%, -50%) rotate(720deg) scale(1); }
-}
+    #shuffle-outline {
+      z-index: 2;
+    }
 
-@keyframes spinOutline {
-  0%   { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
-  50%  { transform: translate(-50%, -50%) rotate(-360deg) scale(1.2); }
-  100% { transform: translate(-50%, -50%) rotate(-720deg) scale(1); }
-}
+    /* === SINGLE SEAMLESS CURVE === */
+    #shuffle-container.spinning #shuffle-main {
+      animation: spinMain 1s cubic-bezier(0.68, -0.8, 0.32, 1.8) forwards;
+    }
+
+    #shuffle-container.spinning #shuffle-outline {
+      animation: spinOutline 1s cubic-bezier(0.68, -0.8, 0.32, 1.8) forwards;
+    }
+
+    @keyframes spinMain {
+      0% {
+        transform: translate(-50%, -50%) rotate(0deg) scale(1);
+      }
+
+      50% {
+        transform: translate(-50%, -50%) rotate(360deg) scale(0.5);
+      }
+
+      100% {
+        transform: translate(-50%, -50%) rotate(720deg) scale(1);
+      }
+    }
+
+    @keyframes spinOutline {
+      0% {
+        transform: translate(-50%, -50%) rotate(0deg) scale(1);
+      }
+
+      50% {
+        transform: translate(-50%, -50%) rotate(-360deg) scale(1.2);
+      }
+
+      100% {
+        transform: translate(-50%, -50%) rotate(-720deg) scale(1);
+      }
+    }
 
     .modal {
-      position: absolute;
-      inset: 0;
-      background: #fff;
-      display: none;
-      flex-direction: column;
-      z-index: 100;
-      container-type: inline-size;
-      transform: translateY(0);
-      transition: transform 0.4s ease-out;
-    }
-    .modal.learn { transform: translateY(-100%); }
-    .modal.portfolio { transform: translateY(100%); }
-    .modal.guide { transform: translateX(-100%); }
-    .modal.score { background: #0a0a0a; }
-    .modal.active {
-      display: flex;
-      transform: translate(0);
-    }
+  position: absolute;
+  inset: 4cqi; /* ← padding around the edge of game-container */
+  background: rgba(255, 255, 255, 0.7);
+  display: none;
+  backdrop-filter: blur(2cqi);
+  flex-direction: column;
+  z-index: 100;
+  container-type: inline-size;
+  transform: translateY(0) rotate(0deg); /* ← Added rotate(0deg) as base */
+  transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* ← Even bouncier curve with more overshoot */
+  border-radius: 3.2cqi; /* ← rounded corners */
+  overflow: hidden; /* prevent content from spilling out */
+}
+.modal.learn { transform: translateY(-100%) rotate(-5deg); } /* ← Starts off-screen top with more tilt (-5deg) */
+.modal.portfolio { transform: translateY(100%) rotate(-5deg); } /* ← Starts off-screen bottom with more tilt (-5deg) */
+.modal.guide { transform: translateY(-100%) rotate(-5deg); } /* ← Matches learn (from top) */
+.modal.score { transform: translateY(100%) rotate(-5deg); } /* ← Matches portfolio (from bottom) */
+.modal.active {
+  display: flex;
+  transform: translateY(0) rotate(0deg); /* ← Settles to no translation/rotation */
+}
+
     .modal-top {
-      flex: 0 0 18%;
+      flex: 0 0 9%;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 4cqi;
       color: white;
     }
-    .modal-top.learn { background: #7f2a8f; }
-    .modal-top.portfolio { background: #fbb065; color: #000; }
-    .modal-top.guide { background: #4dbde5; }
-    .modal-top.score { background: #5fbae9; color: #000; }
+
+    .modal-top.learn {
+      background: #fbb065;
+    }
+
+    .modal-top.portfolio {
+      background: #f0f0f0;
+      color: #000;
+    }
+
+    .modal-top.guide {
+      background: #4dbde5;
+    }
+
+    .modal-top.score {
+      background: #7f2a8f;
+      color: #ffffff;
+    }
+
     .modal-top .title {
       font-family: 'Fira Sans', sans-serif;
       font-weight: 600;
       font-size: 5cqi;
     }
+
     .modal-top .buttons {
       display: flex;
       align-items: center;
       gap: 10.5cqi;
     }
+
     .close-btn,
     .action-btn {
       height: 9cqi;
@@ -232,18 +350,21 @@
       justify-content: center;
       font-size: 7cqi;
     }
+
     .close-btn {
       width: 9cqi;
       border-radius: 2cqi;
-      background: rgba(255,255,255,0.25);
+      background: rgba(255, 255, 255, 0.25);
       color: white;
     }
+
     .modal-top.portfolio .close-btn,
     .modal-top.guide .close-btn,
     .modal-top.score .close-btn {
-      background: rgba(0,0,0,0.15);
+      background: rgba(0, 0, 0, 0.15);
       color: #000;
     }
+
     .action-btn {
       padding: 0 6cqi;
       font-size: 6cqi;
@@ -251,8 +372,17 @@
       border-radius: 9999px;
       display: none;
     }
-    .action-btn.learn { background: #fbb065; color: #000000; }
-    .action-btn.remove { background: #7f2a8f; color: white; }
+
+    .action-btn.learn {
+      background: #ffffff;
+      color: #000000;
+    }
+
+    .action-btn.remove {
+      background: #7f2a8f;
+      color: white;
+    }
+
     .modal-grid {
       flex: 1;
       display: grid;
@@ -262,10 +392,12 @@
       padding: 1.8cqi;
       overflow: hidden;
     }
+
     .modal-bottom-spacer {
       flex: 0 0 2.25%;
       background: transparent;
     }
+
     .doodle-cell {
       min-height: 0;
       display: flex;
@@ -277,21 +409,26 @@
       cursor: pointer;
       position: relative;
     }
+
     .doodle-cell:hover:not(.selected) {
-      background: rgba(255,255,255,0.4);
+      background: rgba(255, 255, 255, 0.4);
       transform: scale(1.1);
     }
+
     .doodle-cell.selected {
       transform: scale(1.5);
       z-index: 10;
       opacity: 1 !important;
     }
+
     .modal-grid .doodle-cell:not(.selected) {
       opacity: 0.5;
     }
+
     .modal-grid:not(:has(.selected)) .doodle-cell {
       opacity: 1;
     }
+
     .doodle-img {
       width: 92%;
       aspect-ratio: 1 / 1;
@@ -301,28 +438,57 @@
       border-radius: 14px;
       transition: all 0.6s ease-out;
     }
-    .doodle-cell.animate-learn .doodle-img {
-      animation: learnSpinShrink 0.6s ease-in-out forwards;
-    }
-    @keyframes learnSpinShrink {
-      0% { transform: scale(1) rotate(0deg); }
-      40% { transform: scale(0.1) rotate(720deg); }
-      100% { transform: scale(1) rotate(720deg); }
-    }
+
+ /* === UPDATED ANIMATION FOR LEARNING (disappear fully) === */
+.doodle-cell.animate-learn .doodle-img {
+  animation: learnSpinShrink 0.9s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; /* Duration to 0.9s (1.5x longer) */
+}
+@keyframes learnSpinShrink {
+  0% { transform: scale(1) rotate(0deg); opacity: 1; }
+  40% { transform: scale(0.1) rotate(720deg); opacity: 0.5; } /* Mid-point shrink with fade start */
+  100% { transform: scale(0) rotate(720deg); opacity: 0; } /* Fully disappear, no bounce back */
+}
+
+/* === UPDATED ANIMATION FOR ADDING TO PORTFOLIO (reappear from invisible) === */
+.doodle-cell.animate-add {
+  animation: addSpinGrow 0.9s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; /* Duration to 0.9s (1.5x longer) */
+}
+@keyframes addSpinGrow {
+  0% { transform: scale(0) rotate(720deg); opacity: 0; } /* Start fully invisible/small */
+  60% { transform: scale(1.3) rotate(0deg); opacity: 1; } /* Overshoot scale for bounce */
+  100% { transform: scale(1) rotate(0deg); opacity: 1; } /* Settle */
+}
+
     .doodle-cell.animate-remove {
       animation: removeSlideDown 0.6s ease-in-out forwards;
     }
+
     @keyframes removeSlideDown {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(200%); }
+      0% {
+        transform: translateY(0);
+      }
+
+      100% {
+        transform: translateY(200%);
+      }
     }
+
     .doodle-cell.animate-remove .doodle-img {
       animation: spinFadeScale 0.6s ease-in-out forwards;
     }
+
     @keyframes spinFadeScale {
-      0% { transform: scale(1) rotate(0deg); opacity: 1; }
-      100% { transform: scale(0.1) rotate(720deg); opacity: 0; }
+      0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(0.1) rotate(720deg);
+        opacity: 0;
+      }
     }
+
     #guide-content {
       flex: 1;
       overflow-y: auto;
@@ -332,6 +498,7 @@
       flex-direction: column;
       gap: 2.2cqi;
     }
+
     .merge-row {
       display: flex;
       align-items: center;
@@ -339,11 +506,13 @@
       padding: 2.2cqi 0;
       border-bottom: 1px solid #e0f0f8;
     }
+
     .inputs {
       display: flex;
       gap: 1.6cqi;
       flex-shrink: 0;
     }
+
     .arrow-container {
       flex: 1;
       display: flex;
@@ -351,6 +520,7 @@
       height: 10cqi;
       margin: 0 4cqi;
     }
+
     .arrow-line {
       flex: 1;
       height: 0.5cqi;
@@ -358,6 +528,7 @@
       border-radius: 2px;
       position: relative;
     }
+
     .arrow-line::after {
       content: '';
       position: absolute;
@@ -371,81 +542,90 @@
       border-bottom: none;
       border-left: none;
     }
+
     .result {
       flex-shrink: 0;
     }
+
     .guide-doodle {
       width: 8.7cqi;
       height: auto;
       cursor: pointer;
     }
 
-.guide-tooltip {
-  background: #ccecf8;
-  border-radius: 3.2cqi;
-  padding: 4.5cqi 5.5cqi;
-  box-shadow: 0 1.1cqi 4.2cqi rgba(0,0,0,0.12);
-  font-family: 'Fira Sans', sans-serif;
-  width: 100%;
-  position: static;
-  margin: 3.5cqi 0 2cqi 0;
-  pointer-events: auto;
-}
+    .guide-tooltip {
+      background: #ccecf8;
+      border-radius: 3.2cqi;
+      padding: 4.5cqi 5.5cqi;
+      box-shadow: 0 1.1cqi 4.2cqi rgba(0, 0, 0, 0.12);
+      font-family: 'Fira Sans', sans-serif;
+      width: 100%;
+      position: static;
+      margin: 3.5cqi 0 2cqi 0;
+      pointer-events: auto;
+      font-size: 5.0cqi;
+      /* Matched from #tooltip */
+      line-height: 1.55;
+      /* Matched from #tooltip */
+    }
 
     #full-guide-btn {
-      background: #4dbde5;
-      color: white;
-      padding: 2cqi 8cqi;
+      background: #ffffff;
+      color: #4dbde5;
+      padding: 1cqi 4cqi;
       font-size: 5cqi;
       border-radius: 9999px;
       display: none;
     }
 
-#tooltip {
-  position: absolute;
-  background: #ccecf8;
-  border-radius: 3.2cqi;
-  padding: 4.5cqi 5.5cqi;
-  font-family: 'Fira Sans', sans-serif;
-  font-size: 5.0cqi;           /* bumped up from 4.2cqi */
-  line-height: 1.55;           /* slightly increased for better readability */
-  z-index: 250;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(2.2cqi);
-  transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
-  pointer-events: none;
-}
+    #tooltip {
+      position: absolute;
+      background: #ccecf8;
+      border-radius: 3.2cqi;
+      padding: 4.5cqi 5.5cqi;
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 5.0cqi;
+      /* bumped up from 4.2cqi */
+      line-height: 1.55;
+      /* slightly increased for better readability */
+      z-index: 250;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(2.2cqi);
+      transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+      pointer-events: none;
+    }
 
-#tooltip.show {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  pointer-events: auto;
-}
+    #tooltip.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
 
     #tooltip .tooltip-desc {
       color: #222;
     }
 
-.tooltip-guide-btn {
-  display: block;
-  margin: 10px auto 4px;   /* tightened spacing */
-  padding: 7px 20px;
-  background: #4dbde5;
-  color: white;
-  border: none;
-  border-radius: 9999px;
-  font-size: 4.2cqi;
-  font-weight: 500;
-  cursor: pointer;
-  transition: transform 0.2s;
-  pointer-events: auto;
-}
+    .tooltip-guide-btn {
+      display: block;
+      margin: 10px auto 4px;
+      /* tightened spacing */
+      padding: 7px 20px;
+      background: #4dbde5;
+      color: white;
+      border: none;
+      border-radius: 9999px;
+      font-size: 4.2cqi;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.2s;
+      pointer-events: auto;
+    }
 
-.tooltip-guide-btn:hover {
-  transform: scale(1.05);
-}
+    .tooltip-guide-btn:hover {
+      transform: scale(1.05);
+    }
 
     .inline-doodle {
       display: inline-block;
@@ -454,6 +634,7 @@
       vertical-align: middle;
       margin: 0 0.15em -0.2em;
     }
+
     #toast {
       position: absolute;
       top: 50%;
@@ -466,7 +647,7 @@
       font-size: 5cqi;
       padding: 2cqi 5cqi;
       border-radius: 9999px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.4s ease;
@@ -475,9 +656,11 @@
       max-width: 80cqi;
       text-align: center;
     }
+
     #toast.show {
       opacity: 1;
     }
+
     #score-modal .scanner-content {
       flex: 1;
       display: flex;
@@ -489,6 +672,7 @@
       overflow-x: hidden;
       padding-bottom: 30cqi;
     }
+
     #score-modal .camera-container {
       position: relative;
       width: 90cqi;
@@ -501,12 +685,14 @@
       border: 4px solid #333;
       margin: 0 auto;
     }
+
     #score-modal #score-camera-preview {
       width: 100%;
       height: 100%;
       object-fit: cover;
       background: #000;
     }
+
     #score-modal #score-grid-overlay {
       position: absolute;
       inset: 0;
@@ -515,11 +701,13 @@
       pointer-events: none;
       z-index: 2;
     }
-    #score-modal .scanner-content > * {
+
+    #score-modal .scanner-content>* {
       width: 90cqi;
       max-width: 520px;
       margin: 0 auto;
     }
+
     #score-modal #score-output-canvas,
     #score-modal #score-detected-grid,
     #score-modal #score-tally,
@@ -530,30 +718,221 @@
       max-width: 520px;
       margin: 0 auto;
     }
-    #score-modal .status { font-size: 4.5cqi; text-align: center; margin: 10px 0; color: #fff; }
-    #score-modal .debug { font-size: 3.2cqi; color: #aaa; text-align: left; padding: 2cqi; background: rgba(255,255,255,0.05); border-radius: 8px; }
-    #score-modal .console-log { width: 90cqi; max-width: 520px; background: #222; color: #0f0; padding: 12px; font-family: monospace; font-size: 3.2cqi; line-height: 1.5; border-radius: 8px; white-space: pre-wrap; max-height: 180px; overflow-y: auto; }
-    #score-modal .tweak-prompt { display:none; text-align:center; font-size:4cqi; color:#ff0; background:rgba(0,0,0,0.6); padding:2cqi; border-radius:8px; width:90cqi; max-width:520px; }
-    #score-modal #score-detected-grid { display:none; grid-template-columns:repeat(10,1fr); grid-template-rows:repeat(7,1fr); gap:3px; width:90cqi; max-width:520px; height:420px; background:#111; padding:8px; border-radius:12px; }
-    #score-modal .grid-cell { position:relative; aspect-ratio:1; background:transparent; border:none; background-size:contain; background-position:center; background-repeat:no-repeat; cursor:pointer; transition:transform .4s; }
-    #score-modal .grid-cell:hover { transform:scale(1.12); }
-    #score-modal .grid-cell.low-confidence { box-shadow:0 0 0 6px rgba(255,255,0,0.8); }
-    #score-modal .grid-cell.scoring { transform:scale(1.25); }
-    #score-modal .point-bubble { position:absolute; width:85px; height:85px; background-size:contain; background-repeat:no-repeat; background-position:center; display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:bold; color:#fff; text-shadow:0 2px 8px #000; pointer-events:none; z-index:30; transition:all .8s cubic-bezier(0.68,-0.55,0.27,1.55); }
-    #score-modal #score-tally { display:none; width:90cqi; max-width:520px; background:#1a1a1a; padding:15px; border-radius:16px; margin-top:15px; max-height:45vh; overflow-y:auto; }
-    #score-modal .tally-row { display:flex; align-items:center; background:#222; border-radius:12px; padding:10px 15px; margin-bottom:10px; }
-    #score-modal .tally-row img { width:55px; height:55px; object-fit:contain; margin-right:15px; }
-    #score-modal .tally-line { flex:1; height:3px; background:#555; margin:0 15px; border-radius:3px; }
-    #score-modal .score-box { padding:8px 25px; background:#333; border-radius:9999px; font-size:5.2cqi; font-weight:bold; min-width:100px; text-align:center; }
-    #score-modal button { background:#5fbae9; color:white; padding:4cqi 14cqi; font-size:6cqi; border:none; border-radius:9999px; margin-top:2cqi; cursor:pointer; }
-    #score-modal #score-snap-btn { margin-top:auto; width:85%; max-width:520px; padding:5cqi 12cqi; font-size:7cqi; font-weight:bold; }
-    #score-modal #score-final-total { font-size:10cqi; font-weight:bold; color:#ff0; margin:20px 0; text-align:center; }
-    #score-modal #score-doodle-popup { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.9); padding:4cqi; border-radius:16px; z-index:200; box-shadow:0 0 30px rgba(255,255,255,0.3); }
-    #score-modal .popup-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1.5cqi; max-width:90vw; max-height:80vh; overflow-y:auto; }
-    #score-modal .popup-item { width:8cqi; height:8cqi; background:#f0f0f0; border:2px solid #ccc; border-radius:8px; background-size:contain; background-position:center; background-repeat:no-repeat; cursor:pointer; }
-    #score-modal .popup-item:hover { border-color:#ff0; }
+
+    #score-modal .status {
+      font-size: 4.5cqi;
+      text-align: center;
+      margin: 10px 0;
+      color: #fff;
+    }
+
+    #score-modal .debug {
+      font-size: 3.2cqi;
+      color: #aaa;
+      text-align: left;
+      padding: 2cqi;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+    }
+
+    #score-modal .console-log {
+      width: 90cqi;
+      max-width: 520px;
+      background: #222;
+      color: #0f0;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 3.2cqi;
+      line-height: 1.5;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    #score-modal .tweak-prompt {
+      display: none;
+      text-align: center;
+      font-size: 4cqi;
+      color: #ff0;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 2cqi;
+      border-radius: 8px;
+      width: 90cqi;
+      max-width: 520px;
+    }
+
+    #score-modal #score-detected-grid {
+      display: none;
+      grid-template-columns: repeat(10, 1fr);
+      grid-template-rows: repeat(7, 1fr);
+      gap: 3px;
+      width: 90cqi;
+      max-width: 520px;
+      height: 420px;
+      background: #111;
+      padding: 8px;
+      border-radius: 12px;
+    }
+
+    #score-modal .grid-cell {
+      position: relative;
+      aspect-ratio: 1;
+      background: transparent;
+      border: none;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      cursor: pointer;
+      transition: transform .4s;
+    }
+
+    #score-modal .grid-cell:hover {
+      transform: scale(1.12);
+    }
+
+    #score-modal .grid-cell.low-confidence {
+      box-shadow: 0 0 0 6px rgba(255, 255, 0, 0.8);
+    }
+
+    #score-modal .grid-cell.scoring {
+      transform: scale(1.25);
+    }
+
+    #score-modal .point-bubble {
+      position: absolute;
+      width: 85px;
+      height: 85px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 2px 8px #000;
+      pointer-events: none;
+      z-index: 30;
+      transition: all .8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+
+    #score-modal #score-tally {
+      display: none;
+      width: 90cqi;
+      max-width: 520px;
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 16px;
+      margin-top: 15px;
+      max-height: 45vh;
+      overflow-y: auto;
+    }
+
+    #score-modal .tally-row {
+      display: flex;
+      align-items: center;
+      background: #222;
+      border-radius: 12px;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+    }
+
+    #score-modal .tally-row img {
+      width: 55px;
+      height: 55px;
+      object-fit: contain;
+      margin-right: 15px;
+    }
+
+    #score-modal .tally-line {
+      flex: 1;
+      height: 3px;
+      background: #555;
+      margin: 0 15px;
+      border-radius: 3px;
+    }
+
+    #score-modal .score-box {
+      padding: 8px 25px;
+      background: #333;
+      border-radius: 9999px;
+      font-size: 5.2cqi;
+      font-weight: bold;
+      min-width: 100px;
+      text-align: center;
+    }
+
+    #score-modal button {
+      background: #5fbae9;
+      color: white;
+      padding: 4cqi 14cqi;
+      font-size: 6cqi;
+      border: none;
+      border-radius: 9999px;
+      margin-top: 2cqi;
+      cursor: pointer;
+    }
+
+    #score-modal #score-snap-btn {
+      margin-top: auto;
+      width: 85%;
+      max-width: 520px;
+      padding: 5cqi 12cqi;
+      font-size: 7cqi;
+      font-weight: bold;
+    }
+
+    #score-modal #score-final-total {
+      font-size: 10cqi;
+      font-weight: bold;
+      color: #ff0;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    #score-modal #score-doodle-popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      padding: 4cqi;
+      border-radius: 16px;
+      z-index: 200;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+    }
+
+    #score-modal .popup-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 1.5cqi;
+      max-width: 90vw;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    #score-modal .popup-item {
+      width: 8cqi;
+      height: 8cqi;
+      background: #f0f0f0;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      cursor: pointer;
+    }
+
+    #score-modal .popup-item:hover {
+      border-color: #ff0;
+    }
+
   </style>
 </head>
+
 <body>
   <!-- ANIMATED BACKGROUND IMAGES -->
   <div id="header-bg">
@@ -565,26 +944,26 @@
   <div id="game-container">
     <div id="header">
       <img id="guide-btn" src="images/guidebutton.png" class="nav-btn" alt="Guide">
-  <img id="learn-btn" src="images/learnbutton.png" class="nav-btn" alt="Learn">
+      <img id="learn-btn" src="images/learnbutton.png" class="nav-btn" alt="Learn">
     </div>
-  
+
     <div id="shuffle-zone">
-  <div id="doodle-l1"></div>
-  <div id="doodle-l2"></div>
-  <div id="doodle-l3"></div>
-  <div id="doodle-r1"></div>
-  <div id="doodle-r2"></div>
-  <div id="doodle-r3"></div>
-  
-  <!-- NEW SPINNING SHUFFLE BUTTON -->
-  <div id="shuffle-container">
-    <img id="shuffle-main" src="images/shufflebutton.png" alt="Shuffle">
-    <img id="shuffle-outline" src="images/shufflebuttonoutline.png" alt="">
-  </div>
-</div>
+      <div id="doodle-l1"></div>
+      <div id="doodle-l2"></div>
+      <div id="doodle-l3"></div>
+      <div id="doodle-r1"></div>
+      <div id="doodle-r2"></div>
+      <div id="doodle-r3"></div>
+
+      <!-- NEW SPINNING SHUFFLE BUTTON -->
+      <div id="shuffle-container">
+        <img id="shuffle-main" src="images/shufflebutton.png" alt="Shuffle">
+        <img id="shuffle-outline" src="images/shufflebuttonoutline.png" alt="">
+      </div>
+    </div>
     <div id="footer">
       <img id="portfolio-btn" src="images/portfoliobutton.png" class="nav-btn" alt="Portfolio">
-  <img id="score-btn" src="images/scorebutton.png" class="nav-btn" alt="Score">
+      <img id="score-btn" src="images/scorebutton.png" class="nav-btn" alt="Score">
     </div>
 
     <!-- LEARN MODAL -->
@@ -636,7 +1015,7 @@
       </div>
       <div id="score-content" class="scanner-content">
         <p>Align the two blue page grids with your notebook pages.<br>Fill the preview edge-to-edge then tap SNAP.</p>
-      
+
         <div class="camera-container">
           <video id="score-camera-preview" autoplay playsinline muted></video>
           <canvas id="score-grid-overlay"></canvas>
@@ -644,12 +1023,13 @@
         <canvas id="score-output-canvas"></canvas>
         <div id="score-status" class="status">Waiting for photo...</div>
         <div class="debug" id="score-debug-info">8.0 • Clean scoring mode</div>
-      
+
         <div id="score-debug-cells" class="debug-cells"></div>
         <div id="score-console-log" class="console-log">Waiting for photo...</div>
-        <div id="score-tweak-prompt" class="tweak-prompt">Detected! Tap any wrong cell to correct (yellow = low confidence)</div>
+        <div id="score-tweak-prompt" class="tweak-prompt">Detected! Tap any wrong cell to correct (yellow = low
+          confidence)</div>
         <div id="score-detected-grid"></div>
-      
+
         <button id="score-score-btn" style="display:none;">SCORE SHEET</button>
         <button id="score-export-btn" style="display:none;">📤 EXPORT TRAINING ZIP</button>
         <button id="score-snap-btn" style="display:none;">SNAP NOW</button>
@@ -689,8 +1069,8 @@
       "mug", "toiletpaper", "chest", "present", "diamond",
       "icecream"
     ];
-    
-const doodleDescriptions = {
+
+    const doodleDescriptions = {
       circle: "{circle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
       square: "{square} is a basic shape that can merge to create many doodles (see Doodle Guide).",
       triangle: "{triangle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
@@ -773,28 +1153,28 @@ const doodleDescriptions = {
       { inputs: ["pyramid", "line", "cloud"], output: "icecream" }
     ];
 
-    
+
     function formatName(name) {
       return name.charAt(0).toUpperCase() + name.slice(1);
     }
-    
-function renderDescription(text) {
-  return text.replace(/\{(\w+)\}/gi, (match, key) => {
-    const lower = key.toLowerCase();
-    if (allPossibleDoodles.includes(lower)) {
-      return `<img src="images/${lower}.png" 
+
+    function renderDescription(text) {
+      return text.replace(/\{(\w+)\}/gi, (match, key) => {
+        const lower = key.toLowerCase();
+        if (allPossibleDoodles.includes(lower)) {
+          return `<img src="images/${lower}.png" 
                    class="inline-doodle" 
                    alt="${formatName(lower)}" 
                    data-doodle="${lower}"
                    style="cursor:pointer;">`;
+        }
+        if (/^\d+pt$/.test(lower) || lower === 'minus2pt') {
+          const ptFile = lower === 'minus2pt' ? 'minus2pt' : lower;
+          return `<img src="images/${ptFile}.png" class="inline-doodle" alt="${key}">`;
+        }
+        return key;
+      });
     }
-    if (/^\d+pt$/.test(lower) || lower === 'minus2pt') {
-      const ptFile = lower === 'minus2pt' ? 'minus2pt' : lower;
-      return `<img src="images/${ptFile}.png" class="inline-doodle" alt="${key}">`;
-    }
-    return key;
-  });
-}
 
     let currentGuideFilter = null;
 
@@ -842,45 +1222,45 @@ function renderDescription(text) {
           resultDiv.appendChild(resultImg);
           row.appendChild(resultDiv);
           content.appendChild(row);
-          
+
         });
         // === NEW: Add the tooltip at the bottom when a doodle is selected ===
-  const existingTip = content.querySelector('.guide-tooltip');
-  if (existingTip) existingTip.remove();
+        const existingTip = content.querySelector('.guide-tooltip');
+        if (existingTip) existingTip.remove();
 
-  if (filterDoodle) {
-    const tip = createGuideTooltip(filterDoodle);
-    content.appendChild(tip);
-  }
+        if (filterDoodle) {
+          const tip = createGuideTooltip(filterDoodle);
+          content.appendChild(tip);
+        }
       }
       document.getElementById('full-guide-btn').style.display = filterDoodle ? 'block' : 'none';
     }
-   
+
     function createGuideTooltip(doodle) {
-  const tip = document.createElement('div');
-  tip.className = 'tooltip guide-tooltip';
-  tip.style.position = 'static';
-  tip.style.width = '100%';
-  tip.style.margin = '3.5cqi 0 2cqi 0';
-  tip.style.pointerEvents = 'auto';
+      const tip = document.createElement('div');
+      tip.className = 'tooltip guide-tooltip';
+      tip.style.position = 'static';
+      tip.style.width = '100%';
+      tip.style.margin = '3.5cqi 0 2cqi 0';
+      tip.style.pointerEvents = 'auto';
 
-  const desc = document.createElement('div');
-  desc.className = 'tooltip-desc';
-  desc.innerHTML = renderDescription(doodleDescriptions[doodle]);
+      const desc = document.createElement('div');
+      desc.className = 'tooltip-desc';
+      desc.innerHTML = renderDescription(doodleDescriptions[doodle]);
 
-  tip.appendChild(desc);
+      tip.appendChild(desc);
 
-  // SPECIAL BEHAVIOR FOR GUIDE TOOLTIP ONLY
-  const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
-  inlineDoodles.forEach(img => {
-    img.addEventListener('click', (e) => {
-      e.stopImmediatePropagation();
-      handleGuideInlineClick(img.dataset.doodle);
-    });
-  });
+      // SPECIAL BEHAVIOR FOR GUIDE TOOLTIP ONLY
+      const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
+      inlineDoodles.forEach(img => {
+        img.addEventListener('click', (e) => {
+          e.stopImmediatePropagation();
+          handleGuideInlineClick(img.dataset.doodle);
+        });
+      });
 
-  return tip;
-}
+      return tip;
+    }
 
     function openModal(modalId) {
       const modal = document.getElementById(modalId);
@@ -896,86 +1276,90 @@ function renderDescription(text) {
       hideTooltip();
       setTimeout(() => modal.style.display = 'none', 400);
     }
-    document.getElementById('guide-btn').addEventListener('click', () => {hideTooltip(); renderGuide(); openModal('guide-modal'); });
+    document.getElementById('guide-btn').addEventListener('click', () => { hideTooltip(); renderGuide(); openModal('guide-modal'); });
     document.getElementById('full-guide-btn').addEventListener('click', () => renderGuide(null));
     document.getElementById('close-guide').addEventListener('click', () => closeModal('guide-modal'));
-    document.getElementById('learn-btn').addEventListener('click', () => {hideTooltip(); populateLearnGrid(); openModal('learn-modal'); });
+    document.getElementById('learn-btn').addEventListener('click', () => { hideTooltip(); populateLearnGrid(); openModal('learn-modal'); });
     document.getElementById('close-learn').addEventListener('click', () => closeModal('learn-modal'));
-    document.getElementById('portfolio-btn').addEventListener('click', () => {hideTooltip(); populatePortfolioGrid(); openModal('portfolio-modal'); });
+    document.getElementById('portfolio-btn').addEventListener('click', () => { hideTooltip(); populatePortfolioGrid(); openModal('portfolio-modal'); });
     document.getElementById('close-portfolio').addEventListener('click', () => closeModal('portfolio-modal'));
-    document.getElementById('score-btn').addEventListener('click', () => {hideTooltip(); openModal('score-modal'); initScoreScanner(); });
+    document.getElementById('score-btn').addEventListener('click', () => { hideTooltip(); openModal('score-modal'); initScoreScanner(); });
     document.getElementById('close-score').addEventListener('click', () => {
       closeModal('score-modal');
       if (scoreStream) { scoreStream.getTracks().forEach(t => t.stop()); scoreStream = null; }
     });
-  
+
     const shuffleContainer = document.getElementById('shuffle-container');
 
-shuffleContainer.addEventListener('click', () => {
-  // Add the spinning class to trigger both animations
-  shuffleContainer.classList.add('spinning');
+    shuffleContainer.addEventListener('click', () => {
+      // Add the spinning class to trigger both animations
+      shuffleContainer.classList.add('spinning');
 
-  // Remove the class after the animation finishes so it can spin again
-  setTimeout(() => {
-    shuffleContainer.classList.remove('spinning');
-  }, 1350);
-
-  // Original shuffle logic (unchanged)
-  const drawn = drawSix();
-  if (!drawn) return;
-
-  const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
-  order.forEach((id, i) => {
-    const div = document.getElementById(id);
-    if (div && div.style.backgroundImage) {
+      // Remove the class after the animation finishes so it can spin again
       setTimeout(() => {
-        // Outgoing doodles
-div.style.transition = 'transform 0.28s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
-        div.style.transform = 'translateY(120dvh) rotate(-720deg)';
-      }, i * 80);
-    }
-  });
+        shuffleContainer.classList.remove('spinning');
+      }, 1350);
 
-  setTimeout(() => {
-  order.forEach((id, i) => {
-    const div = document.getElementById(id);
-    if (!div) return;
+      // Original shuffle logic (unchanged)
+      const drawn = drawSix();
+      if (!drawn) return;
 
-    div.style.transition = 'none';
-    div.style.transform = 'translateY(100dvh) rotate(720deg)';
-    div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
-    div.dataset.doodle = drawn[i];
-    void div.offsetWidth;
+      const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
+      order.forEach((id, i) => {
+        const div = document.getElementById(id);
+        if (div && div.style.backgroundImage) {
+          setTimeout(() => {
+            // Outgoing doodles – add random horizontal spread as they fall
+            const spreadX = (Math.random() * 24 - 12).toFixed(2) + 'cqi';  // ±12cqi (tweak range for more/less spread)
+            div.style.transition = 'transform 0.33s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
+            div.style.transform = `translate(${spreadX}, 120dvh) rotate(-720deg)`;
+          }, i * 5);
+        }
+      });
 
-    // === ORGANIC RANDOM SETTLE IN CQI ===
-    const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi';   // ±1.2 cqi left/right
-    const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi';   // ±0.8 cqi up/down
-    const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg';       // ±2° rotation
+      setTimeout(() => {
+        order.forEach((id, i) => {
+          const div = document.getElementById(id);
+          if (!div) return;
 
-    setTimeout(() => {
-      div.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-      div.style.transform = `translate(${rx}, ${ry}) rotate(${rr})`;
-    }, i * 50);
-  });
-}, 280);
-});
+          div.style.transition = 'none';
+
+          // Incoming doodles – start with random horizontal spread below screen
+          const startSpreadX = (Math.random() * 36 - 18).toFixed(2) + 'cqi';  // ±12cqi (tweak range for more/less spread)
+          div.style.transform = `translate(${startSpreadX}, 100dvh) rotate(720deg)`;
+          div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
+          div.dataset.doodle = drawn[i];
+          void div.offsetWidth;
+
+          // === ORGANIC RANDOM SETTLE IN CQI ===
+          const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi';   // ±1.2 cqi left/right
+          const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi';   // ±0.8 cqi up/down
+          const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg';       // ±2° rotation
+
+          setTimeout(() => {
+            div.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            div.style.transform = `translate(${rx}, ${ry}) rotate(${rr})`;
+          }, i * 50);
+        });
+      }, 350);
+    });
 
     // Make main doodles selectable on click/tap (so tooltip works there too)
-const mainDoodleContainers = document.querySelectorAll('#shuffle-zone > div[id^="doodle-"]');
-mainDoodleContainers.forEach(div => {
-  div.style.cursor = 'pointer';
-  div.addEventListener('click', () => {
-    const wasSelected = div.classList.contains('selected');
-    mainDoodleContainers.forEach(d => d.classList.remove('selected'));
-    if (!wasSelected) {
-      div.classList.add('selected');
-      showTooltipForDoodle(div.dataset.doodle, div);
-    } else {
-      hideTooltip();
-    }
-  });
-});
-    
+    const mainDoodleContainers = document.querySelectorAll('#shuffle-zone > div[id^="doodle-"]');
+    mainDoodleContainers.forEach(div => {
+      div.style.cursor = 'pointer';
+      div.addEventListener('click', () => {
+        const wasSelected = div.classList.contains('selected');
+        mainDoodleContainers.forEach(d => d.classList.remove('selected'));
+        if (!wasSelected) {
+          div.classList.add('selected');
+          showTooltipForDoodle(div.dataset.doodle, div);
+        } else {
+          hideTooltip();
+        }
+      });
+    });
+
     function populateLearnGrid() {
       const grid = document.getElementById('learn-grid');
       grid.innerHTML = '';
@@ -1009,47 +1393,65 @@ mainDoodleContainers.forEach(div => {
         grid.appendChild(cell);
       });
     }
-    
-function toggleSelection(cell, grid, modalType) {
-  const isSelected = cell.classList.contains('selected');
-  const actionBtn = modalType === 'learn' ? document.getElementById('modal-learn-btn') : document.getElementById('modal-remove-btn');
 
-  grid.querySelectorAll('.doodle-cell').forEach(c => c.classList.remove('selected'));
+    function toggleSelection(cell, grid, modalType) {
+      const isSelected = cell.classList.contains('selected');
+      const actionBtn = modalType === 'learn' ? document.getElementById('modal-learn-btn') : document.getElementById('modal-remove-btn');
 
-  if (!isSelected) {
-    cell.classList.add('selected');
-    showTooltipForDoodle(cell.dataset.doodle, cell);
-    actionBtn.style.display = 'block';
-  } else {
-    hideTooltip();
-    actionBtn.style.display = 'none';
-  }
-}
+      grid.querySelectorAll('.doodle-cell').forEach(c => c.classList.remove('selected'));
 
-   document.getElementById('modal-learn-btn').addEventListener('click', () => {
+      if (!isSelected) {
+        cell.classList.add('selected');
+        showTooltipForDoodle(cell.dataset.doodle, cell);
+        actionBtn.style.display = 'block';
+      } else {
+        hideTooltip();
+        actionBtn.style.display = 'none';
+      }
+    }
+
+    document.getElementById('modal-learn-btn').addEventListener('click', () => {
   const selected = document.querySelector('#learn-grid .doodle-cell.selected');
   if (selected) {
     const doodle = selected.dataset.doodle;
     deck[doodle] = (deck[doodle] || 0) + 1;
-
     selected.classList.add('animate-learn');
-
-    const toast = document.getElementById('toast');
-    toast.textContent = `${formatName(doodle)} added to your portfolio`;
-    toast.classList.add('show');
-
     setTimeout(() => {
-      selected.classList.remove('animate-learn');
+      // NEW: Don't remove 'animate-learn' class – instead, permanently hide the cell to prevent reappearance
+      selected.style.opacity = '0'; // Ensure it stays invisible
+      selected.style.pointerEvents = 'none'; // Optional: Disable interaction
       selected.classList.remove('selected');
       document.getElementById('modal-learn-btn').style.display = 'none';
-      toast.classList.remove('show');
-
-      // NEW: automatically close modal + tooltip after the toast
       hideTooltip();
+      // Chain to close learn and open portfolio simultaneously
       closeModal('learn-modal');
-    }, 1200);
+      populatePortfolioGrid(); // Refresh portfolio grid with new doodle
+      openModal('portfolio-modal');
+      // Find the newly added doodle cell (last one in the grid, since we append)
+      const portfolioCells = document.querySelectorAll('#portfolio-grid .doodle-cell');
+      const newCell = portfolioCells[portfolioCells.length - 1];
+      if (newCell && newCell.dataset.doodle === doodle) {
+        // Animate the new cell with spin/grow bounce — DELAYED to sync with modal open
+        newCell.style.opacity = '0'; // Start hidden for animation
+        newCell.style.transform = 'scale(0) rotate(720deg)'; // Pre-set to match keyframe start
+        newCell.offsetHeight; // Force reflow
+        setTimeout(() => {
+          newCell.classList.add('animate-add');
+        }, 400); // ← Delay in ms (e.g., 400ms — fiddle with this to match modal slide timing)
+      }
+      // Show toast after portfolio opens
+      const toast = document.getElementById('toast');
+      toast.textContent = `${formatName(doodle)} added to your portfolio`;
+      toast.classList.add('show');
+      // Auto-close portfolio and hide toast after delay
+      setTimeout(() => {
+        toast.classList.remove('show');
+        closeModal('portfolio-modal');
+      }, 1600); // Adjust timing for viewing the animation + toast (e.g., 1600ms)
+    }, 600); // Matches new 0.9s animate-learn duration, but 300ms sooner for quicker switch
   }
 });
+    
     document.getElementById('modal-remove-btn').addEventListener('click', () => {
       const selected = document.querySelector('#portfolio-grid .doodle-cell.selected');
       if (selected) {
@@ -1094,7 +1496,7 @@ function toggleSelection(cell, grid, modalType) {
     let scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
     let scoreGridCells = [];
     const LOW_CONFIDENCE_THRESHOLD = 0.75;
-    const playableCols = [0,1,2,3,4,6,7,8,9,10];
+    const playableCols = [0, 1, 2, 3, 4, 6, 7, 8, 9, 10];
     function scoreLog(text) { document.getElementById('score-console-log').textContent += text + "\n"; }
     async function scoreLoadModel() {
       scoreLog("Loading ML model...");
@@ -1167,7 +1569,7 @@ function toggleSelection(cell, grid, modalType) {
       captured.width = scoreVideo.videoWidth;
       captured.height = scoreVideo.videoHeight;
       captured.getContext('2d').drawImage(scoreVideo, 0, 0);
-      const displayRect = {left:0, top:0, w: scoreVideo.clientWidth, h: scoreVideo.clientHeight};
+      const displayRect = { left: 0, top: 0, w: scoreVideo.clientWidth, h: scoreVideo.clientHeight };
       const sourceRect = getVideoSourceRect(displayRect);
       const cropped = document.createElement('canvas');
       cropped.width = sourceRect.w;
@@ -1298,11 +1700,11 @@ function toggleSelection(cell, grid, modalType) {
         const filename = `${className}${randomNum}.png`;
         scoreCellCanvases[i].toBlob(blob => zip.file(filename, blob), 'image/png');
       });
-      const content = await zip.generateAsync({type: "blob"});
+      const content = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(content);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `doodle-training-${new Date().toISOString().slice(0,10)}.zip`;
+      a.download = `doodle-training-${new Date().toISOString().slice(0, 10)}.zip`;
       a.click();
       URL.revokeObjectURL(url);
     }
@@ -1317,28 +1719,28 @@ function toggleSelection(cell, grid, modalType) {
 
     // ====================== FULL SCORING ANIMATION ======================
     const scoringRules = [
-      {type:'turd', base:-2}, {type:'music', base:1}, {type:'planet', base:1},
-      {type:'star', base:2}, {type:'flower', base:2}, {type:'coin', base:2},
-      {type:'heart', base:2}, {type:'pizza', base:3}, {type:'diamond', base:4},
-      {type:'icecream', base:4}, {type:'sword', base:5}, {type:'present', base:6},
-      {type:'3dset', calc:calculate3DSet}, {type:'chest', calc:calculateChest},
-      {type:'rocket', calc:calculateRocket}, {type:'cat', calc:calculateCat},
-      {type:'cloud', calc:calculateCloud}, {type:'umbrella', calc:calculateUmbrella},
-      {type:'mug', calc:calculateMug}, {type:'toiletpaper', calc:calculateToiletpaper},
-      {type:'house', calc:calculateHouse}, {type:'crown', calc:calculateCrown},
-      {type:'smiley', calc:calculateSmiley}, {type:'letter', calc:calculateLetter},
-      {type:'piano', calc:calculatePiano}, {type:'butterfly', calc:calculateButterfly},
-      {type:'fish', calc:calculateFish}, {type:'boat', calc:calculateBoat},
-      {type:'die', calc:calculateDie}
+      { type: 'turd', base: -2 }, { type: 'music', base: 1 }, { type: 'planet', base: 1 },
+      { type: 'star', base: 2 }, { type: 'flower', base: 2 }, { type: 'coin', base: 2 },
+      { type: 'heart', base: 2 }, { type: 'pizza', base: 3 }, { type: 'diamond', base: 4 },
+      { type: 'icecream', base: 4 }, { type: 'sword', base: 5 }, { type: 'present', base: 6 },
+      { type: '3dset', calc: calculate3DSet }, { type: 'chest', calc: calculateChest },
+      { type: 'rocket', calc: calculateRocket }, { type: 'cat', calc: calculateCat },
+      { type: 'cloud', calc: calculateCloud }, { type: 'umbrella', calc: calculateUmbrella },
+      { type: 'mug', calc: calculateMug }, { type: 'toiletpaper', calc: calculateToiletpaper },
+      { type: 'house', calc: calculateHouse }, { type: 'crown', calc: calculateCrown },
+      { type: 'smiley', calc: calculateSmiley }, { type: 'letter', calc: calculateLetter },
+      { type: 'piano', calc: calculatePiano }, { type: 'butterfly', calc: calculateButterfly },
+      { type: 'fish', calc: calculateFish }, { type: 'boat', calc: calculateBoat },
+      { type: 'die', calc: calculateDie }
     ];
 
     function getSurrounding(r, c) {
-      const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+      const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
       let list = [];
-      for (let [dr,dc] of dirs) {
-        let nr = r+dr, nc = c+dc;
-        if (nr>=0 && nr<7 && nc>=0 && nc<11 && scoreBoard[nr][nc] !== null) {
-          list.push({r:nr, c:nc, doodle:scoreBoard[nr][nc]});
+      for (let [dr, dc] of dirs) {
+        let nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < 7 && nc >= 0 && nc < 11 && scoreBoard[nr][nc] !== null) {
+          list.push({ r: nr, c: nc, doodle: scoreBoard[nr][nc] });
         }
       }
       return list;
@@ -1346,94 +1748,94 @@ function toggleSelection(cell, grid, modalType) {
 
     function calculateBase(type, pts) {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === type) {
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculate3DSet() {
       let cubes = 0, pyramids = 0, cylinders = 0, positions = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         let d = scoreBoard[r][c];
-        if (d==='cube') {cubes++; positions.push({r,c});}
-        else if (d==='pyramid') {pyramids++; positions.push({r,c});}
-        else if (d==='cylinder') {cylinders++; positions.push({r,c});}
+        if (d === 'cube') { cubes++; positions.push({ r, c }); }
+        else if (d === 'pyramid') { pyramids++; positions.push({ r, c }); }
+        else if (d === 'cylinder') { cylinders++; positions.push({ r, c }); }
       }
-      let sets = Math.min(Math.floor(cubes/2), Math.floor(pyramids/3), Math.floor(cylinders/2));
-      return {total: sets*20, positions, isGlobal:true};
+      let sets = Math.min(Math.floor(cubes / 2), Math.floor(pyramids / 3), Math.floor(cylinders / 2));
+      return { total: sets * 20, positions, isGlobal: true };
     }
 
     function calculateChest() {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'chest') {
-          let count = getSurrounding(r, c).filter(s => ['coin','diamond','crown'].includes(s.doodle)).length;
+          let count = getSurrounding(r, c).filter(s => ['coin', 'diamond', 'crown'].includes(s.doodle)).length;
           let pts = count * 2;
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculateRocket() {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'rocket') {
           let count = 0;
-          for (let rr=0; rr<7; rr++) {
+          for (let rr = 0; rr < 7; rr++) {
             if (rr !== r && (scoreBoard[rr][c] === 'planet' || scoreBoard[rr][c] === 'star')) count++;
           }
           let pts = count * 3;
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculateCat() {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'cat') {
-          let count = getSurrounding(r, c).filter(s => ['fish','turd'].includes(s.doodle)).length;
+          let count = getSurrounding(r, c).filter(s => ['fish', 'turd'].includes(s.doodle)).length;
           let pts = 3 + count * 2;
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculateCloud() {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'cloud') {
           let count = 0;
           let isLeft = c < 5;
-          for (let rr = r+1; rr < 7; rr++) {
+          for (let rr = r + 1; rr < 7; rr++) {
             if (scoreBoard[rr][c] === 'drop' && (c < 5 === isLeft)) count++;
           }
           let pts = count * 1;
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculateUmbrella() {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'umbrella') {
           let count = 0;
           let isLeft = c < 5;
@@ -1442,170 +1844,170 @@ function toggleSelection(cell, grid, modalType) {
           }
           let pts = count * 1;
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculateMug() {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'mug') {
-          let hasDropAbove = (r > 0 && scoreBoard[r-1][c] === 'drop');
+          let hasDropAbove = (r > 0 && scoreBoard[r - 1][c] === 'drop');
           let pts = 2 + (hasDropAbove ? 2 : 0);
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculateToiletpaper() {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'toiletpaper') {
           let count = getSurrounding(r, c).filter(s => s.doodle === 'turd').length;
           let pts = 1 + count * 7;
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculateHouse() {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'house') {
-          let count = getSurrounding(r, c).filter(s => ['smiley','wireless'].includes(s.doodle)).length;
+          let count = getSurrounding(r, c).filter(s => ['smiley', 'wireless'].includes(s.doodle)).length;
           let pts = 1 + count * 1;
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculateCrown() {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'crown') {
-          let hasSmileyBelow = (r < 6 && scoreBoard[r+1][c] === 'smiley');
+          let hasSmileyBelow = (r < 6 && scoreBoard[r + 1][c] === 'smiley');
           let pts = 3 + (hasSmileyBelow ? 1 : 0);
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculateSmiley() {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'smiley') {
-          let count = getSurrounding(r, c).filter(s => ['pizza','icecream'].includes(s.doodle)).length;
+          let count = getSurrounding(r, c).filter(s => ['pizza', 'icecream'].includes(s.doodle)).length;
           let pts = 1 + count * 1;
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculateLetter() {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'letter') {
-          let hasHeartAbove = (r > 0 && scoreBoard[r-1][c] === 'heart');
+          let hasHeartAbove = (r > 0 && scoreBoard[r - 1][c] === 'heart');
           let pts = 1 + (hasHeartAbove ? 5 : 0);
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculatePiano() {
       let columnsWithMusic = new Set();
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'music') columnsWithMusic.add(c);
       }
       let numCols = columnsWithMusic.size;
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'piano') {
           let pts = numCols;
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculateButterfly() {
       let visited = Array(7).fill().map(() => Array(11).fill(false));
       let maxSize = 0;
-      const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+      const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
       function dfs(r, c) {
-        if (r<0 || r>=7 || c<0 || c>=11 || visited[r][c] || scoreBoard[r][c] !== 'flower') return 0;
+        if (r < 0 || r >= 7 || c < 0 || c >= 11 || visited[r][c] || scoreBoard[r][c] !== 'flower') return 0;
         visited[r][c] = true;
         let size = 1;
-        for (let [dr,dc] of dirs) size += dfs(r+dr, c+dc);
+        for (let [dr, dc] of dirs) size += dfs(r + dr, c + dc);
         return size;
       }
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'flower' && !visited[r][c]) {
           maxSize = Math.max(maxSize, dfs(r, c));
         }
       }
       let total = maxSize * 1;
-      return {total, positions: []};
+      return { total, positions: [] };
     }
 
     function calculateFish() {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'fish') {
           let count = getSurrounding(r, c).filter(s => s.doodle === 'fish').length;
           let pts = count * 1;
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculateBoat() {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'boat') {
           let count = 0;
           let isLeft = c < 5;
-          for (let rr = r+1; rr < 7; rr++) {
+          for (let rr = r + 1; rr < 7; rr++) {
             if (scoreBoard[rr][c] === 'fish' && (c < 5 === isLeft)) count++;
           }
           let pts = count * 2;
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     function calculateDie() {
       let total = 0, perCellList = [];
-      for (let r=0; r<7; r++) for (let c=0; c<11; c++) {
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'die') {
           let neighbors = getSurrounding(r, c);
           let maxNeighbor = 0;
@@ -1614,11 +2016,11 @@ function toggleSelection(cell, grid, modalType) {
           }
           let pts = maxNeighbor;
           total += pts;
-          perCellList.push({r, c, pts});
+          perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
         }
       }
-      return {total, perCellList};
+      return { total, perCellList };
     }
 
     async function animateCell(cell, pts) {
@@ -1688,7 +2090,7 @@ function toggleSelection(cell, grid, modalType) {
         await new Promise(r => setTimeout(r, 420));
       }
       const unique = new Set(scoreDetectedDoodles).size;
-      let bonus = unique <=12 ? -10 : unique<=14 ? 1 : unique===15 ? 5 : unique===16 ? 10 : unique===17 ? 16 : unique===18 ? 23 : unique===19 ? 31 : 40;
+      let bonus = unique <= 12 ? -10 : unique <= 14 ? 1 : unique === 15 ? 5 : unique === 16 ? 10 : unique === 17 ? 16 : unique === 18 ? 23 : unique === 19 ? 31 : 40;
       total += bonus;
       addTallyRow('variety', bonus);
       const totalRow = document.createElement('div');
@@ -1712,177 +2114,174 @@ function toggleSelection(cell, grid, modalType) {
       document.getElementById('score-new-scan-btn').style.display = 'none';
     };
 
-// ====================== SMART TOOLTIP ON SELECT ======================
-function showTooltipForDoodle(doodle, element) {
-  const tooltip = document.getElementById('tooltip');
-  const desc = document.getElementById('tooltip-desc');
-  if (!doodleDescriptions[doodle]) return;
+    // ====================== SMART TOOLTIP ON SELECT ======================
+    function showTooltipForDoodle(doodle, element) {
+      const tooltip = document.getElementById('tooltip');
+      const desc = document.getElementById('tooltip-desc');
+      if (!doodleDescriptions[doodle]) return;
 
-  desc.innerHTML = renderDescription(doodleDescriptions[doodle]);
-// Make inline doodle images clickable
-const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
-inlineDoodles.forEach(img => {
-  img.addEventListener('click', (e) => {
-    e.stopImmediatePropagation(); // prevent closing the tooltip accidentally
-    const targetDoodle = img.dataset.doodle;
-    handleInlineDoodleClick(targetDoodle);
-  });
-});
+      desc.innerHTML = renderDescription(doodleDescriptions[doodle]);
+      // Make inline doodle images clickable
+      const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
+      inlineDoodles.forEach(img => {
+        img.addEventListener('click', (e) => {
+          e.stopImmediatePropagation(); // prevent closing the tooltip accidentally
+          const targetDoodle = img.dataset.doodle;
+          handleInlineDoodleClick(targetDoodle);
+        });
+      });
 
-  const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
-  if (oldBtn) oldBtn.remove();
+      const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
+      if (oldBtn) oldBtn.remove();
 
-  const container = document.getElementById('game-container');
-  const containerRect = container.getBoundingClientRect();
-  const doodleRect = element.getBoundingClientRect();
+      const container = document.getElementById('game-container');
+      const containerRect = container.getBoundingClientRect();
+      const doodleRect = element.getBoundingClientRect();
 
-  tooltip.style.width = '75cqi';
-  tooltip.style.maxWidth = '75cqi';
+      tooltip.style.width = '75cqi';
+      tooltip.style.maxWidth = '75cqi';
 
-  tooltip.style.visibility = 'hidden';
-  tooltip.classList.add('show');
-  const tooltipHeightPx = tooltip.offsetHeight;
-  tooltip.classList.remove('show');
-  tooltip.style.visibility = 'visible';
+      tooltip.style.visibility = 'hidden';
+      tooltip.classList.add('show');
+      const tooltipHeightPx = tooltip.offsetHeight;
+      tooltip.classList.remove('show');
+      tooltip.style.visibility = 'visible';
 
-  tooltip.style.left = '50%';
-  tooltip.style.transform = 'translateX(-50%)';
+      tooltip.style.left = '50%';
+      tooltip.style.transform = 'translateX(-50%)';
 
-  const normalGapCqi = 5.8;
-  const safetyPx     = 28;
+      const normalGapCqi = 5.8;
+      const safetyPx = 28;
 
-  const containerWidthPx = containerRect.width;
-  const normalGapPx = (normalGapCqi / 100) * containerWidthPx;
+      const containerWidthPx = containerRect.width;
+      const normalGapPx = (normalGapCqi / 100) * containerWidthPx;
 
-  const relDoodleTop = doodleRect.top - containerRect.top;
-  const doodleCenterPx = relDoodleTop + (doodleRect.height / 2);
+      const relDoodleTop = doodleRect.top - containerRect.top;
+      const doodleCenterPx = relDoodleTop + (doodleRect.height / 2);
 
-  const relDoodleBottom = relDoodleTop + doodleRect.height;
-  const spaceBelowPx = containerRect.height - relDoodleBottom;
+      const relDoodleBottom = relDoodleTop + doodleRect.height;
+      const spaceBelowPx = containerRect.height - relDoodleBottom;
 
-  let proposedTopPx;
+      let proposedTopPx;
 
-  if (spaceBelowPx >= tooltipHeightPx + normalGapPx + safetyPx) {
-    // BELOW: top of tooltip = center + half doodle + gap
-    const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
-    proposedTopPx = doodleCenterPx + offsetFromCenterPx;
-  } else {
-    // ABOVE: bottom of tooltip = center - half doodle - gap - EXTRA full doodle height
-    const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
-    const extraAboveClearancePx = doodleRect.height;   // ← this is the new shift you wanted
-    const totalOffsetAbovePx = offsetFromCenterPx + extraAboveClearancePx;
+      if (spaceBelowPx >= tooltipHeightPx + normalGapPx + safetyPx) {
+        // BELOW: top of tooltip = center + half doodle + gap
+        const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
+        proposedTopPx = doodleCenterPx + offsetFromCenterPx;
+      } else {
+        // ABOVE: bottom of tooltip = center - half doodle - gap - EXTRA full doodle height
+        const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
+        const extraAboveClearancePx = doodleRect.height;   // ← this is the new shift you wanted
+        const totalOffsetAbovePx = offsetFromCenterPx + extraAboveClearancePx;
 
-    const tooltipBottomPx = doodleCenterPx - totalOffsetAbovePx;
-    proposedTopPx = tooltipBottomPx - tooltipHeightPx;
-  }
+        const tooltipBottomPx = doodleCenterPx - totalOffsetAbovePx;
+        proposedTopPx = tooltipBottomPx - tooltipHeightPx;
+      }
 
-  // Clamp
-  proposedTopPx = Math.max(18, Math.min(proposedTopPx, containerRect.height - tooltipHeightPx - 18));
+      // Clamp
+      proposedTopPx = Math.max(18, Math.min(proposedTopPx, containerRect.height - tooltipHeightPx - 18));
 
-  // To cqi
-  const proposedTopCqi = (proposedTopPx / containerWidthPx) * 100;
-  tooltip.style.top = `${proposedTopCqi.toFixed(2)}cqi`;
+      // To cqi
+      const proposedTopCqi = (proposedTopPx / containerWidthPx) * 100;
+      tooltip.style.top = `${proposedTopCqi.toFixed(2)}cqi`;
 
-  const guideBtn = document.createElement('button');
-  guideBtn.className = 'tooltip-guide-btn';
-  guideBtn.textContent = 'See in Guide';
-  guideBtn.onclick = () => {
-    hideTooltip();
-    renderGuide(doodle);
-    openModal('guide-modal');
-  };
-  tooltip.appendChild(guideBtn);
+      const guideBtn = document.createElement('button');
+      guideBtn.className = 'tooltip-guide-btn';
+      guideBtn.textContent = 'See in Guide';
+      guideBtn.onclick = () => {
+        hideTooltip();
+        renderGuide(doodle);
+        openModal('guide-modal');
+      };
+      tooltip.appendChild(guideBtn);
 
-  tooltip.classList.add('show');
-}
-
-function hideTooltip() {
-  const tooltip = document.getElementById('tooltip');
-  const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
-  if (oldBtn) oldBtn.remove();
-  tooltip.classList.remove('show');
-  tooltip.style.zIndex = '';
-  tooltip.style.transform = '';
-}
-
-function handleInlineDoodleClick(targetDoodle) {
-  hideTooltip();
-
-  const learnModal = document.getElementById('learn-modal');
-  const isLearnOpen = learnModal.classList.contains('active');
-
-  if (!isLearnOpen) {
-    populateLearnGrid();
-    openModal('learn-modal');
-  }
-
-  // Find and select the cell in the Learn grid
-  const cell = document.querySelector(`#learn-grid .doodle-cell[data-doodle="${targetDoodle}"]`);
-  if (cell) {
-    toggleSelection(cell, document.getElementById('learn-grid'), 'learn');
-  }
-}
-
-function handleGuideInlineClick(targetDoodle) {
-  renderGuide(targetDoodle);   // re-filter the guide + show new tooltip at bottom
-}
-
-// Click anywhere outside the tooltip (but not on a doodle) to close it
-document.addEventListener('click', (e) => {
-  const tooltip = document.getElementById('tooltip');
-  if (tooltip.classList.contains('show')) {
-    const clickedDoodle = e.target.closest('[data-doodle]');
-    if (!tooltip.contains(e.target) && !clickedDoodle) {
-      hideTooltip();
+      tooltip.classList.add('show');
     }
-  }
-});
 
-function updateAnimatedBackgrounds() {
-  const shuffle = document.getElementById('shuffle-zone');
-  if (!shuffle) return;
+    function hideTooltip() {
+      const tooltip = document.getElementById('tooltip');
+      const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
+      if (oldBtn) oldBtn.remove();
+      tooltip.classList.remove('show');
+      tooltip.style.zIndex = '';
+      tooltip.style.transform = '';
+    }
 
-  const shuffleRect = shuffle.getBoundingClientRect();
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
+    function handleInlineDoodleClick(targetDoodle) {
+      hideTooltip();
 
-  // Use the ACTUAL image width (this fixes overshooting)
-  const headerImg = document.querySelector('#header-bg img');
-  const footerImg = document.querySelector('#footer-bg img');
+      const learnModal = document.getElementById('learn-modal');
+      const isLearnOpen = learnModal.classList.contains('active');
 
-  const headerWidth = headerImg.naturalWidth || 3840;
-  const footerWidth = footerImg.naturalWidth || 3840;
+      if (!isLearnOpen) {
+        populateLearnGrid();
+        openModal('learn-modal');
+      }
 
-  const maxTranslate = -(Math.max(headerWidth, footerWidth) - vw + 4); // small buffer to ensure full coverage
+      // Find and select the cell in the Learn grid
+      const cell = document.querySelector(`#learn-grid .doodle-cell[data-doodle="${targetDoodle}"]`);
+      if (cell) {
+        toggleSelection(cell, document.getElementById('learn-grid'), 'learn');
+      }
+    }
 
-  // Header
-  const headerBg = document.getElementById('header-bg');
-  headerBg.style.height = `${shuffleRect.top}px`;
-  headerBg.style.setProperty('--max-translate', `${maxTranslate}px`);
+    function handleGuideInlineClick(targetDoodle) {
+      renderGuide(targetDoodle);   // re-filter the guide + show new tooltip at bottom
+    }
 
-  // Footer
-  const footerBg = document.getElementById('footer-bg');
-  footerBg.style.height = `${vh - shuffleRect.bottom}px`;
-  footerBg.style.top = `${shuffleRect.bottom}px`;
-  footerBg.style.setProperty('--max-translate', `${maxTranslate}px`);
-}
+    // Click anywhere outside the tooltip (but not on a doodle) to close it
+    document.addEventListener('click', (e) => {
+      const tooltip = document.getElementById('tooltip');
+      if (tooltip.classList.contains('show')) {
+        const clickedDoodle = e.target.closest('[data-doodle]');
+        if (!tooltip.contains(e.target) && !clickedDoodle) {
+          hideTooltip();
+        }
+      }
+    });
 
-// Make sure the animation uses the correct values once images are loaded
-const headerImg = document.querySelector('#header-bg img');
-const footerImg = document.querySelector('#footer-bg img');
+    function updateAnimatedBackgrounds() {
+      const shuffle = document.getElementById('shuffle-zone');
+      if (!shuffle) return;
+      const shuffleRect = shuffle.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      // Use the ACTUAL image width (this fixes overshooting)
+      const headerImg = document.querySelector('#header-bg img');
+      const footerImg = document.querySelector('#footer-bg img');
+      const headerWidth = headerImg.naturalWidth || 3840;
+      const footerWidth = footerImg.naturalWidth || 3840;
+      const maxTranslate = -(Math.max(headerWidth, footerWidth) - vw + 4); // small buffer to ensure full coverage
+      // Header
+      const headerBg = document.getElementById('header-bg');
+      const overshootPct = 0.1; // Adjust this value to control overshoot (0.15 ≈ +15% to reach ~35%)
+      const overshoot = vh * overshootPct;
+      headerBg.style.height = `${shuffleRect.top + overshoot}px`;
+      headerBg.style.setProperty('--max-translate', `${maxTranslate}px`);
+      // Footer
+      const footerBg = document.getElementById('footer-bg');
+      footerBg.style.height = `${(vh - shuffleRect.bottom) + overshoot}px`;
+      footerBg.style.top = `${shuffleRect.bottom - overshoot}px`;
+      footerBg.style.setProperty('--max-translate', `${maxTranslate}px`);
+    }
 
-if (headerImg.complete && footerImg.complete) {
-  updateAnimatedBackgrounds();
-} else {
-  headerImg.onload = footerImg.onload = updateAnimatedBackgrounds;
-}
+    // Make sure the animation uses the correct values once images are loaded
+    const headerImg = document.querySelector('#header-bg img');
+    const footerImg = document.querySelector('#footer-bg img');
 
-// Initial + resize + orientation
-window.addEventListener('load', updateAnimatedBackgrounds);
-window.addEventListener('resize', updateAnimatedBackgrounds);
-window.addEventListener('orientationchange', () => setTimeout(updateAnimatedBackgrounds, 120));
+    if (headerImg.complete && footerImg.complete) {
+      updateAnimatedBackgrounds();
+    } else {
+      headerImg.onload = footerImg.onload = updateAnimatedBackgrounds;
+    }
+
+    // Initial + resize + orientation
+    window.addEventListener('load', updateAnimatedBackgrounds);
+    window.addEventListener('resize', updateAnimatedBackgrounds);
+    window.addEventListener('orientationchange', () => setTimeout(updateAnimatedBackgrounds, 120));
 
     initScoreScanner();
   </script>
 </body>
+
 </html>
