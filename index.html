@@ -100,7 +100,6 @@
       grid-template-rows: 1fr 3fr 1fr;
       container-type: inline-size;
       z-index: 10;
-      overflow:hidden;
     }
 
     @media (max-aspect-ratio: 9/16) {
@@ -208,6 +207,22 @@
       transform: scale(1.05);
     }
 
+  /* === ALTERNATIVE ANIMATION USING HEIGHT FOR PRESS EFFECT + SEPARATE ROTATE === */
+.nav-btn.pressed {
+  animation: 
+    buttonHeight 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards,  /* Bouncy for height shrink/grow */
+    buttonRotate 0.3s ease-out forwards;  /* Smooth for spin */
+}
+@keyframes buttonHeight {
+  0% { height: 20cqi; }  /* Start at normal height */
+  35% { height: calc(20cqi * 0.65); }  /* Shrink to 75% */
+  100% { height: 20cqi; }  /* Back to normal */
+}
+@keyframes buttonRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }  /* Full spin */
+}
+
     /* Remove the old button styles that no longer apply */
     #header button,
     #footer button {
@@ -290,14 +305,14 @@
   z-index: 100;
   container-type: inline-size;
   transform: translateY(0) rotate(0deg); /* ← Added rotate(0deg) as base */
-  transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* ← Even bouncier curve with more overshoot */
+  transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* ← Even bouncier curve with more overshoot */
   border-radius: 3.2cqi; /* ← rounded corners */
   overflow: hidden; /* prevent content from spilling out */
 }
-.modal.learn { transform: translateY(-100%) rotate(-5deg); } /* ← Starts off-screen top with more tilt (-5deg) */
-.modal.portfolio { transform: translateY(100%) rotate(-5deg); } /* ← Starts off-screen bottom with more tilt (-5deg) */
-.modal.guide { transform: translateY(-100%) rotate(-5deg); } /* ← Matches learn (from top) */
-.modal.score { transform: translateY(100%) rotate(-5deg); } /* ← Matches portfolio (from bottom) */
+.modal.learn { transform: translateY(-110%) rotate(-5deg); } /* ← Further up off-screen */
+.modal.portfolio { transform: translateY(110%) rotate(-5deg); } /* ← Further down off-screen */
+.modal.guide { transform: translateY(-110%) rotate(-5deg); } /* ← Further up off-screen */
+.modal.score { transform: translateY(110%) rotate(-5deg); } /* ← Further down off-screen */
 .modal.active {
   display: flex;
   transform: translateY(0) rotate(0deg); /* ← Settles to no translation/rotation */
@@ -342,17 +357,12 @@
       gap: 10.5cqi;
     }
 
-    .close-btn,
-    .action-btn {
+    .close-btn {
       height: 9cqi;
       line-height: 9cqi;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 7cqi;
-    }
-
-    .close-btn {
       width: 9cqi;
       border-radius: 2cqi;
       background: rgba(255, 255, 255, 0.25);
@@ -367,24 +377,54 @@
     }
 
     .action-btn {
+      height: 15cqi;
       padding: 0 6cqi;
-      font-size: 6cqi;
+      font-size: 8cqi;
       min-width: 14cqi;
       border-radius: 9999px;
       display: none;
     }
 
-    .action-btn.learn {
-      background: #ffffff;
-      color: #000000;
-    }
+    /* Updated action button styles for yellow BG + black text */
+.action-btn.learn { 
+  background: #fbb065; /* Yellow from learn theme */
+  color: #000000; /* Black text */
+  /* Existing styles: padding: 0 6cqi; font-size: 6cqi; etc. – no change needed */
+}
 
     .action-btn.remove {
       background: #7f2a8f;
       color: white;
     }
 
+/* NEW: Position the button absolutely within the modal-grid */
+#modal-learn-btn {
+  position: absolute;
+  z-index: 15; /* Above other cells */
+  display: none; /* Hidden by default */
+  transition: opacity 0.2s ease; /* Optional fade-in for smoothness */
+}
+
+#modal-learn-btn.animate-shrink {
+  animation: buttonShrink 0.9s cubic-bezier(0.68, -0.55, 0.27, 1) forwards; /* ← Updated curve */
+}
+@keyframes buttonShrink {
+  0% { transform: scale(1); opacity: 1; }
+  40% { transform: scale(0.1); opacity: 0.5; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+/* For the learn button pulse */
+#modal-learn-btn.pulsing {
+  animation: pulseScale 500ms ease-in-out infinite alternate;
+}
+@keyframes pulseScale {
+  from { transform: scale(1.05); }
+  to { transform: scale(0.95); }
+}
+
     .modal-grid {
+      position:relative;
       flex: 1;
       display: grid;
       grid-template-columns: repeat(6, 1fr);
@@ -422,6 +462,15 @@
       opacity: 1 !important;
     }
 
+    /* For the selected doodle gentle rotation */
+.doodle-cell.selected .doodle-img {
+  animation: gentleRotate 500ms ease-in-out infinite alternate;
+}
+@keyframes gentleRotate {
+  from { transform: rotate(-7deg); }
+  to { transform: rotate(7deg); }
+}
+
     .modal-grid .doodle-cell:not(.selected) {
       opacity: 0.5;
     }
@@ -442,7 +491,7 @@
 
  /* === UPDATED ANIMATION FOR LEARNING (disappear fully) === */
 .doodle-cell.animate-learn .doodle-img {
-  animation: learnSpinShrink 0.9s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; /* Duration to 0.9s (1.5x longer) */
+  animation: learnSpinShrink 0.9s cubic-bezier(0.68, -0.55, 0.27, 1) forwards; /* ← Updated curve */
 }
 @keyframes learnSpinShrink {
   0% { transform: scale(1) rotate(0deg); opacity: 1; }
@@ -972,7 +1021,7 @@
       <div class="modal-top learn">
         <div class="title">Learn a Doodle</div>
         <div class="buttons">
-          <button class="action-btn learn" id="modal-learn-btn">LEARN</button>
+          <button class="action-btn learn" id="modal-learn-btn">Learn</button>
           <button class="close-btn" id="close-learn">✕</button>
         </div>
       </div>
@@ -1270,13 +1319,28 @@
       modal.offsetHeight;
       modal.classList.add('active');
     }
-    function closeModal(modalId) {
-      const modal = document.getElementById(modalId);
-      if (!modal) return;
-      modal.classList.remove('active');
-      hideTooltip();
-      setTimeout(() => modal.style.display = 'none', 400);
+    
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  modal.classList.remove('active');
+  hideTooltip();
+  if (modalId === 'learn-modal') {
+    const btn = document.getElementById('modal-learn-btn');
+    if (btn) {
+      const buttonsDiv = modal.querySelector('.buttons');
+      if (buttonsDiv && !buttonsDiv.contains(btn)) {
+        buttonsDiv.appendChild(btn);
+      }
+      btn.style.display = 'none';
+      btn.style.top = '';
+      btn.style.left = '';
+      btn.style.opacity = '';
     }
+  }
+  setTimeout(() => modal.style.display = 'none', 400);
+}
+
     document.getElementById('guide-btn').addEventListener('click', () => { hideTooltip(); renderGuide(); openModal('guide-modal'); });
     document.getElementById('full-guide-btn').addEventListener('click', () => renderGuide(null));
     document.getElementById('close-guide').addEventListener('click', () => closeModal('guide-modal'));
@@ -1396,22 +1460,80 @@
     }
 
     function toggleSelection(cell, grid, modalType) {
-      const isSelected = cell.classList.contains('selected');
-      const actionBtn = modalType === 'learn' ? document.getElementById('modal-learn-btn') : document.getElementById('modal-remove-btn');
-
-      grid.querySelectorAll('.doodle-cell').forEach(c => c.classList.remove('selected'));
-
-      if (!isSelected) {
-        cell.classList.add('selected');
-        showTooltipForDoodle(cell.dataset.doodle, cell);
-        actionBtn.style.display = 'block';
-      } else {
-        hideTooltip();
-        actionBtn.style.display = 'none';
+  const isSelected = cell.classList.contains('selected');
+  const actionBtn = modalType === 'learn' ? document.getElementById('modal-learn-btn') : document.getElementById('modal-remove-btn');
+  grid.querySelectorAll('.doodle-cell').forEach(c => c.classList.remove('selected'));
+  if (!isSelected) {
+    cell.classList.add('selected');
+    showTooltipForDoodle(cell.dataset.doodle, cell);
+   
+    // NEW: For learn modal – position button next to selected cell
+    if (modalType === 'learn') {
+      // Append button to grid for relative positioning (if not already)
+      if (!grid.contains(actionBtn)) {
+        grid.appendChild(actionBtn);
       }
+     
+      // Reset for reappearance
+      actionBtn.style.display = 'none';
+      actionBtn.style.opacity = '0';
+      actionBtn.style.top = '0';
+      actionBtn.style.left = '0';
+      void actionBtn.offsetHeight;
+     
+      // Show hidden for measurement
+      actionBtn.style.display = 'block';
+      void actionBtn.offsetHeight;
+     
+      // Get rects
+      const gridRect = grid.getBoundingClientRect();
+      const cellRect = cell.getBoundingClientRect();
+      const btnRect = actionBtn.getBoundingClientRect();
+     
+      // Account for grid padding (1.8cqi – convert to px for accuracy)
+      const gridStyle = getComputedStyle(grid);
+      const gridPaddingTop = parseFloat(gridStyle.paddingTop);
+      const gridPaddingLeft = parseFloat(gridStyle.paddingLeft);
+     
+      // Vertical: Relative top from grid top, centered (no padding subtraction needed)
+      const relativeCellTop = cellRect.top - gridRect.top;
+      const topOffset = relativeCellTop + (cellRect.height / 2) - (btnRect.height / 2);
+     
+      // Horizontal: Relative left from grid left (no padding subtraction needed)
+      let leftOffset;
+      const gapPx = 8; // Horizontal gap in px (adjust if needed)
+      if ((Array.from(grid.querySelectorAll('.doodle-cell')).indexOf(cell) % 6) + 1 <= 3) {
+        // Left columns: Button to the RIGHT
+        leftOffset = (cellRect.right - gridRect.left) + gapPx;
+      } else {
+        // Right columns: Button to the LEFT
+        leftOffset = (cellRect.left - gridRect.left) - btnRect.width - gapPx;
+      }
+     
+      // Apply and fade in
+      actionBtn.style.top = `${topOffset}px`;
+      actionBtn.style.left = `${leftOffset}px`;
+      actionBtn.style.opacity = '1';
+      actionBtn.classList.add('pulsing'); // ← Add pulsing class after positioning
+    } else {
+      actionBtn.style.display = 'block'; // For portfolio, keep in header
     }
-
-    document.getElementById('modal-learn-btn').addEventListener('click', () => {
+  } else {
+    hideTooltip();
+    if (modalType === 'learn') {
+      actionBtn.classList.remove('pulsing'); // ← Remove pulsing
+      actionBtn.style.opacity = '0';
+      setTimeout(() => { actionBtn.style.display = 'none'; }, 200); // Fade out
+    } else {
+      actionBtn.style.display = 'none';
+    }
+  }
+}
+   
+document.getElementById('modal-learn-btn').addEventListener('click', () => {
+  const btn = document.getElementById('modal-learn-btn');
+  btn.classList.remove('pulsing'); // ← NEW: Remove pulsing to avoid animation conflict
+  btn.classList.add('animate-shrink'); // ← Add shrink immediately after
   const selected = document.querySelector('#learn-grid .doodle-cell.selected');
   if (selected) {
     const doodle = selected.dataset.doodle;
@@ -1422,7 +1544,8 @@
       selected.style.opacity = '0'; // Ensure it stays invisible
       selected.style.pointerEvents = 'none'; // Optional: Disable interaction
       selected.classList.remove('selected');
-      document.getElementById('modal-learn-btn').style.display = 'none';
+      btn.style.display = 'none'; // Still hide after animation (but animation handles visual disappear)
+      btn.classList.remove('animate-shrink'); // Reset class for future uses
       hideTooltip();
       // Chain to close learn and open portfolio simultaneously
       closeModal('learn-modal');
@@ -1440,19 +1563,21 @@
           newCell.classList.add('animate-add');
         }, 400); // ← Delay in ms (e.g., 400ms — fiddle with this to match modal slide timing)
       }
-      // Show toast after portfolio opens
+      // Show toast after portfolio opens — with 700ms delay
       const toast = document.getElementById('toast');
       toast.textContent = `${formatName(doodle)} added to your portfolio`;
-      toast.classList.add('show');
-      // Auto-close portfolio and hide toast after delay
       setTimeout(() => {
-        toast.classList.remove('show');
-        closeModal('portfolio-modal');
-      }, 1600); // Adjust timing for viewing the animation + toast (e.g., 1600ms)
-    }, 600); // Matches new 0.9s animate-learn duration, but 300ms sooner for quicker switch
+        toast.classList.add('show');
+        // Auto-close portfolio and hide toast after delay — with +500ms (2100ms total)
+        setTimeout(() => {
+          toast.classList.remove('show');
+          closeModal('portfolio-modal');
+        }, 1600); 
+      }, 700); // ← Delay for toast show
+    }, 300); // ← Matches 0.9s animation durations to let them complete before switching
   }
 });
-    
+
     document.getElementById('modal-remove-btn').addEventListener('click', () => {
       const selected = document.querySelector('#portfolio-grid .doodle-cell.selected');
       if (selected) {
@@ -2282,6 +2407,17 @@
     window.addEventListener('orientationchange', () => setTimeout(updateAnimatedBackgrounds, 120));
 
     initScoreScanner();
+
+    // Add press animation to all nav buttons
+const navButtons = document.querySelectorAll('.nav-btn');
+navButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.classList.add('pressed');
+    setTimeout(() => {
+      btn.classList.remove('pressed');
+    }, 300); // Matches animation duration
+  });
+});
   </script>
 </body>
 
