@@ -331,7 +331,7 @@
     }
 
     .modal-top.portfolio {
-      background: #f0f0f0;
+      background: #ffffff;
       color: #000;
     }
 
@@ -396,26 +396,33 @@
       color: white;
     }
 
-/* NEW: Position the button absolutely within the modal-grid */
-#modal-learn-btn {
+
+/* NEW: Position the button absolutely within the modal-grid – for BOTH buttons */
+#modal-learn-btn,
+#modal-remove-btn {
   position: absolute;
   z-index: 15; /* Above other cells */
   display: none; /* Hidden by default */
   transition: opacity 0.2s ease; /* Optional fade-in for smoothness */
 }
 
-#modal-learn-btn.animate-shrink {
+/* For BOTH buttons shrink animation */
+#modal-learn-btn.animate-shrink,
+#modal-remove-btn.animate-shrink {
   animation: buttonShrink 0.9s cubic-bezier(0.68, -0.55, 0.27, 1) forwards; /* ← Updated curve */
 }
+
+/* For BOTH buttons pulse */
+#modal-learn-btn.pulsing,
+#modal-remove-btn.pulsing {
+  animation: pulseScale 500ms ease-in-out infinite alternate;
+}
+
+
 @keyframes buttonShrink {
   0% { transform: scale(1); opacity: 1; }
   40% { transform: scale(0.1); opacity: 0.5; }
   100% { transform: scale(0); opacity: 0; }
-}
-
-/* For the learn button pulse */
-#modal-learn-btn.pulsing {
-  animation: pulseScale 500ms ease-in-out infinite alternate;
 }
 @keyframes pulseScale {
   from { transform: scale(1.05); }
@@ -467,6 +474,23 @@
 @keyframes gentleRotate {
   from { transform: rotate(-7deg); }
   to { transform: rotate(7deg); }
+}
+
+[id^="doodle-"] {
+  --base-transform: translate(0, 0) rotate(0deg); /* Default */
+}
+
+/* Highlighted main doodles with scale and rock animation */
+[id^="doodle-"].selected {
+  animation: mainHighlight 500ms ease-in-out infinite alternate;
+}
+@keyframes mainHighlight {
+  from {
+    transform: var(--base-transform) scale(1.1) rotate(-7deg);
+  }
+  to {
+    transform: var(--base-transform) scale(1.1) rotate(7deg);
+  }
 }
 
     .modal-grid .doodle-cell:not(.selected) {
@@ -550,8 +574,43 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #e0f0f8;
     }
+
+/* Animation for guide rows AND tooltip sliding in */
+.merge-row.animate-in,
+.guide-tooltip.animate-in {
+  animation: slideUpFade 0.4s ease-out forwards;
+}
+@keyframes slideUpFade {
+  from {
+    transform: translateY(14cqi); /* Start slightly lower – adjust as needed */
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Highlighted doodles in the Guide modal */
+.guide-doodle.highlighted {
+  animation: guideHighlight 500ms ease-in-out infinite alternate;
+}
+
+@keyframes guideHighlight {
+  from {
+    transform: scale(1.1) rotate(-7deg);
+  }
+  to {
+    transform: scale(1.1) rotate(7deg);
+  }
+}
+
+.group-divider {
+  height: 0; /* No intrinsic height needed; border handles the line */
+  border-top: 1px solid #e0f0f8; /* Subtle light blue line */
+  margin: 2.2cqi 0; /* Existing spacing around it */
+}
 
     .inputs {
       display: flex;
@@ -1030,7 +1089,7 @@
       <div class="modal-top portfolio">
         <div class="title">Portfolio</div>
         <div class="buttons">
-          <button class="action-btn remove" id="modal-remove-btn">REMOVE</button>
+          <button class="action-btn remove" id="modal-remove-btn">Remove</button>
           <button class="close-btn" id="close-portfolio">✕</button>
         </div>
       </div>
@@ -1225,62 +1284,143 @@
     let currentGuideFilter = null;
 
     function renderGuide(filterDoodle = null) {
-      currentGuideFilter = filterDoodle;
-      const content = document.getElementById('guide-content');
-      content.innerHTML = '';
-      const filteredMerges = doodleMerges.filter(merge => {
-        if (!filterDoodle) return true;
-        const lower = filterDoodle.toLowerCase();
-        return merge.inputs.some(i => i.toLowerCase() === lower) || merge.output.toLowerCase() === lower;
-      });
-      if (filteredMerges.length === 0 && filterDoodle) {
-        const empty = document.createElement('div');
-        empty.style.padding = '20cqi';
-        empty.style.textAlign = 'center';
-        empty.style.color = '#666';
-        empty.style.fontSize = '5cqi';
-        empty.textContent = `No recipes found for "${filterDoodle}"`;
-        content.appendChild(empty);
-      } else {
-        filteredMerges.forEach(merge => {
-          const row = document.createElement('div');
-          row.className = 'merge-row';
-          const inputsDiv = document.createElement('div');
-          inputsDiv.className = 'inputs';
-          merge.inputs.forEach(d => {
-            const img = document.createElement('img');
-            img.src = `images/${d}.png`;
-            img.className = 'guide-doodle';
-            img.addEventListener('click', () => renderGuide(d));
-            inputsDiv.appendChild(img);
-          });
-          row.appendChild(inputsDiv);
-          const arrowContainer = document.createElement('div');
-          arrowContainer.className = 'arrow-container';
-          arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
-          row.appendChild(arrowContainer);
-          const resultDiv = document.createElement('div');
-          resultDiv.className = 'result';
-          const resultImg = document.createElement('img');
-          resultImg.src = `images/${merge.output}.png`;
-          resultImg.className = 'guide-doodle';
-          resultImg.addEventListener('click', () => renderGuide(merge.output));
-          resultDiv.appendChild(resultImg);
-          row.appendChild(resultDiv);
-          content.appendChild(row);
-
-        });
-        // === NEW: Add the tooltip at the bottom when a doodle is selected ===
-        const existingTip = content.querySelector('.guide-tooltip');
-        if (existingTip) existingTip.remove();
-
-        if (filterDoodle) {
-          const tip = createGuideTooltip(filterDoodle);
-          content.appendChild(tip);
+  currentGuideFilter = filterDoodle;
+  const content = document.getElementById('guide-content');
+  content.innerHTML = '';
+  const filteredMerges = doodleMerges.filter(merge => {
+    if (!filterDoodle) return true;
+    const lower = filterDoodle.toLowerCase();
+    return merge.inputs.some(i => i.toLowerCase() === lower) || merge.output.toLowerCase() === lower;
+  });
+  if (filteredMerges.length === 0 && filterDoodle) {
+    const empty = document.createElement('div');
+    empty.style.padding = '20cqi';
+    empty.style.textAlign = 'center';
+    empty.style.color = '#666';
+    empty.style.fontSize = '5cqi';
+    empty.textContent = `No recipes found for "${filterDoodle}"`;
+    content.appendChild(empty);
+  } else {
+    if (!filterDoodle) {
+      // Full guide: Custom order by first input
+      const guideOrder = ["circle", "square", "triangle", "line", "dot", "lens", "halfcircle", "drop", "teeth", "cylinder", "cube", "pyramid"];
+      filteredMerges.sort((a, b) => guideOrder.indexOf(a.inputs[0]) - guideOrder.indexOf(b.inputs[0]));
+      let currentGroup = null;
+      filteredMerges.forEach(merge => {
+        const firstInput = merge.inputs[0];
+        if (firstInput !== currentGroup) {
+          if (currentGroup !== null) {
+            const divider = document.createElement('div');
+            divider.className = 'group-divider';
+            content.appendChild(divider);
+          }
+          currentGroup = firstInput;
         }
+        appendMergeRow(content, merge.inputs, merge.output);
+      });
+    } else {
+      const lowerFilter = filterDoodle.toLowerCase();
+      // Filtered: Separate outputs and inputs
+      const outputMerges = filteredMerges.filter(merge => merge.output.toLowerCase() === lowerFilter);
+      const inputMerges = filteredMerges.filter(merge => merge.inputs.some(i => i.toLowerCase() === lowerFilter) && merge.output.toLowerCase() !== lowerFilter);
+
+      // Render outputs first (if any)
+      outputMerges.forEach(merge => {
+        appendMergeRow(content, merge.inputs, merge.output);
+      });
+
+      // Add divider if there are both outputs and inputs
+      if (outputMerges.length > 0 && inputMerges.length > 0) {
+        const divider = document.createElement('div');
+        divider.className = 'group-divider';
+        content.appendChild(divider);
       }
-      document.getElementById('full-guide-btn').style.display = filterDoodle ? 'block' : 'none';
+
+      // Reorder and sort inputs
+      const reorderedInputs = inputMerges.map(merge => {
+        const selected = merge.inputs.filter(i => i.toLowerCase() === lowerFilter);
+        const others = merge.inputs.filter(i => i.toLowerCase() !== lowerFilter);
+        return { ...merge, inputs: [...selected, ...others] }; // Selected first, then others
+      });
+      reorderedInputs.sort((a, b) => a.inputs.length - b.inputs.length); // Sort by length ascending
+
+      // Render reordered inputs as one group
+      reorderedInputs.forEach(merge => {
+        appendMergeRow(content, merge.inputs, merge.output);
+      });
     }
+
+    // Highlight all instances of the filtered doodle with scale and rock animation
+    if (filterDoodle) {
+      const lowerFilter = filterDoodle.toLowerCase();
+      const allGuideDoodles = content.querySelectorAll('.guide-doodle');
+      allGuideDoodles.forEach(img => {
+        const imgDoodle = img.src.split('/').pop().replace('.png', '').toLowerCase();
+        if (imgDoodle === lowerFilter) {
+          img.classList.add('highlighted');
+        }
+      });
+    }
+    // === NEW: Add the tooltip at the bottom when a doodle is selected ===
+    const existingTip = content.querySelector('.guide-tooltip');
+    if (existingTip) existingTip.remove();
+    let tip = null; // ← NEW: Declare tip variable for animation
+    if (filterDoodle) {
+      tip = createGuideTooltip(filterDoodle);
+      content.appendChild(tip);
+    }
+    // NEW: Animate rows sliding in (only when filtering)
+    if (filterDoodle) {
+      const rows = content.querySelectorAll('.merge-row');
+      rows.forEach((row, index) => {
+        row.style.opacity = '0'; // Start hidden
+        row.style.transform = 'translateY(4cqi)'; // Start lower
+        setTimeout(() => {
+          row.classList.add('animate-in');
+        }, index * 60); // Stagger by 80ms per row for smooth sequence
+      });
+      // NEW: Animate tooltip sliding in (after rows, for sequencing)
+      if (tip) {
+        tip.style.opacity = '0';
+        tip.style.transform = 'translateY(4cqi)';
+        setTimeout(() => {
+          tip.classList.add('animate-in');
+        }, rows.length * 30 + 150); // ← Delay after last row + buffer
+      }
+    }
+  }
+  document.getElementById('full-guide-btn').style.display = filterDoodle ? 'block' : 'none';
+}
+
+// NEW: Helper function to append a merge row (extracted for reuse)
+function appendMergeRow(content, inputs, output) {
+  const row = document.createElement('div');
+  row.className = 'merge-row';
+  const inputsDiv = document.createElement('div');
+  inputsDiv.className = 'inputs';
+  inputs.forEach(d => {
+    const img = document.createElement('img');
+    img.src = `images/${d}.png`;
+    img.className = 'guide-doodle';
+    img.addEventListener('click', () => renderGuide(d));
+    inputsDiv.appendChild(img);
+  });
+  row.appendChild(inputsDiv);
+  const arrowContainer = document.createElement('div');
+  arrowContainer.className = 'arrow-container';
+  arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
+  row.appendChild(arrowContainer);
+  const resultDiv = document.createElement('div');
+  resultDiv.className = 'result';
+  const resultImg = document.createElement('img');
+  resultImg.src = `images/${output}.png`;
+  resultImg.className = 'guide-doodle';
+  resultImg.addEventListener('click', () => renderGuide(output));
+  resultDiv.appendChild(resultImg);
+  row.appendChild(resultDiv);
+  content.appendChild(row);
+}
+
 
     function createGuideTooltip(doodle) {
       const tip = document.createElement('div');
@@ -1316,13 +1456,14 @@
       modal.classList.add('active');
     }
     
-function closeModal(modalId) {
+    function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal) return;
   modal.classList.remove('active');
   hideTooltip();
-  if (modalId === 'learn-modal') {
-    const btn = document.getElementById('modal-learn-btn');
+  if (modalId === 'learn-modal' || modalId === 'portfolio-modal') {
+    const btnId = modalId === 'learn-modal' ? 'modal-learn-btn' : 'modal-remove-btn';
+    const btn = document.getElementById(btnId);
     if (btn) {
       const buttonsDiv = modal.querySelector('.buttons');
       if (buttonsDiv && !buttonsDiv.contains(btn)) {
@@ -1336,7 +1477,7 @@ function closeModal(modalId) {
   }
   setTimeout(() => modal.style.display = 'none', 400);
 }
-
+    
     document.getElementById('guide-btn').addEventListener('click', () => { hideTooltip(); renderGuide(); openModal('guide-modal'); });
     document.getElementById('full-guide-btn').addEventListener('click', () => renderGuide(null));
     document.getElementById('close-guide').addEventListener('click', () => closeModal('guide-modal'));
@@ -1350,76 +1491,74 @@ function closeModal(modalId) {
       if (scoreStream) { scoreStream.getTracks().forEach(t => t.stop()); scoreStream = null; }
     });
 
+    
     const shuffleContainer = document.getElementById('shuffle-container');
-
-    shuffleContainer.addEventListener('click', () => {
-      // Add the spinning class to trigger both animations
-      shuffleContainer.classList.add('spinning');
-
-      // Remove the class after the animation finishes so it can spin again
+shuffleContainer.addEventListener('click', () => {
+  // Add the spinning class to trigger both animations
+  shuffleContainer.classList.add('spinning');
+  // Remove the class after the animation finishes so it can spin again
+  setTimeout(() => {
+    shuffleContainer.classList.remove('spinning');
+  }, 1350);
+  // NEW: Unselect any selected doodle and hide tooltip before shuffling
+  mainDoodleContainers.forEach(div => div.classList.remove('selected'));
+  hideTooltip();
+  // Original shuffle logic (unchanged)
+  const drawn = drawSix();
+  if (!drawn) return;
+  const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
+  order.forEach((id, i) => {
+    const div = document.getElementById(id);
+    if (div && div.style.backgroundImage) {
       setTimeout(() => {
-        shuffleContainer.classList.remove('spinning');
-      }, 1350);
-
-      // Original shuffle logic (unchanged)
-      const drawn = drawSix();
-      if (!drawn) return;
-
-      const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
-      order.forEach((id, i) => {
-        const div = document.getElementById(id);
-        if (div && div.style.backgroundImage) {
-          setTimeout(() => {
-            // Outgoing doodles – add random horizontal spread as they fall
-            const spreadX = (Math.random() * 24 - 12).toFixed(2) + 'cqi';  // ±12cqi (tweak range for more/less spread)
-            div.style.transition = 'transform 0.33s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
-            div.style.transform = `translate(${spreadX}, 120dvh) rotate(-720deg)`;
-          }, i * 5);
-        }
-      });
-
+        // Outgoing doodles – add random horizontal spread as they fall
+        const spreadX = (Math.random() * 24 - 12).toFixed(2) + 'cqi'; // ±12cqi (tweak range for more/less spread)
+        div.style.transition = 'transform 0.33s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
+        div.style.transform = `translate(${spreadX}, 120dvh) rotate(-720deg)`;
+      }, i * 5);
+    }
+  });
+  setTimeout(() => {
+    order.forEach((id, i) => {
+      const div = document.getElementById(id);
+      if (!div) return;
+      div.style.transition = 'none';
+      // Incoming doodles – start with random horizontal spread below screen
+      const startSpreadX = (Math.random() * 36 - 18).toFixed(2) + 'cqi'; // ±12cqi (tweak range for more/less spread)
+      div.style.transform = `translate(${startSpreadX}, 100dvh) rotate(720deg)`;
+      div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
+      div.dataset.doodle = drawn[i];
+      void div.offsetWidth;
+      // === ORGANIC RANDOM SETTLE IN CQI ===
+      const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi'; // ±1.2 cqi left/right
+      const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi'; // ±0.8 cqi up/down
+      const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg'; // ±2° rotation
       setTimeout(() => {
-        order.forEach((id, i) => {
-          const div = document.getElementById(id);
-          if (!div) return;
-
-          div.style.transition = 'none';
-
-          // Incoming doodles – start with random horizontal spread below screen
-          const startSpreadX = (Math.random() * 36 - 18).toFixed(2) + 'cqi';  // ±12cqi (tweak range for more/less spread)
-          div.style.transform = `translate(${startSpreadX}, 100dvh) rotate(720deg)`;
-          div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
-          div.dataset.doodle = drawn[i];
-          void div.offsetWidth;
-
-          // === ORGANIC RANDOM SETTLE IN CQI ===
-          const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi';   // ±1.2 cqi left/right
-          const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi';   // ±0.8 cqi up/down
-          const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg';       // ±2° rotation
-
-          setTimeout(() => {
-            div.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            div.style.transform = `translate(${rx}, ${ry}) rotate(${rr})`;
-          }, i * 50);
-        });
-      }, 350);
+        div.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        div.style.transform = `translate(${rx}, ${ry}) rotate(${rr})`;
+      }, i * 50);
     });
+  }, 350);
+});
 
-    // Make main doodles selectable on click/tap (so tooltip works there too)
-    const mainDoodleContainers = document.querySelectorAll('#shuffle-zone > div[id^="doodle-"]');
-    mainDoodleContainers.forEach(div => {
-      div.style.cursor = 'pointer';
-      div.addEventListener('click', () => {
-        const wasSelected = div.classList.contains('selected');
-        mainDoodleContainers.forEach(d => d.classList.remove('selected'));
-        if (!wasSelected) {
-          div.classList.add('selected');
-          showTooltipForDoodle(div.dataset.doodle, div);
-        } else {
-          hideTooltip();
-        }
-      });
-    });
+// Make main doodles selectable on click/tap (so tooltip works there too)
+const mainDoodleContainers = document.querySelectorAll('#shuffle-zone > div[id^="doodle-"]');
+mainDoodleContainers.forEach(div => {
+  div.style.cursor = 'pointer';
+  div.addEventListener('click', () => {
+    const wasSelected = div.classList.contains('selected');
+    mainDoodleContainers.forEach(d => d.classList.remove('selected'));
+    if (!wasSelected) {
+      div.classList.add('selected');
+      // NEW: Preserve current transform as base for animation
+      const currentTransform = div.style.transform || 'translate(0, 0) rotate(0deg)';
+      div.style.setProperty('--base-transform', currentTransform);
+      showTooltipForDoodle(div.dataset.doodle, div);
+    } else {
+      hideTooltip();
+    }
+  });
+});
 
     function populateLearnGrid() {
       const grid = document.getElementById('learn-grid');
@@ -1463,8 +1602,7 @@ function closeModal(modalId) {
     cell.classList.add('selected');
     showTooltipForDoodle(cell.dataset.doodle, cell);
    
-    // NEW: For learn modal – position button next to selected cell
-    if (modalType === 'learn') {
+    if (modalType === 'learn' || modalType === 'portfolio') { // ← Updated to handle both modals
       // Append button to grid for relative positioning (if not already)
       if (!grid.contains(actionBtn)) {
         grid.appendChild(actionBtn);
@@ -1497,7 +1635,8 @@ function closeModal(modalId) {
      
       // Horizontal: Relative left from grid left (no padding subtraction needed)
       let leftOffset;
-      const gapPx = 8; // Horizontal gap in px (adjust if needed)
+      const gapCqi = 5.2; // Adjust this cqi value for spacing (e.g., 1.4cqi ≈ current grid gap; increase for more space)
+      const gapPx = (gapCqi / 100) * gridRect.width; // Convert cqi to px based on grid inline-size
       if ((Array.from(grid.querySelectorAll('.doodle-cell')).indexOf(cell) % 6) + 1 <= 3) {
         // Left columns: Button to the RIGHT
         leftOffset = (cellRect.right - gridRect.left) + gapPx;
@@ -1510,13 +1649,13 @@ function closeModal(modalId) {
       actionBtn.style.top = `${topOffset}px`;
       actionBtn.style.left = `${leftOffset}px`;
       actionBtn.style.opacity = '1';
-      actionBtn.classList.add('pulsing'); // ← Add pulsing class after positioning
+      actionBtn.classList.add('pulsing'); // ← Add pulsing for both
     } else {
-      actionBtn.style.display = 'block'; // For portfolio, keep in header
+      actionBtn.style.display = 'block'; // Fallback for other modals (if any)
     }
   } else {
     hideTooltip();
-    if (modalType === 'learn') {
+    if (modalType === 'learn' || modalType === 'portfolio') { // ← Updated to handle both
       actionBtn.classList.remove('pulsing'); // ← Remove pulsing
       actionBtn.style.opacity = '0';
       setTimeout(() => { actionBtn.style.display = 'none'; }, 200); // Fade out
@@ -1525,7 +1664,7 @@ function closeModal(modalId) {
     }
   }
 }
-   
+
 document.getElementById('modal-learn-btn').addEventListener('click', () => {
   const btn = document.getElementById('modal-learn-btn');
   btn.classList.remove('pulsing'); // ← NEW: Remove pulsing to avoid animation conflict
@@ -1568,28 +1707,46 @@ document.getElementById('modal-learn-btn').addEventListener('click', () => {
         setTimeout(() => {
           toast.classList.remove('show');
           closeModal('portfolio-modal');
-        }, 1600); 
+        }, 1300); 
       }, 700); // ← Delay for toast show
     }, 300); // ← Matches 0.9s animation durations to let them complete before switching
   }
 });
 
-    document.getElementById('modal-remove-btn').addEventListener('click', () => {
-      const selected = document.querySelector('#portfolio-grid .doodle-cell.selected');
-      if (selected) {
-        const doodle = selected.dataset.doodle;
-        if (deck[doodle] > 0) {
-          deck[doodle]--;
-          selected.classList.add('animate-remove');
-          setTimeout(() => {
-            populatePortfolioGrid();
-            document.getElementById('modal-remove-btn').style.display = 'none';
-            hideTooltip();
-          }, 600);
+document.getElementById('modal-remove-btn').addEventListener('click', () => {
+  const btn = document.getElementById('modal-remove-btn');
+  btn.classList.remove('pulsing');
+  btn.classList.add('animate-shrink');
+  const selected = document.querySelector('#portfolio-grid .doodle-cell.selected');
+  if (selected) {
+    const doodle = selected.dataset.doodle;
+    if (deck[doodle] > 0) {
+      deck[doodle]--;
+      selected.classList.add('animate-remove');
+      setTimeout(() => {
+        selected.style.opacity = '0';
+        selected.style.pointerEvents = 'none';
+        selected.classList.remove('selected');
+        btn.classList.remove('animate-shrink'); // Reset animation class
+        hideTooltip();
+        // NEW: Move button back to header BEFORE repopulating grid (to preserve it)
+        const modal = document.getElementById('portfolio-modal');
+        const buttonsDiv = modal.querySelector('.buttons');
+        if (buttonsDiv && !buttonsDiv.contains(btn)) {
+          buttonsDiv.appendChild(btn);
         }
-      }
-    });
-    function getDeckAsArray() {
+        btn.style.display = 'none';
+        btn.style.top = '';
+        btn.style.left = '';
+        btn.style.opacity = '';
+        // Now safe to repopulate (button is out of the grid)
+        populatePortfolioGrid();
+      }, 600); // Matches animate-remove duration
+    }
+  }
+});
+
+function getDeckAsArray() {
       let arr = [];
       for (let [doodle, count] of Object.entries(deck)) {
         for (let i = 0; i < count; i++) arr.push(doodle);
@@ -2237,88 +2394,72 @@ document.getElementById('modal-learn-btn').addEventListener('click', () => {
     };
 
     // ====================== SMART TOOLTIP ON SELECT ======================
-    function showTooltipForDoodle(doodle, element) {
-      const tooltip = document.getElementById('tooltip');
-      const desc = document.getElementById('tooltip-desc');
-      if (!doodleDescriptions[doodle]) return;
-
-      desc.innerHTML = renderDescription(doodleDescriptions[doodle]);
-      // Make inline doodle images clickable
-      const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
-      inlineDoodles.forEach(img => {
-        img.addEventListener('click', (e) => {
-          e.stopImmediatePropagation(); // prevent closing the tooltip accidentally
-          const targetDoodle = img.dataset.doodle;
-          handleInlineDoodleClick(targetDoodle);
-        });
-      });
-
-      const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
-      if (oldBtn) oldBtn.remove();
-
-      const container = document.getElementById('game-container');
-      const containerRect = container.getBoundingClientRect();
-      const doodleRect = element.getBoundingClientRect();
-
-      tooltip.style.width = '75cqi';
-      tooltip.style.maxWidth = '75cqi';
-
-      tooltip.style.visibility = 'hidden';
-      tooltip.classList.add('show');
-      const tooltipHeightPx = tooltip.offsetHeight;
-      tooltip.classList.remove('show');
-      tooltip.style.visibility = 'visible';
-
-      tooltip.style.left = '50%';
-      tooltip.style.transform = 'translateX(-50%)';
-
-      const normalGapCqi = 5.8;
-      const safetyPx = 28;
-
-      const containerWidthPx = containerRect.width;
-      const normalGapPx = (normalGapCqi / 100) * containerWidthPx;
-
-      const relDoodleTop = doodleRect.top - containerRect.top;
-      const doodleCenterPx = relDoodleTop + (doodleRect.height / 2);
-
-      const relDoodleBottom = relDoodleTop + doodleRect.height;
-      const spaceBelowPx = containerRect.height - relDoodleBottom;
-
-      let proposedTopPx;
-
-      if (spaceBelowPx >= tooltipHeightPx + normalGapPx + safetyPx) {
-        // BELOW: top of tooltip = center + half doodle + gap
-        const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
-        proposedTopPx = doodleCenterPx + offsetFromCenterPx;
-      } else {
-        // ABOVE: bottom of tooltip = center - half doodle - gap - EXTRA full doodle height
-        const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
-        const extraAboveClearancePx = doodleRect.height;   // ← this is the new shift you wanted
-        const totalOffsetAbovePx = offsetFromCenterPx + extraAboveClearancePx;
-
-        const tooltipBottomPx = doodleCenterPx - totalOffsetAbovePx;
-        proposedTopPx = tooltipBottomPx - tooltipHeightPx;
-      }
-
-      // Clamp
-      proposedTopPx = Math.max(18, Math.min(proposedTopPx, containerRect.height - tooltipHeightPx - 18));
-
-      // To cqi
-      const proposedTopCqi = (proposedTopPx / containerWidthPx) * 100;
-      tooltip.style.top = `${proposedTopCqi.toFixed(2)}cqi`;
-
-      const guideBtn = document.createElement('button');
-      guideBtn.className = 'tooltip-guide-btn';
-      guideBtn.textContent = 'See in Guide';
-      guideBtn.onclick = () => {
-        hideTooltip();
-        renderGuide(doodle);
-        openModal('guide-modal');
-      };
-      tooltip.appendChild(guideBtn);
-
-      tooltip.classList.add('show');
-    }
+    
+function showTooltipForDoodle(doodle, element) {
+  const tooltip = document.getElementById('tooltip');
+  const desc = document.getElementById('tooltip-desc');
+  if (!doodleDescriptions[doodle]) return;
+  desc.innerHTML = renderDescription(doodleDescriptions[doodle]);
+  // Make inline doodle images clickable
+  const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
+  inlineDoodles.forEach(img => {
+    img.addEventListener('click', (e) => {
+      e.stopImmediatePropagation(); // prevent closing the tooltip accidentally
+      const targetDoodle = img.dataset.doodle;
+      handleInlineDoodleClick(targetDoodle);
+    });
+  });
+  const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
+  if (oldBtn) oldBtn.remove();
+  const container = document.getElementById('game-container');
+  const containerRect = container.getBoundingClientRect();
+  const doodleRect = element.getBoundingClientRect();
+  tooltip.style.width = '75cqi';
+  tooltip.style.maxWidth = '75cqi';
+  tooltip.style.visibility = 'hidden';
+  tooltip.classList.add('show');
+  const tooltipHeightPx = tooltip.offsetHeight;
+  tooltip.classList.remove('show');
+  tooltip.style.visibility = 'visible';
+  tooltip.style.left = '50%';
+  tooltip.style.transform = 'translateX(-50%)';
+  const normalGapCqi = 2; // 
+  const safetyPx = 28;
+  const containerWidthPx = containerRect.width;
+  const normalGapPx = (normalGapCqi / 100) * containerWidthPx;
+  const relDoodleTop = doodleRect.top - containerRect.top;
+  const doodleCenterPx = relDoodleTop + (doodleRect.height / 2);
+  const relDoodleBottom = relDoodleTop + doodleRect.height;
+  const spaceBelowPx = containerRect.height - relDoodleBottom;
+  let proposedTopPx;
+  if (spaceBelowPx >= tooltipHeightPx + normalGapPx + safetyPx) {
+    // BELOW: top of tooltip = center + half doodle + gap
+    const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
+    proposedTopPx = doodleCenterPx + offsetFromCenterPx;
+  } else {
+    // ABOVE: bottom of tooltip = center - half doodle - gap - EXTRA full doodle height
+    const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
+    const extraAboveClearancePx = doodleRect.height * 0.7; // 
+    const totalOffsetAbovePx = offsetFromCenterPx + extraAboveClearancePx;
+    const tooltipBottomPx = doodleCenterPx - totalOffsetAbovePx;
+    proposedTopPx = tooltipBottomPx - tooltipHeightPx;
+  }
+  // Clamp
+  proposedTopPx = Math.max(18, Math.min(proposedTopPx, containerRect.height - tooltipHeightPx - 18));
+  // To cqi
+  const proposedTopCqi = (proposedTopPx / containerWidthPx) * 100;
+  tooltip.style.top = `${proposedTopCqi.toFixed(2)}cqi`;
+  const guideBtn = document.createElement('button');
+  guideBtn.className = 'tooltip-guide-btn';
+  guideBtn.textContent = 'See in Guide';
+  guideBtn.onclick = () => {
+    hideTooltip();
+    renderGuide(doodle);
+    openModal('guide-modal');
+  };
+  tooltip.appendChild(guideBtn);
+  tooltip.classList.add('show');
+}
 
     function hideTooltip() {
       const tooltip = document.getElementById('tooltip');
