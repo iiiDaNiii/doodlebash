@@ -204,12 +204,6 @@
       height: 100%;
       position: relative;
       cursor: pointer;
-      transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-    #shuffle-container.hidden {
-      opacity: 0;
-      transform: translateY(20cqi);
-      pointer-events: none;
     }
     #shuffle-container img {
       position: absolute;
@@ -766,7 +760,8 @@
       gap: 3px;
       width: 90cqi;
       max-width: 520px;
-      height: 420px;
+      height: auto;
+      aspect-ratio: 10/7;
       background: #111;
       padding: 8px;
       border-radius: 12px;
@@ -868,6 +863,15 @@
       font-size: 7cqi;
       font-weight: bold;
     }
+    #score-modal #score-score-btn {
+      margin-top: auto;
+      width: 85%;
+      max-width: 520px;
+      padding: 5cqi 12cqi;
+      font-size: 7cqi;
+      font-weight: bold;
+      display: none;
+    }
     #score-modal #score-final-total {
       font-size: 10cqi;
       font-weight: bold;
@@ -909,58 +913,59 @@
     #score-modal .popup-item:hover {
       border-color: #ff0;
     }
-    /* NEW: Sequence overlay and styles */
-    #sequence-overlay {
-      position: absolute;
-      inset: 0;
-      z-index: 15;
-      display: flex;
+
+    /* New styles for review rows */
+    #score-review-container {
+      display: none;
+      flex: 1;
       flex-direction: column;
-      justify-content: center;
+      overflow-y: auto;
+      width: 100%;
+      padding: 2cqi;
+    }
+    .review-row {
+      display: flex;
       align-items: center;
-      padding: 4cqi;
-      opacity: 0;
-      transform: translateY(20cqi);
-      transition: opacity 0.3s ease, transform 0.3s ease;
-      pointer-events: none;
+      padding: 2cqi;
+      border-bottom: 1px solid #ccc;
+      gap: 2cqi;
     }
-    #sequence-overlay.show {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: none; /* Allow clicks through overlay */
-}
-.sequence-message,
-#sequence-button {
-  pointer-events: auto; /* But allow clicks on message/button */
-}
-    .sequence-message {
-  font-family: 'Fira Sans', sans-serif;
-  font-size: 4.2cqi;
-  text-align: center;
-  color: #222;
-  margin-bottom: 3cqi;
-  max-width: 50cqi; /* Narrow to avoid overlapping doodles */
-  padding: 0 2cqi; /* Optional: breathing room */
-}
-    #sequence-button {
-      background: #fbb065;
-      color: #000;
-      font-size: 5.5cqi;
-      padding: 2.5cqi 8cqi;
-      border-radius: 9999px;
-      font-family: 'Covered By Your Grace', cursive;
+    .digital-doodle {
+      width: 15cqi;
+      height: 15cqi;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      flex-shrink: 0;
     }
-    /* Pulsing for learn button */
-    .nav-btn.pulsing {
-      animation: pulseLearn 0.8s ease-in-out infinite alternate;
+    .snippets {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1cqi;
+      overflow-x: auto;
     }
-    @keyframes pulseLearn {
-      from {
-        transform: scale(1);
-      }
-      to {
-        transform: scale(1.2);
-      }
+    .snippet {
+      width: 10cqi;
+      height: 10cqi;
+      object-fit: contain;
+      cursor: pointer;
+      border: 1px solid #fff;
+    }
+    .snippet:hover {
+      border-color: #ff0;
+    }
+
+    /* Hide clutter elements */
+    #score-output-canvas,
+    #score-status,
+    #score-debug-info,
+    #score-debug-cells,
+    #score-console-log,
+    #score-tweak-prompt,
+    #score-export-btn,
+    #score-new-scan-btn {
+      display: none !important;
     }
   </style>
 </head>
@@ -988,11 +993,6 @@
       <div id="shuffle-container">
         <img id="shuffle-main" src="images/shufflebutton.png" alt="Shuffle">
         <img id="shuffle-outline" src="images/shufflebuttonoutline.png" alt="">
-      </div>
-      <!-- NEW: Sequence overlay -->
-      <div id="sequence-overlay">
-        <div id="sequence-message" class="sequence-message"></div>
-        <button id="sequence-button" class="sequence-button"></button>
       </div>
     </div>
     <div id="footer">
@@ -1044,18 +1044,20 @@
         </div>
       </div>
       <div id="score-content" class="scanner-content">
-        <p>Align the two blue page grids with your notebook pages.<br>Fill the preview edge-to-edge then tap SNAP.</p>
+        <p id="score-instructions">Align the two red page grids with your notebook pages.<br>Fill the preview edge-to-edge then tap SNAP.</p>
         <div class="camera-container">
           <video id="score-camera-preview" autoplay playsinline muted></video>
           <canvas id="score-grid-overlay"></canvas>
         </div>
         <canvas id="score-output-canvas"></canvas>
+        <div id="score-loading" class="status" style="display:none;">Processing...</div>
         <div id="score-status" class="status">Waiting for photo...</div>
         <div class="debug" id="score-debug-info">8.0 • Clean scoring mode</div>
         <div id="score-debug-cells" class="debug-cells"></div>
         <div id="score-console-log" class="console-log">Waiting for photo...</div>
         <div id="score-tweak-prompt" class="tweak-prompt">Detected! Tap any wrong cell to correct (yellow = low
           confidence)</div>
+        <div id="score-review-container"></div>
         <div id="score-detected-grid"></div>
         <button id="score-score-btn" style="display:none;">SCORE SHEET</button>
         <button id="score-export-btn" style="display:none;">📤 EXPORT TRAINING ZIP</button>
@@ -1438,14 +1440,6 @@ shuffleContainer.addEventListener('click', () => {
       }, i * 50);
     });
   }, 350);
-  // NEW: Transition to draw step after shuffle animation
-  setTimeout(() => {
-    shuffleContainer.classList.add('hidden');
-    setTimeout(() => {
-      currentStep = 'draw';
-      updateSequenceDisplay();
-    }, 350);
-  }, 1350);
 });
 // Make main doodles selectable on click/tap (so tooltip works there too)
 const mainDoodleContainers = document.querySelectorAll('#shuffle-zone > div[id^="doodle-"]');
@@ -1576,7 +1570,6 @@ document.getElementById('modal-learn-btn').addEventListener('click', () => {
   if (selected) {
     const doodle = selected.dataset.doodle;
     deck[doodle] = (deck[doodle] || 0) + 1;
-    learnedThisRound = true; // ← NEW: Set flag indicating a learn occurred
     selected.classList.add('animate-learn');
     setTimeout(() => {
       // NEW: Don't remove 'animate-learn' class – instead, permanently hide the cell to prevent reappearance
@@ -1611,10 +1604,6 @@ document.getElementById('modal-learn-btn').addEventListener('click', () => {
         setTimeout(() => {
           toast.classList.remove('show');
           closeModal('portfolio-modal');
-          if (currentStep === 'learn' && learnedThisRound) {
-            advanceStep();
-            learnedThisRound = false;
-          }
         }, 1300);
       }, 700); // ← Delay for toast show
     }, 300); // ← Matches 0.9s animation durations to let them complete before switching
@@ -1660,12 +1649,12 @@ function getDeckAsArray() {
       return arr;
     }
     function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];  // Added brackets on left
+  }
+  return array;
+}
     function drawSix() {
       const deckArray = getDeckAsArray();
       if (deckArray.length < 6) {
@@ -1728,7 +1717,7 @@ function getDeckAsArray() {
       const unitW = gw / 11;
       const unitH = gh / 7;
       ctx.lineCap = 'round';
-      ctx.strokeStyle = 'rgba(95, 186, 233, 0.95)';
+      ctx.strokeStyle = 'rgba(255, 0, 0, 0.95)'; // Changed to red
       ctx.lineWidth = Math.max(2.8, gw / 380);
       for (let i = 0; i <= 7; i++) {
         const y = gy + Math.round(i * unitH);
@@ -1748,25 +1737,38 @@ function getDeckAsArray() {
         ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gh); ctx.stroke();
       }
     }
-    document.getElementById('score-snap-btn').onclick = async () => {
-      scoreStatusEl.textContent = "Capturing...";
-      const captured = document.createElement('canvas');
-      captured.width = scoreVideo.videoWidth;
-      captured.height = scoreVideo.videoHeight;
-      captured.getContext('2d').drawImage(scoreVideo, 0, 0);
-      const displayRect = { left: 0, top: 0, w: scoreVideo.clientWidth, h: scoreVideo.clientHeight };
-      const sourceRect = getVideoSourceRect(displayRect);
-      const cropped = document.createElement('canvas');
-      cropped.width = sourceRect.w;
-      cropped.height = sourceRect.h;
-      cropped.getContext('2d').drawImage(captured, sourceRect.left, sourceRect.top, sourceRect.w, sourceRect.h, 0, 0, sourceRect.w, sourceRect.h);
-      scoreOutputCanvas.width = sourceRect.w;
-      scoreOutputCanvas.height = sourceRect.h;
-      const outCtx = scoreOutputCanvas.getContext('2d');
-      outCtx.drawImage(cropped, 0, 0);
-      drawOverlayGrid(outCtx, 0, 0, sourceRect.w, sourceRect.h);
-      await scoreDetectFromCropped(cropped);
-    };
+
+document.getElementById('score-snap-btn').onclick = async () => {
+  scoreStatusEl.textContent = "Capturing...";
+  const captured = document.createElement('canvas');
+  captured.width = scoreVideo.videoWidth;
+  captured.height = scoreVideo.videoHeight;
+  captured.getContext('2d').drawImage(scoreVideo, 0, 0);
+  const displayRect = { left: 0, top: 0, w: scoreVideo.clientWidth, h: scoreVideo.clientHeight };
+  const sourceRect = getVideoSourceRect(displayRect);
+  const cropped = document.createElement('canvas');
+  cropped.width = sourceRect.w;
+  cropped.height = sourceRect.h;
+  cropped.getContext('2d').drawImage(captured, sourceRect.left, sourceRect.top, sourceRect.w, sourceRect.h, 0, 0, sourceRect.w, sourceRect.h);
+  scoreOutputCanvas.width = sourceRect.w;
+  scoreOutputCanvas.height = sourceRect.h;
+  const outCtx = scoreOutputCanvas.getContext('2d');
+  outCtx.drawImage(cropped, 0, 0);
+  drawOverlayGrid(outCtx, 0, 0, sourceRect.w, sourceRect.h);
+  // Freeze preview: hide video, show canvas
+  scoreVideo.style.display = 'none';
+  scoreOutputCanvas.style.display = 'block';
+  // Hide instructions
+  document.getElementById('score-instructions').style.display = 'none';
+  // Hide snap btn
+  document.getElementById('score-snap-btn').style.display = 'none';
+  // Show loading
+  document.getElementById('score-loading').style.display = 'block';
+  // Hide status
+  scoreStatusEl.style.display = 'none';
+  await scoreDetectFromCropped(cropped);
+};
+
     function getCurrentGridRect(w, h) { return { left: 0, top: 0, w, h }; }
     function getVideoSourceRect(displayRect) {
       const vw = scoreVideo.videoWidth, vh = scoreVideo.videoHeight;
@@ -1822,10 +1824,42 @@ function getDeckAsArray() {
         }
       }
       scoreBuildBoard();
-      scoreRenderDetectedGrid();
-      document.getElementById('score-score-btn').style.display = 'block';
-      document.getElementById('score-export-btn').style.display = 'block';
-      scoreStatusEl.textContent = "Ready to score!";
+      // After detection, hide loading
+document.getElementById('score-loading').style.display = 'none';
+// Show review
+document.getElementById('score-review-container').style.display = 'flex';
+document.getElementById('score-score-btn').style.display = 'block';
+renderReviewRows();
+// Update status
+scoreStatusEl.textContent = "Review detections below. Tap snippets to correct.";
+scoreStatusEl.style.display = 'block';
+    }
+    function renderReviewRows() {
+      const reviewContainer = document.getElementById('score-review-container');
+      reviewContainer.innerHTML = '';
+      const uniqueDoodles = [...new Set(scoreDetectedDoodles.filter(d => d !== 'unknown'))].sort();
+      uniqueDoodles.forEach(doodle => {
+        const row = document.createElement('div');
+        row.className = 'review-row';
+        const digital = document.createElement('div');
+        digital.className = 'digital-doodle';
+        digital.style.backgroundImage = `url('images/${doodle}.png')`;
+        const snippetsDiv = document.createElement('div');
+        snippetsDiv.className = 'snippets';
+        scoreDetectedDoodles.forEach((d, i) => {
+          if (d === doodle) {
+            const img = document.createElement('img');
+            img.className = 'snippet';
+            img.src = scoreCellCanvases[i].toDataURL('image/png');
+            img.dataset.index = i;
+            img.addEventListener('click', () => scoreShowDoodlePopup(i));
+            snippetsDiv.appendChild(img);
+          }
+        });
+        row.appendChild(digital);
+        row.appendChild(snippetsDiv);
+        reviewContainer.appendChild(row);
+      });
     }
     function scoreBuildBoard() {
       scoreBoard = Array(7).fill().map(() => Array(11).fill(null));
@@ -1854,29 +1888,27 @@ function getDeckAsArray() {
       });
     }
     let scoreCurrentCellIndex = -1;
-    function scoreShowDoodlePopup(index) {
-      scoreCurrentCellIndex = index;
-      const popup = document.getElementById('score-doodle-popup');
-      const grid = document.getElementById('score-popup-grid');
-      grid.innerHTML = '';
-      const opts = scoreClassNames.filter(name => name !== 'unknown');
-      opts.forEach(d => {
-        const item = document.createElement('div');
-        item.className = 'popup-item';
-        item.style.backgroundImage = `url('images/${d}.png')`;
-        item.onclick = () => {
-          const cell = document.querySelector(`#score-detected-grid .grid-cell[data-index="${index}"]`);
-          cell.dataset.doodle = d;
-          cell.className = `grid-cell ${d}`;
-          cell.style.backgroundImage = `url('images/${d}.png')`;
-          scoreDetectedDoodles[index] = d;
-          cell.classList.remove('low-confidence');
-          popup.style.display = 'none';
-        };
-        grid.appendChild(item);
-      });
-      popup.style.display = 'block';
-    }
+    
+function scoreShowDoodlePopup(index) {
+  scoreCurrentCellIndex = index;
+  const popup = document.getElementById('score-doodle-popup');
+  const grid = document.getElementById('score-popup-grid');
+  grid.innerHTML = '';
+  const opts = allPossibleDoodles; // Use all possible doodles
+  opts.forEach(d => {
+    const item = document.createElement('div');
+    item.className = 'popup-item';
+    item.style.backgroundImage = `url('images/${d}.png')`;
+    item.onclick = () => {
+      scoreDetectedDoodles[index] = d;
+      renderReviewRows(); // Refresh review rows after correction
+      popup.style.display = 'none';
+    };
+    grid.appendChild(item);
+  });
+  popup.style.display = 'block';
+}
+    
     async function scoreExportTrainingData() {
       const zip = new JSZip();
       scoreDetectedDoodles.forEach((doodle, i) => {
@@ -1899,6 +1931,13 @@ function getDeckAsArray() {
       scoreStatusEl = document.getElementById('score-status');
       scoreVideo.addEventListener('play', () => scoreInitGridOverlay(), { once: true });
       scoreLoadModel().then(() => scoreStartCamera());
+      // Show only camera and snap initially
+      document.querySelector('.camera-container').style.display = 'block';
+      document.getElementById('score-snap-btn').style.display = 'block';
+      document.getElementById('score-review-container').style.display = 'none';
+      document.getElementById('score-detected-grid').style.display = 'none';
+      document.getElementById('score-tally').style.display = 'none';
+      document.getElementById('score-score-btn').style.display = 'none';
     }
     populateLearnGrid();
     // ====================== FULL SCORING ANIMATION ======================
@@ -2265,7 +2304,14 @@ function getDeckAsArray() {
       tally.appendChild(totalRow);
       document.getElementById('score-new-scan-btn').style.display = 'block';
     }
-    document.getElementById('score-score-btn').onclick = runScoringAnimation;
+    document.getElementById('score-score-btn').onclick = () => {
+      // Hide review, show detected grid and tally
+      document.getElementById('score-review-container').style.display = 'none';
+      document.getElementById('score-score-btn').style.display = 'none';
+      scoreRenderDetectedGrid();
+      document.getElementById('score-detected-grid').style.display = 'grid';
+      runScoringAnimation();
+    };
     console.log("✅ SCORE SHEET button wired successfully with full animation!");
     document.getElementById('score-new-scan-btn').onclick = () => {
       const tally = document.getElementById('score-tally');
@@ -2411,7 +2457,6 @@ function showTooltipForDoodle(doodle, element) {
     window.addEventListener('load', updateAnimatedBackgrounds);
     window.addEventListener('resize', updateAnimatedBackgrounds);
     window.addEventListener('orientationchange', () => setTimeout(updateAnimatedBackgrounds, 120));
-    initScoreScanner();
     // Add press animation to all nav buttons
 const navButtons = document.querySelectorAll('.nav-btn');
 navButtons.forEach(btn => {
@@ -2422,77 +2467,6 @@ navButtons.forEach(btn => {
     }, 300); // Matches animation duration
   });
 });
-    // NEW: Gameplay sequence logic
-    let currentStep = 'shuffle';
-    let learnedThisRound = false;
-    const sequenceOverlay = document.getElementById('sequence-overlay');
-    const sequenceMessage = document.getElementById('sequence-message');
-    const sequenceButton = document.getElementById('sequence-button');
-    const learnBtn = document.getElementById('learn-btn');
-    sequenceOverlay.style.display = 'none'; // Initial hide
-
-    function advanceStep() {
-      if (currentStep === 'draw') {
-        currentStep = 'merge';
-      } else if (currentStep === 'merge') {
-        currentStep = 'learn';
-      } else if (currentStep === 'learn') {
-        currentStep = 'shuffle';
-      }
-      updateSequenceDisplay();
-    }
-
-function updateSequenceDisplay() {
-  const isAlreadyShown = sequenceOverlay.classList.contains('show');
-  if (currentStep === 'shuffle') {
-    if (isAlreadyShown) {
-      sequenceOverlay.classList.remove('show');
-      setTimeout(() => {
-        sequenceOverlay.style.display = 'none';
-        shuffleContainer.classList.remove('hidden');
-        learnBtn.classList.remove('pulsing');
-      }, 300); // Match transition time
-    } else {
-      sequenceOverlay.style.display = 'none';
-      shuffleContainer.classList.remove('hidden');
-      learnBtn.classList.remove('pulsing');
-    }
-  } else {
-    sequenceOverlay.style.display = 'flex';
-    void sequenceOverlay.offsetHeight; // Reflow
-    if (isAlreadyShown) {
-      // Animate out, then change and animate in
-      sequenceOverlay.classList.remove('show');
-      setTimeout(() => {
-        setSequenceContent();
-        sequenceOverlay.classList.add('show');
-      }, 300); // Match transition time for fade out
-    } else {
-      // Direct show with animation
-      setSequenceContent();
-      sequenceOverlay.classList.add('show');
-    }
-  }
-}
-
-function setSequenceContent() {
-  // Helper to set message/button without duplicating code
-  if (currentStep === 'draw') {
-    sequenceMessage.textContent = "Choose a column, and draw all three doodles in your Notebook following all placement rules.";
-    sequenceButton.textContent = "Done";
-    sequenceButton.onclick = advanceStep;
-  } else if (currentStep === 'merge') {
-    sequenceMessage.textContent = "If you want, you can now merge any groups of doodles following all merge rules. Draw all newly created doodles on your sheet.";
-    sequenceButton.textContent = "Done";
-    sequenceButton.onclick = advanceStep;
-  } else if (currentStep === 'learn') {
-    sequenceMessage.innerHTML = renderDescription("You may learn one doodle. either a basic doodle {circle}{square}{triangle}{line}{dot} or a doodle you created this round through a merge.");
-    sequenceButton.textContent = "Skip";
-    sequenceButton.onclick = advanceStep;
-    learnBtn.classList.add('pulsing');
-  }
-}
-
-</script>
+  </script>
 </body>
 </html>
