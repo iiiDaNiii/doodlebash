@@ -913,7 +913,17 @@
     #score-modal .popup-item:hover {
       border-color: #ff0;
     }
-
+    #score-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 2cqi 4cqi;
+  border-radius: 8px;
+  z-index: 3; /* Above canvas */
+}
     /* New styles for review rows */
     #score-review-container {
       display: none;
@@ -955,7 +965,6 @@
     .snippet:hover {
       border-color: #ff0;
     }
-
     /* Hide clutter elements */
     #score-output-canvas,
     #score-status,
@@ -967,6 +976,15 @@
     #score-new-scan-btn {
       display: none !important;
     }
+    #score-output-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Match video */
+  display: none;
+}
   </style>
 </head>
 <body>
@@ -1049,7 +1067,7 @@
           <video id="score-camera-preview" autoplay playsinline muted></video>
           <canvas id="score-grid-overlay"></canvas>
         </div>
-        <canvas id="score-output-canvas"></canvas>
+        <canvas id="score-output-canvas" style="display:none; width:100%; height:auto; aspect-ratio:11/7;"></canvas>
         <div id="score-loading" class="status" style="display:none;">Processing...</div>
         <div id="score-status" class="status">Waiting for photo...</div>
         <div class="debug" id="score-debug-info">8.0 • Clean scoring mode</div>
@@ -1057,6 +1075,7 @@
         <div id="score-console-log" class="console-log">Waiting for photo...</div>
         <div id="score-tweak-prompt" class="tweak-prompt">Detected! Tap any wrong cell to correct (yellow = low
           confidence)</div>
+          <p id="score-review-instructions" style="display:none; font-size:4.5cqi; text-align:center; color:#fff;">Double check that all your doodles have been interpreted correctly. Select misplaced doodles to correct them.</p>
         <div id="score-review-container"></div>
         <div id="score-detected-grid"></div>
         <button id="score-score-btn" style="display:none;">SCORE SHEET</button>
@@ -1357,7 +1376,7 @@ function appendMergeRow(content, inputs, output) {
       modal.offsetHeight;
       modal.classList.add('active');
     }
-   
+  
     function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal) return;
@@ -1379,7 +1398,7 @@ function appendMergeRow(content, inputs, output) {
   }
   setTimeout(() => modal.style.display = 'none', 400);
 }
-   
+  
     document.getElementById('guide-btn').addEventListener('click', () => { hideTooltip(); renderGuide(); openModal('guide-modal'); });
     document.getElementById('full-guide-btn').addEventListener('click', () => renderGuide(null));
     document.getElementById('close-guide').addEventListener('click', () => closeModal('guide-modal'));
@@ -1392,7 +1411,7 @@ function appendMergeRow(content, inputs, output) {
       closeModal('score-modal');
       if (scoreStream) { scoreStream.getTracks().forEach(t => t.stop()); scoreStream = null; }
     });
-   
+  
     const shuffleContainer = document.getElementById('shuffle-container');
 shuffleContainer.addEventListener('click', () => {
   // Add the spinning class to trigger both animations
@@ -1499,38 +1518,38 @@ mainDoodleContainers.forEach(div => {
   if (!isSelected) {
     cell.classList.add('selected');
     showTooltipForDoodle(cell.dataset.doodle, cell);
-  
+ 
     if (modalType === 'learn' || modalType === 'portfolio') { // ← Updated to handle both modals
       // Append button to grid for relative positioning (if not already)
       if (!grid.contains(actionBtn)) {
         grid.appendChild(actionBtn);
       }
-    
+   
       // Reset for reappearance
       actionBtn.style.display = 'none';
       actionBtn.style.opacity = '0';
       actionBtn.style.top = '0';
       actionBtn.style.left = '0';
       void actionBtn.offsetHeight;
-    
+   
       // Show hidden for measurement
       actionBtn.style.display = 'block';
       void actionBtn.offsetHeight;
-    
+   
       // Get rects
       const gridRect = grid.getBoundingClientRect();
       const cellRect = cell.getBoundingClientRect();
       const btnRect = actionBtn.getBoundingClientRect();
-    
+   
       // Account for grid padding (1.8cqi – convert to px for accuracy)
       const gridStyle = getComputedStyle(grid);
       const gridPaddingTop = parseFloat(gridStyle.paddingTop);
       const gridPaddingLeft = parseFloat(gridStyle.paddingLeft);
-    
+   
       // Vertical: Relative top from grid top, centered (no padding subtraction needed)
       const relativeCellTop = cellRect.top - gridRect.top;
       const topOffset = relativeCellTop + (cellRect.height / 2) - (btnRect.height / 2);
-    
+   
       // Horizontal: Relative left from grid left (no padding subtraction needed)
       let leftOffset;
       const gapCqi = 5.2; // Adjust this cqi value for spacing (e.g., 1.4cqi ≈ current grid gap; increase for more space)
@@ -1542,7 +1561,7 @@ mainDoodleContainers.forEach(div => {
         // Right columns: Button to the LEFT
         leftOffset = (cellRect.left - gridRect.left) - btnRect.width - gapPx;
       }
-    
+   
       // Apply and fade in
       actionBtn.style.top = `${topOffset}px`;
       actionBtn.style.left = `${leftOffset}px`;
@@ -1651,7 +1670,7 @@ function getDeckAsArray() {
     function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];  // Added brackets on left
+    [array[i], array[j]] = [array[j], array[i]]; // Added brackets on left
   }
   return array;
 }
@@ -1737,30 +1756,40 @@ function getDeckAsArray() {
         ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gh); ctx.stroke();
       }
     }
-
 document.getElementById('score-snap-btn').onclick = async () => {
+  if (scoreVideo.videoWidth === 0 || scoreVideo.videoHeight === 0) {
+    console.error('Video dimensions are zero - camera not ready');
+    scoreStatusEl.textContent = "Camera not ready - try again";
+    return;
+  }
   scoreStatusEl.textContent = "Capturing...";
-  const captured = document.createElement('canvas');
-  captured.width = scoreVideo.videoWidth;
-  captured.height = scoreVideo.videoHeight;
-  captured.getContext('2d').drawImage(scoreVideo, 0, 0);
-  const displayRect = { left: 0, top: 0, w: scoreVideo.clientWidth, h: scoreVideo.clientHeight };
+  // Immediate capture
+  scoreOutputCanvas.width = scoreVideo.videoWidth;
+  scoreOutputCanvas.height = scoreVideo.videoHeight;
+  const outCtx = scoreOutputCanvas.getContext('2d');
+  outCtx.drawImage(scoreVideo, 0, 0);
+  // Hide video, show canvas
+  scoreVideo.style.display = 'none';
+  scoreOutputCanvas.style.display = 'block';
+  // Force reflow and short delay for browser to render the frame
+  scoreOutputCanvas.offsetHeight;
+  await new Promise(resolve => setTimeout(resolve, 50)); // 50ms for visual update
+  // Now add overlay on visible canvas
+  const displayRect = { left: 0, top: 0, w: scoreOutputCanvas.clientWidth, h: scoreOutputCanvas.clientHeight };
+  drawOverlayGrid(outCtx, displayRect.left, displayRect.top, displayRect.w, displayRect.h);
+  // Crop for processing (from visible canvas)
   const sourceRect = getVideoSourceRect(displayRect);
+  if (sourceRect.w === 0 || sourceRect.h === 0) {
+    console.error('Source rect dimensions are zero');
+    scoreStatusEl.textContent = "Capture failed - try again";
+    return;
+  }
   const cropped = document.createElement('canvas');
   cropped.width = sourceRect.w;
   cropped.height = sourceRect.h;
-  cropped.getContext('2d').drawImage(captured, sourceRect.left, sourceRect.top, sourceRect.w, sourceRect.h, 0, 0, sourceRect.w, sourceRect.h);
-  scoreOutputCanvas.width = sourceRect.w;
-  scoreOutputCanvas.height = sourceRect.h;
-  const outCtx = scoreOutputCanvas.getContext('2d');
-  outCtx.drawImage(cropped, 0, 0);
-  drawOverlayGrid(outCtx, 0, 0, sourceRect.w, sourceRect.h);
-  // Freeze preview: hide video, show canvas
-  scoreVideo.style.display = 'none';
-  scoreOutputCanvas.style.display = 'block';
-  // Hide instructions
+  cropped.getContext('2d').drawImage(scoreOutputCanvas, sourceRect.left, sourceRect.top, sourceRect.w, sourceRect.h, 0, 0, sourceRect.w, sourceRect.h);
+  // Hide instructions and snap
   document.getElementById('score-instructions').style.display = 'none';
-  // Hide snap btn
   document.getElementById('score-snap-btn').style.display = 'none';
   // Show loading
   document.getElementById('score-loading').style.display = 'block';
@@ -1768,11 +1797,10 @@ document.getElementById('score-snap-btn').onclick = async () => {
   scoreStatusEl.style.display = 'none';
   await scoreDetectFromCropped(cropped);
 };
-
     function getCurrentGridRect(w, h) { return { left: 0, top: 0, w, h }; }
     function getVideoSourceRect(displayRect) {
       const vw = scoreVideo.videoWidth, vh = scoreVideo.videoHeight;
-      const cw = scoreVideo.clientWidth, ch = scoreVideo.clientHeight;
+      const cw = displayRect.w, ch = displayRect.h; // Use passed dimensions
       const videoAspect = vw / vh, containerAspect = cw / ch;
       let scale, offsetX = 0, offsetY = 0;
       if (videoAspect > containerAspect) {
@@ -1783,56 +1811,78 @@ document.getElementById('score-snap-btn').onclick = async () => {
         offsetY = (vh * scale - ch) / 2;
       }
       return {
-        left: Math.round((displayRect.left + offsetX) / scale),
-        top: Math.round((displayRect.top + offsetY) / scale),
-        w: Math.round(displayRect.w / scale),
-        h: Math.round(displayRect.h / scale)
+        left: Math.round(offsetX),
+        top: Math.round(offsetY),
+        w: Math.round(cw / scale),
+        h: Math.round(ch / scale)
       };
     }
     async function scoreDetectFromCropped(cropped) {
-      const numCols = 11;
-      const numRows = 7;
-      const cellW = cropped.width / numCols;
-      const cellH = cropped.height / numRows;
-      scoreDetectedDoodles = [];
-      scoreConfidences = [];
-      scoreCellCanvases = [];
-      scoreLog("Detecting...");
-      for (let r = 0; r < numRows; r++) {
-        for (let pc of playableCols) {
-          const cellCanvas = document.createElement('canvas');
-          cellCanvas.width = 224;
-          cellCanvas.height = 224;
-          const cellCtx = cellCanvas.getContext('2d');
-          cellCtx.drawImage(cropped, Math.round(pc * cellW), Math.round(r * cellH), Math.round(cellW), Math.round(cellH), 0, 0, 224, 224);
-          scoreCellCanvases.push(cellCanvas);
-          const tensor = tf.browser.fromPixels(cellCanvas).expandDims(0).toFloat().div(255);
-          const prediction = scoreModel.predict(tensor);
-          const scores = await prediction.array();
-          let scoresArray = scores[0].slice();
-          let maxIndex = scoresArray.indexOf(Math.max(...scoresArray));
-          let predicted = scoreClassNames[maxIndex];
-          let confidence = scoresArray[maxIndex];
-          if (predicted === 'unknown' && scoresArray.length > 1) {
-            scoresArray[maxIndex] = -999;
-            maxIndex = scoresArray.indexOf(Math.max(...scoresArray));
-            predicted = scoreClassNames[maxIndex];
-            confidence = scoresArray[maxIndex];
-          }
-          scoreDetectedDoodles.push(predicted);
-          scoreConfidences.push(confidence);
+      try {
+        console.log('Starting detection... Cropped dims:', cropped.width, cropped.height);
+        const numCols = 11;
+        const numRows = 7;
+        const cellW = cropped.width / numCols;
+        const cellH = cropped.height / numRows;
+        if (cellW <= 0 || cellH <= 0) {
+          throw new Error('Cell dimensions are invalid - cropped size too small');
         }
+        scoreDetectedDoodles = [];
+        scoreConfidences = [];
+        scoreCellCanvases = [];
+        scoreLog("Detecting...");
+        for (let r = 0; r < numRows; r++) {
+          for (let pc of playableCols) {
+            console.log(`Processing cell r:${r}, c:${pc}`);
+            const x = Math.round(pc * cellW);
+            const y = Math.round(r * cellH);
+            const w = Math.round(cellW);
+            const h = Math.round(cellH);
+            if (w <= 0 || h <= 0) {
+              console.error(`Invalid cell dimensions for r:${r}, c:${pc} - w:${w}, h:${h}`);
+              continue;  // Skip invalid cell
+            }
+            const cellCanvas = document.createElement('canvas');
+            cellCanvas.width = 224;
+            cellCanvas.height = 224;
+            const cellCtx = cellCanvas.getContext('2d');
+            cellCtx.drawImage(cropped, x, y, w, h, 0, 0, 224, 224);
+            scoreCellCanvases.push(cellCanvas);
+            const tensor = tf.browser.fromPixels(cellCanvas).expandDims(0).toFloat().div(255);
+            const prediction = scoreModel.predict(tensor);
+            const scores = await prediction.array();
+            let scoresArray = scores[0].slice();
+            let maxIndex = scoresArray.indexOf(Math.max(...scoresArray));
+            let predicted = scoreClassNames[maxIndex];
+            let confidence = scoresArray[maxIndex];
+            if (predicted === 'unknown' && scoresArray.length > 1) {
+              scoresArray[maxIndex] = -999;
+              maxIndex = scoresArray.indexOf(Math.max(...scoresArray));
+              predicted = scoreClassNames[maxIndex];
+              confidence = scoresArray[maxIndex];
+            }
+            scoreDetectedDoodles.push(predicted);
+            scoreConfidences.push(confidence);
+          }
+        }
+        scoreBuildBoard();
+        // After detection, hide loading
+        document.getElementById('score-loading').style.display = 'none';
+        // Hide entire camera container (including frozen canvas)
+        document.querySelector('.camera-container').style.display = 'none';
+        // Show review instructions
+        document.getElementById('score-review-instructions').style.display = 'block';
+        // Show review
+        document.getElementById('score-review-container').style.display = 'flex';
+        document.getElementById('score-score-btn').style.display = 'block';
+        renderReviewRows();
+        // Update and show status
+        scoreStatusEl.textContent = "Review detections below. Tap snippets to correct.";
+        scoreStatusEl.style.display = 'block';
+      } catch (error) {
+        console.error('Detection error:', error);
+        document.getElementById('score-loading').textContent = 'Error processing - check console';
       }
-      scoreBuildBoard();
-      // After detection, hide loading
-document.getElementById('score-loading').style.display = 'none';
-// Show review
-document.getElementById('score-review-container').style.display = 'flex';
-document.getElementById('score-score-btn').style.display = 'block';
-renderReviewRows();
-// Update status
-scoreStatusEl.textContent = "Review detections below. Tap snippets to correct.";
-scoreStatusEl.style.display = 'block';
     }
     function renderReviewRows() {
       const reviewContainer = document.getElementById('score-review-container');
@@ -1888,7 +1938,7 @@ scoreStatusEl.style.display = 'block';
       });
     }
     let scoreCurrentCellIndex = -1;
-    
+   
 function scoreShowDoodlePopup(index) {
   scoreCurrentCellIndex = index;
   const popup = document.getElementById('score-doodle-popup');
@@ -1908,7 +1958,7 @@ function scoreShowDoodlePopup(index) {
   });
   popup.style.display = 'block';
 }
-    
+   
     async function scoreExportTrainingData() {
       const zip = new JSZip();
       scoreDetectedDoodles.forEach((doodle, i) => {
@@ -2320,7 +2370,7 @@ function scoreShowDoodlePopup(index) {
       document.getElementById('score-new-scan-btn').style.display = 'none';
     };
     // ====================== SMART TOOLTIP ON SELECT ======================
-   
+  
 function showTooltipForDoodle(doodle, element) {
   const tooltip = document.getElementById('tooltip');
   const desc = document.getElementById('tooltip-desc');
