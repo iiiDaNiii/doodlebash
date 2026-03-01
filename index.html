@@ -931,9 +931,6 @@
     #score-output-canvas {
       position: absolute;
       inset: 0;
-      /* Fill the entire camera container */
-      background: #000;
-      /* Fallback black */
       z-index: 3;
       /* Above video and overlay */
       display: none;
@@ -1219,6 +1216,67 @@
     #score-new-scan-btn {
       display: none !important;
     }
+
+    .camera-container-split {
+      display: flex;
+      width: 90cqi;
+      aspect-ratio: 11 / 7;
+      overflow: hidden;
+      position: relative;
+      /* For absolute video positioning */
+      border-radius: 3cqi;
+      /* Overall if needed */
+    }
+
+    .camera-left,
+    .camera-right {
+      flex: 5;
+      /* Each takes 5/11 of width */
+      position: relative;
+      overflow: hidden;
+      z-index: 2;
+      /* Above video */
+      border-radius: 3cqi;
+      /* Individual radius per window */
+    }
+
+    .camera-gap {
+      flex: 1;
+      /* 1/11 width for center column */
+      background: transparent;
+      /* Shows modal BG through */
+    }
+
+    .camera-left canvas,
+    .camera-right canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .camera-left #score-output-canvas-left,
+    .camera-right #score-output-canvas-right {
+      z-index: 3;
+      display: none;
+    }
+
+.camera-container-split video {
+  position: absolute;
+  top: 0;
+  width: 220%; /* Wide enough to cover full + gap shift */
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+.camera-left video {
+  left: 0;
+  transform: translateX(0); /* Shows columns 1-5 */
+}
+.camera-right video {
+  left: -120%; /* Shifts to skip center ~9% + align to columns 7-11 */
+  transform: translateX(0);
+}
   </style>
 </head>
 
@@ -1299,12 +1357,20 @@
       <div id="score-content" class="scanner-content">
         <p id="score-instructions">Align the two red page grids with your notebook pages.<br>Fill the preview
           edge-to-edge then tap SNAP.</p>
-        <div class="camera-container" id="score-camera-container">
-          <video id="score-camera-preview" autoplay playsinline muted></video>
-          <canvas id="score-grid-overlay"></canvas>
-          <canvas id="score-output-canvas"></canvas>
-        </div>
-        
+        <div class="camera-container-split">
+  <div class="camera-left">
+    <video id="score-camera-preview-left" autoplay playsinline muted></video>
+    <canvas id="score-grid-overlay-left"></canvas>
+    <canvas id="score-output-canvas-left"></canvas>
+  </div>
+  <div class="camera-gap"></div>
+  <div class="camera-right">
+    <video id="score-camera-preview-right" autoplay playsinline muted></video>
+    <canvas id="score-grid-overlay-right"></canvas>
+    <canvas id="score-output-canvas-right"></canvas>
+  </div>
+</div>
+
         <div id="score-loading" class="status" style="display:none;">Processing...</div>
         <div id="score-status" class="status">Waiting for photo...</div>
         <div class="debug" id="score-debug-info">8.0 • Clean scoring mode</div>
@@ -1939,88 +2005,110 @@
         scoreLog("ERROR loading model: " + e.message);
       }
     }
+
     async function scoreStartCamera() {
-      scoreStatusEl.textContent = "Requesting camera...";
-      try {
-        scoreStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        scoreVideo.srcObject = scoreStream;
-        scoreVideo.onloadeddata = () => {
-          document.getElementById('score-snap-btn').style.display = 'block';
-          scoreInitGridOverlay();
-          scoreStatusEl.textContent = "Camera ready! Point at notebook and SNAP";
-        };
-      } catch (e) {
-        scoreStatusEl.textContent = `Camera error: ${e.name}`;
-      }
-    }
+  scoreStatusEl.textContent = "Requesting camera...";
+  try {
+    scoreStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    document.getElementById('score-camera-preview-left').srcObject = scoreStream;
+    document.getElementById('score-camera-preview-right').srcObject = scoreStream;
+  } catch (e) {
+    scoreStatusEl.textContent = `Camera error: ${e.name}`;
+  }
+}
+
     function scoreInitGridOverlay() {
-      const overlay = document.getElementById('score-grid-overlay');
-      if (!overlay) return;
+      const overlayLeft = document.getElementById('score-grid-overlay-left');
+      const overlayRight = document.getElementById('score-grid-overlay-right');
+      if (!overlayLeft || !overlayRight) return;
+
       function redraw() {
-        overlay.width = overlay.clientWidth;
-        overlay.height = overlay.clientHeight;
-        const ctx = overlay.getContext('2d');
-        ctx.clearRect(0, 0, overlay.width, overlay.height);
-        const rect = { left: 0, top: 0, w: overlay.width, h: overlay.height };
-        drawOverlayGrid(ctx, rect.left, rect.top, rect.w, rect.h);
+        // Left
+        overlayLeft.width = overlayLeft.clientWidth;
+        overlayLeft.height = overlayLeft.clientHeight;
+        drawOverlaySide(overlayLeft.getContext('2d'), 0, 0, overlayLeft.width, overlayLeft.height, 'left');
+
+        // Right
+        overlayRight.width = overlayRight.clientWidth;
+        overlayRight.height = overlayRight.clientHeight;
+        drawOverlaySide(overlayRight.getContext('2d'), 0, 0, overlayRight.width, overlayRight.height, 'right');
       }
       redraw();
       window.addEventListener('resize', redraw);
-      scoreVideo.addEventListener('play', () => setTimeout(redraw, 150), { once: true });
+      scoreVideoLeft.addEventListener('play', () => setTimeout(redraw, 150), { once: true });
     }
-    /* UPDATED: drawOverlayGrid now accepts a color parameter for dynamic flashing */
 
     function drawOverlayGrid(ctx, gx, gy, gw, gh, color = 'rgba(255, 0, 0, 0.95)') { // Default red
-  const unitW = gw / 11;
-  const unitH = gh / 7;
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = color;
-  ctx.lineWidth = Math.max(2.8, gw / 380);
+      const unitW = gw / 11;
+      const unitH = gh / 7;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = Math.max(2.8, gw / 380);
 
-  // Internal horizontals stretched to section edges (skip top/bottom, draw i=1 to 6 full width per section)
-  for (let i = 1; i < 7; i++) {
-    const y = gy + Math.round(i * unitH);
-    // Left section: full to edges
-    ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx + 5 * unitW, y); ctx.stroke();
-    // Right section: full to edges
-    const rightStart = gx + 6 * unitW;
-    ctx.beginPath(); ctx.moveTo(rightStart, y); ctx.lineTo(rightStart + 5 * unitW, y); ctx.stroke();
-  }
+      // Internal horizontals stretched to section edges (skip top/bottom, draw i=1 to 6 full width per section)
+      for (let i = 1; i < 7; i++) {
+        const y = gy + Math.round(i * unitH);
+        // Left section: full to edges
+        ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx + 5 * unitW, y); ctx.stroke();
+        // Right section: full to edges
+        const rightStart = gx + 6 * unitW;
+        ctx.beginPath(); ctx.moveTo(rightStart, y); ctx.lineTo(rightStart + 5 * unitW, y); ctx.stroke();
+      }
 
-  // Internal verticals stretched full height (draw i=1 to 4 full top to bottom per section)
-  for (let i = 1; i < 5; i++) {
-    const xLeft = gx + Math.round(i * unitW);
-    ctx.beginPath(); ctx.moveTo(xLeft, gy); ctx.lineTo(xLeft, gy + gh); ctx.stroke();
+      // Internal verticals stretched full height (draw i=1 to 4 full top to bottom per section)
+      for (let i = 1; i < 5; i++) {
+        const xLeft = gx + Math.round(i * unitW);
+        ctx.beginPath(); ctx.moveTo(xLeft, gy); ctx.lineTo(xLeft, gy + gh); ctx.stroke();
 
-    const xRight = gx + 6 * unitW + Math.round(i * unitW);
-    ctx.beginPath(); ctx.moveTo(xRight, gy); ctx.lineTo(xRight, gy + gh); ctx.stroke();
-  }
+        const xRight = gx + 6 * unitW + Math.round(i * unitW);
+        ctx.beginPath(); ctx.moveTo(xRight, gy); ctx.lineTo(xRight, gy + gh); ctx.stroke();
+      }
 
-  // Fill center column with white (solid split)
-  const centerX = gx + 5 * unitW;
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(centerX, gy, unitW, gh);
-}
-    
-    document.getElementById('score-snap-btn').onclick = async () => {
+      // Fill center column with white (solid split)
+      const centerX = gx + 5 * unitW;
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(centerX, gy, unitW, gh);
+    }
+
+    function drawOverlaySide(ctx, gx, gy, gw, gh, side, color = 'rgba(255, 0, 0, 0.95)') {
+      const unitW = gw / 5; // Each side is 5 units
+      const unitH = gh / 7;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = Math.max(2.8, gw / 380);
+
+      // Internal horizontals full to edges (i=1 to 6)
+      for (let i = 1; i < 7; i++) {
+        const y = gy + Math.round(i * unitH);
+        ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx + 5 * unitW, y); ctx.stroke();
+      }
+
+      // Internal verticals full height (i=1 to 4)
+      for (let i = 1; i < 5; i++) {
+        const x = gx + Math.round(i * unitW);
+        ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gh); ctx.stroke();
+      }
+    }
+
+document.getElementById('score-snap-btn').onclick = async () => {
   scoreStatusEl.textContent = "Capturing...";
 
   // Quick check if video frame is ready
-  if (scoreVideo.videoWidth === 0) {
+  if (scoreVideoLeft.videoWidth === 0) {
     console.log("Video frame not ready yet – retrying in 100ms");
     setTimeout(() => document.getElementById('score-snap-btn').click(), 100);
     return;
   }
 
-  // Capture full frame from video
+  // Capture full frame from left video (represents full stream)
   const captured = document.createElement('canvas');
-  captured.width = scoreVideo.videoWidth;
-  captured.height = scoreVideo.videoHeight;
-  captured.getContext('2d').drawImage(scoreVideo, 0, 0);
+  captured.width = scoreVideoLeft.videoWidth;
+  captured.height = scoreVideoLeft.videoHeight;
+  captured.getContext('2d').drawImage(scoreVideoLeft, 0, 0);
   console.log(`Capture dimensions: ${captured.width}x${captured.height}`); // Debug: Should be non-zero
 
-  // Get crop rect based on display (enforces 11/7 crop from video source)
-  const displayRect = { left: 0, top: 0, w: scoreVideo.clientWidth, h: scoreVideo.clientHeight };
+  // Get crop rect based on display
+  const displayRect = { left: 0, top: 0, w: scoreVideoLeft.clientWidth + scoreVideoRight.clientWidth + (scoreVideoLeft.clientWidth / 5), h: scoreVideoLeft.clientHeight }; // Approx full with gap
   const sourceRect = getVideoSourceRect(displayRect);
   console.log(`Crop rect: ${JSON.stringify(sourceRect)}`); // Debug: Check if valid
 
@@ -2030,34 +2118,41 @@
   cropped.height = sourceRect.h;
   cropped.getContext('2d').drawImage(captured, sourceRect.left, sourceRect.top, sourceRect.w, sourceRect.h, 0, 0, sourceRect.w, sourceRect.h);
 
-  // Get the displayed size of the container (for scaling)
-  const container = document.getElementById('score-camera-container');
-  const displayWidth = container.clientWidth;
-  const displayHeight = container.clientHeight;
-  console.log(`Display size: ${displayWidth}x${displayHeight}`); // Debug: Should match container
+  // Get containers and unitW for center skip
+  const containerLeft = document.querySelector('.camera-left');
+  const containerRight = document.querySelector('.camera-right');
+  const unitW = cropped.width / 11;
 
-  // Set canvas to match displayed size (prevents browser zoom/clip)
-  scoreOutputCanvas.width = displayWidth;
-  scoreOutputCanvas.height = displayHeight;
-  const outCtx = scoreOutputCanvas.getContext('2d');
+  // Left side draw (columns 1-5)
+  scoreOutputCanvasLeft.width = containerLeft.clientWidth;
+  scoreOutputCanvasLeft.height = containerLeft.clientHeight;
+  const outCtxLeft = scoreOutputCanvasLeft.getContext('2d');
+  outCtxLeft.drawImage(cropped, 0, 0, 5 * unitW, cropped.height, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height);
+  drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left');
 
-  // Draw cropped image, scaling to fit the displayed canvas size exactly
-  outCtx.drawImage(cropped, 0, 0, cropped.width, cropped.height, 0, 0, displayWidth, displayHeight);
+  // Right side draw (columns 7-11, skipping center unitW in source x)
+  scoreOutputCanvasRight.width = containerRight.clientWidth;
+  scoreOutputCanvasRight.height = containerRight.clientHeight;
+  const outCtxRight = scoreOutputCanvasRight.getContext('2d');
+  outCtxRight.drawImage(cropped, 6 * unitW, 0, 5 * unitW, cropped.height, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height);
+  drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right');
 
-  // Draw initial red grid on frozen frame (scaled to display size)
-  drawOverlayGrid(outCtx, 0, 0, displayWidth, displayHeight);
+  // Freeze: Hide videos and live overlays, show canvases
+  scoreVideoLeft.style.display = 'none';
+  scoreVideoRight.style.display = 'none';
+  document.getElementById('score-grid-overlay-left').style.display = 'none';
+  document.getElementById('score-grid-overlay-right').style.display = 'none';
+  scoreOutputCanvasLeft.style.display = 'block';
+  scoreOutputCanvasRight.style.display = 'block';
 
-  // Freeze: Hide video and live overlay, show canvas
-  scoreVideo.style.display = 'none';
-  document.getElementById('score-grid-overlay').style.display = 'none';
-  scoreOutputCanvas.style.display = 'block';
-
-  // Visual feedback: White flash then green
+  // Visual feedback: White flash then green on both sides
   setTimeout(() => {
-    drawOverlayGrid(outCtx, 0, 0, displayWidth, displayHeight, 'rgba(255, 255, 255, 0.95)');
+    drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left', 'rgba(255, 255, 255, 0.95)');
+    drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right', 'rgba(255, 255, 255, 0.95)');
   }, 80);
   setTimeout(() => {
-    drawOverlayGrid(outCtx, 0, 0, displayWidth, displayHeight, 'rgba(74, 222, 128, 0.95)');
+    drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left', 'rgba(74, 222, 128, 0.95)');
+    drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right', 'rgba(74, 222, 128, 0.95)');
   }, 280); // Slightly longer for settle
 
   // Hide instructions and snap btn
@@ -2071,17 +2166,17 @@
   // Run detection
   await scoreDetectFromCropped(cropped);
 };
+    
+
 
     function getCurrentGridRect(w, h) { return { left: 0, top: 0, w, h }; }
 
-function getVideoSourceRect(displayRect) {
-  const vw = scoreVideo.videoWidth;
-  const vh = scoreVideo.videoHeight;
+    function getVideoSourceRect(displayRect) {
+  const vw = scoreVideoLeft.videoWidth;
+  const vh = scoreVideoLeft.videoHeight;
   const targetAspect = 11 / 7; // Force exact match to container aspect
   const videoAspect = vw / vh;
-
   let sourceW, sourceH, sourceX = 0, sourceY = 0;
-
   if (videoAspect > targetAspect) {
     // Video wider: crop sides
     sourceH = vh;
@@ -2093,14 +2188,12 @@ function getVideoSourceRect(displayRect) {
     sourceH = vw / targetAspect;
     sourceY = (vh - sourceH) / 2;
   }
-
   // Scale back to display rect (but now cropped to 11/7)
   const cw = displayRect.w;
   const ch = displayRect.h;
   const scaleW = cw / sourceW;
   const scaleH = ch / sourceH;
   const scale = Math.min(scaleW, scaleH); // Use min to avoid stretching
-
   return {
     left: sourceX,
     top: sourceY,
@@ -2246,24 +2339,33 @@ function getVideoSourceRect(displayRect) {
       URL.revokeObjectURL(url);
     }
 
-    function initScoreScanner() {
-      scoreVideo = document.getElementById('score-camera-preview');
-      scoreOutputCanvas = document.getElementById('score-output-canvas');
-      scoreStatusEl = document.getElementById('score-status');
-      scoreVideo.addEventListener('play', () => scoreInitGridOverlay(), { once: true });
-      scoreLoadModel().then(() => scoreStartCamera());
+function initScoreScanner() {
+  scoreVideoLeft = document.getElementById('score-camera-preview-left');
+  scoreVideoRight = document.getElementById('score-camera-preview-right');
+  scoreOutputCanvasLeft = document.getElementById('score-output-canvas-left');
+  scoreOutputCanvasRight = document.getElementById('score-output-canvas-right');
+  scoreStatusEl = document.getElementById('score-status');
+  scoreLoadModel().then(() => scoreStartCamera());
 
-      // Show initial elements
-      document.querySelector('.camera-container').style.display = 'block';
-      document.getElementById('score-snap-btn').style.display = 'block';
-      document.getElementById('score-review-container').style.display = 'none';
-      document.getElementById('score-detected-grid').style.display = 'none';
-      document.getElementById('score-tally').style.display = 'none';
-      document.getElementById('score-score-btn').style.display = 'none';
+  // Show initial elements
+  document.querySelector('.camera-container-split').style.display = 'flex';
+  document.getElementById('score-snap-btn').style.display = 'block';
+  document.getElementById('score-review-container').style.display = 'none';
+  document.getElementById('score-detected-grid').style.display = 'none';
+  document.getElementById('score-tally').style.display = 'none';
+  document.getElementById('score-score-btn').style.display = 'none';
 
-      // Ensure canvas is hidden initially
-      scoreOutputCanvas.style.display = 'none';
-    }
+  // Hide canvases initially
+  scoreOutputCanvasLeft.style.display = 'none';
+  scoreOutputCanvasRight.style.display = 'none';
+
+  // Init overlays and video loaded listener (on left)
+  scoreVideoLeft.addEventListener('loadedmetadata', () => {
+    scoreInitGridOverlay();
+    document.getElementById('score-snap-btn').style.display = 'block';
+    scoreStatusEl.textContent = "Camera ready! Point at notebook and SNAP";
+  }, { once: true });
+}
 
     populateLearnGrid();
     // ====================== FULL SCORING ANIMATION ======================
