@@ -1103,16 +1103,6 @@
       font-weight: bold;
     }
 
-    #score-modal #score-score-btn {
-      margin-top: auto;
-      width: 85%;
-      max-width: 520px;
-      padding: 5cqi 12cqi;
-      font-size: 7cqi;
-      font-weight: bold;
-      display: none;
-    }
-
     #score-modal #score-final-total {
       font-size: 10cqi;
       font-weight: bold;
@@ -1219,7 +1209,7 @@
 
     .camera-container-split {
       display: flex;
-      width: 90cqi;
+      width: 90cqw;
       aspect-ratio: 11 / 7;
       overflow: hidden;
       position: relative;
@@ -2247,33 +2237,41 @@ document.getElementById('score-snap-btn').onclick = async () => {
       scoreStatusEl.textContent = "Review detections below. Tap snippets to correct.";
       scoreStatusEl.style.display = 'block';
     }
+
     function renderReviewRows() {
-      const reviewContainer = document.getElementById('score-review-container');
-      reviewContainer.innerHTML = '';
-      const uniqueDoodles = [...new Set(scoreDetectedDoodles.filter(d => d !== 'unknown'))].sort();
-      uniqueDoodles.forEach(doodle => {
-        const row = document.createElement('div');
-        row.className = 'review-row';
-        const digital = document.createElement('div');
-        digital.className = 'digital-doodle';
-        digital.style.backgroundImage = `url('images/${doodle}.png')`;
-        const snippetsDiv = document.createElement('div');
-        snippetsDiv.className = 'snippets';
-        scoreDetectedDoodles.forEach((d, i) => {
-          if (d === doodle) {
-            const img = document.createElement('img');
-            img.className = 'snippet';
-            img.src = scoreCellCanvases[i].toDataURL('image/png');
-            img.dataset.index = i;
-            img.addEventListener('click', () => scoreShowDoodlePopup(i));
-            snippetsDiv.appendChild(img);
-          }
-        });
-        row.appendChild(digital);
-        row.appendChild(snippetsDiv);
-        reviewContainer.appendChild(row);
-      });
-    }
+  const reviewContainer = document.getElementById('score-review-container');
+  reviewContainer.innerHTML = '';
+  const uniqueDoodles = [...new Set(scoreDetectedDoodles.filter(d => d !== 'unknown'))].sort();
+  uniqueDoodles.forEach(doodle => {
+    const row = document.createElement('div');
+    row.className = 'review-row';
+    const digital = document.createElement('div');
+    digital.className = 'digital-doodle';
+    digital.style.backgroundImage = `url('images/${doodle}.png')`;
+    const snippetsDiv = document.createElement('div');
+    snippetsDiv.className = 'snippets';
+    scoreDetectedDoodles.forEach((d, i) => {
+      if (d === doodle) {
+        const img = document.createElement('img');
+        img.className = 'snippet';
+        img.src = scoreCellCanvases[i].toDataURL('image/png');
+        img.dataset.index = i;
+        img.addEventListener('click', () => scoreShowDoodlePopup(i));
+        snippetsDiv.appendChild(img);
+      }
+    });
+    row.appendChild(digital);
+    row.appendChild(snippetsDiv);
+    reviewContainer.appendChild(row);
+    // Optional: Fade-in for new/updated rows
+    row.style.opacity = '0';
+    setTimeout(() => {
+      row.style.transition = 'opacity 0.3s ease';
+      row.style.opacity = '1';
+    }, 50);
+  });
+}
+
     function scoreBuildBoard() {
       scoreBoard = Array(7).fill().map(() => Array(11).fill(null));
       let idx = 0;
@@ -2300,27 +2298,27 @@ document.getElementById('score-snap-btn').onclick = async () => {
         scoreGridCells.push(cell);
       });
     }
-    let scoreCurrentCellIndex = -1;
-
-    function scoreShowDoodlePopup(index) {
-      scoreCurrentCellIndex = index;
-      const popup = document.getElementById('score-doodle-popup');
-      const grid = document.getElementById('score-popup-grid');
-      grid.innerHTML = '';
-      const opts = allPossibleDoodles; // Use all possible doodles
-      opts.forEach(d => {
-        const item = document.createElement('div');
-        item.className = 'popup-item';
-        item.style.backgroundImage = `url('images/${d}.png')`;
-        item.onclick = () => {
-          scoreDetectedDoodles[index] = d;
-          renderReviewRows(); // Refresh review rows after correction
-          popup.style.display = 'none';
-        };
-        grid.appendChild(item);
-      });
-      popup.style.display = 'block';
-    }
+    
+let scoreCurrentCellIndex = -1;
+function scoreShowDoodlePopup(index) {
+  scoreCurrentCellIndex = index;
+  const popup = document.getElementById('score-doodle-popup');
+  const grid = document.getElementById('score-popup-grid');
+  grid.innerHTML = '';
+  const opts = allPossibleDoodles; // Use all possible doodles
+  opts.forEach(d => {
+    const item = document.createElement('div');
+    item.className = 'popup-item';
+    item.style.backgroundImage = `url('images/${d}.png')`;
+    item.onclick = () => {
+      scoreDetectedDoodles[index] = d;
+      renderReviewRows(); // Refresh rows to move snippet
+      popup.style.display = 'none';
+    };
+    grid.appendChild(item);
+  });
+  popup.style.display = 'block';
+}
 
     async function scoreExportTrainingData() {
       const zip = new JSZip();
