@@ -979,19 +979,45 @@
       max-width: 520px;
     }
 
+
+
     #score-modal #score-detected-grid {
       display: none;
-      grid-template-columns: repeat(10, 1fr);
+      grid-template-columns: repeat(11, 1fr);
       grid-template-rows: repeat(7, 1fr);
-      gap: 3px;
-      width: 90cqi;
-      max-width: 520px;
+      gap: 1cqi;
+      padding: 3.4cqi;
+      width: 80cqi;
       height: auto;
-      aspect-ratio: 10/7;
-      background: #111;
-      padding: 8px;
-      border-radius: 12px;
+      aspect-ratio: 11/7;
+      background-image: url('images/notebook.png');
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
     }
+
+    #score-modal .grid-cell {
+      position: relative;
+      aspect-ratio: 1;
+      background: transparent;
+      border: none;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      cursor: pointer;
+      transition: transform .4s;
+      box-sizing: border-box;
+      /* Prevent size overflow from any borders/padding */
+    }
+
+    #score-modal .scanner-content {
+      overflow-y: auto;
+      /* Ensure scrolling if tally grows long */
+      padding-bottom: 10cqi;
+      /* Extra space at bottom to prevent cutoff */
+    }
+
+
 
     #score-modal .grid-cell {
       position: relative;
@@ -1007,10 +1033,6 @@
 
     #score-modal .grid-cell:hover {
       transform: scale(1.12);
-    }
-
-    #score-modal .grid-cell.low-confidence {
-      box-shadow: 0 0 0 6px rgba(255, 255, 0, 0.8);
     }
 
     #score-modal .grid-cell.scoring {
@@ -1094,12 +1116,30 @@
     }
 
     #score-modal #score-snap-btn {
-      margin-top: auto;
+      position: absolute;
+      bottom: 2cqi;
+      /* Space from bottom */
+      left: 50%;
+      transform: translateX(-50%);
       width: 85%;
       max-width: 520px;
       padding: 5cqi 12cqi;
       font-size: 7cqi;
+    }
+
+    #score-modal #score-score-btn {
+      position: absolute;
+      bottom: 2cqi;
+      /* Same position */
+      left: 50%;
+      transform: translateX(-50%);
+      width: 42.5%;
+      /* Half size */
+      max-width: 260px;
+      padding: 2.5cqi 6cqi;
+      font-size: 3.5cqi;
       font-weight: bold;
+      display: none;
     }
 
     #score-modal #score-final-total {
@@ -1147,6 +1187,14 @@
     #score-modal .popup-item:hover {
       border-color: #ff0;
     }
+
+    #score-instructions {
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 4.5cqi; /* Matches status size – tweak if needed */
+  text-align: left;
+  margin: 2cqi 0;
+  color: #000000;
+}
 
     /* New styles for review rows */
     #score-review-container {
@@ -1213,7 +1261,6 @@
       overflow: hidden;
       position: relative;
       /* For absolute video positioning */
-      border-radius: 3cqi;
       /* Overall if needed */
     }
 
@@ -1225,7 +1272,7 @@
       overflow: hidden;
       z-index: 2;
       /* Above video */
-      border-radius: 3cqi;
+      border-radius: 1.5cqi;
       /* Individual radius per window */
     }
 
@@ -1250,22 +1297,125 @@
       display: none;
     }
 
-.camera-container-split video {
-  position: absolute;
-  top: 0;
-  width: 220%; /* Wide enough to cover full + gap shift */
-  height: 100%;
-  object-fit: cover;
-  background: #000;
+    .camera-container-split video {
+      position: absolute;
+      top: 0;
+      width: 220%;
+      /* Wide enough to cover full + gap shift */
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+    }
+
+    .camera-left video {
+      left: 0;
+      transform: translateX(0);
+      /* Shows columns 1-5 */
+    }
+
+    .camera-right video {
+      left: -120%;
+      /* Shifts to skip center ~9% + align to columns 7-11 */
+      transform: translateX(0);
+    }
+
+    .review-row {
+      display: flex;
+      align-items: center;
+      padding: 2.3cqi;
+      border-bottom: 0.65px solid #ccc;
+      gap: 1.3cqi;
+    }
+
+    .digital-doodle {
+      width: 10cqi;
+      height: 10cqi;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      flex-shrink: 0;
+    }
+
+    .snippet {
+      width: 10cqi;
+      height: 10cqi;
+      object-fit: contain;
+      cursor: pointer;
+      border-radius: 1.5cqi;
+    }
+
+    /* Replace the existing #loading-icon style block in your <style> with this updated version. 
+   This adds aspect-ratio: 1/1 to enforce square shape, centers it better, and tweaks size/margin for visibility. */
+
+    #loading-icon {
+  width: 8cqi !important;
+  aspect-ratio: 1/1;
+  flex-shrink: 0;
+  background-image: url('images/gear1.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+  animation: spin 1s linear infinite;
 }
-.camera-left video {
-  left: 0;
-  transform: translateX(0); /* Shows columns 1-5 */
+
+#loading-icon2 {
+  width: 16cqi !important;
+  aspect-ratio: 1/1;
+  flex-shrink: 0;
+  background-image: url('images/gear2.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 0;
+  animation: spin-reverse 2s linear infinite;
 }
-.camera-right video {
-  left: -120%; /* Shifts to skip center ~9% + align to columns 7-11 */
-  transform: translateX(0);
+
+    #loading-container {
+  display: none;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0cqi;
+  padding: 0;
+  width: fit-content !important;
 }
+
+    #score-modal .scanner-content #loading-container {
+      width: fit-content !important;
+    }
+
+    #loading-icon,
+    #loading-icon2 {
+      margin-left: -2.5cqi;
+      padding: 0;
+    }
+
+
+
+    @keyframes spin-reverse {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(-360deg);
+        /* Negative for counter-clockwise */
+      }
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 
@@ -1344,23 +1494,25 @@
         </div>
       </div>
       <div id="score-content" class="scanner-content">
-        <p id="score-instructions">Align the two red page grids with your notebook pages.<br>Fill the preview
-          edge-to-edge then tap SNAP.</p>
         <div class="camera-container-split">
-  <div class="camera-left">
-    <video id="score-camera-preview-left" autoplay playsinline muted></video>
-    <canvas id="score-grid-overlay-left"></canvas>
-    <canvas id="score-output-canvas-left"></canvas>
-  </div>
-  <div class="camera-gap"></div>
-  <div class="camera-right">
-    <video id="score-camera-preview-right" autoplay playsinline muted></video>
-    <canvas id="score-grid-overlay-right"></canvas>
-    <canvas id="score-output-canvas-right"></canvas>
-  </div>
-</div>
-
-        <div id="score-loading" class="status" style="display:none;">Processing...</div>
+          <div class="camera-left">
+            <video id="score-camera-preview-left" autoplay playsinline muted></video>
+            <canvas id="score-grid-overlay-left"></canvas>
+            <canvas id="score-output-canvas-left"></canvas>
+          </div>
+          <div class="camera-gap"></div>
+          <div class="camera-right">
+            <video id="score-camera-preview-right" autoplay playsinline muted></video>
+            <canvas id="score-grid-overlay-right"></canvas>
+            <canvas id="score-output-canvas-right"></canvas>
+          </div>
+        </div>
+        <div id="loading-container">
+          <div id="loading-icon"></div>
+          <div id="loading-icon2"></div>
+        </div>
+        <p id="score-instructions">Scan your Notebook by aligning the grids with your pages and tapping "SNAP." Ensure
+          that each doodle is fully visible in its own grid cell.</p>
         <div id="score-status" class="status">Waiting for photo...</div>
         <div class="debug" id="score-debug-info">8.0 • Clean scoring mode</div>
         <div id="score-debug-cells" class="debug-cells"></div>
@@ -1996,15 +2148,15 @@
     }
 
     async function scoreStartCamera() {
-  scoreStatusEl.textContent = "Requesting camera...";
-  try {
-    scoreStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-    document.getElementById('score-camera-preview-left').srcObject = scoreStream;
-    document.getElementById('score-camera-preview-right').srcObject = scoreStream;
-  } catch (e) {
-    scoreStatusEl.textContent = `Camera error: ${e.name}`;
-  }
-}
+      scoreStatusEl.textContent = "Requesting camera...";
+      try {
+        scoreStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        document.getElementById('score-camera-preview-left').srcObject = scoreStream;
+        document.getElementById('score-camera-preview-right').srcObject = scoreStream;
+      } catch (e) {
+        scoreStatusEl.textContent = `Camera error: ${e.name}`;
+      }
+    }
 
     function scoreInitGridOverlay() {
       const overlayLeft = document.getElementById('score-grid-overlay-left');
@@ -2059,12 +2211,12 @@
       ctx.fillRect(centerX, gy, unitW, gh);
     }
 
-    function drawOverlaySide(ctx, gx, gy, gw, gh, side, color = 'rgba(255, 0, 0, 0.95)') {
+    function drawOverlaySide(ctx, gx, gy, gw, gh, side, color = 'rgba(251, 176, 101, 0.95)') {
       const unitW = gw / 5; // Each side is 5 units
       const unitH = gh / 7;
       ctx.lineCap = 'round';
       ctx.strokeStyle = color;
-      ctx.lineWidth = Math.max(2.8, gw / 380);
+      ctx.lineWidth = Math.max(1.5, gw / 380);
 
       // Internal horizontals full to edges (i=1 to 6)
       for (let i = 1; i < 7; i++) {
@@ -2079,117 +2231,105 @@
       }
     }
 
-document.getElementById('score-snap-btn').onclick = async () => {
-  scoreStatusEl.textContent = "Capturing...";
-
-  // Quick check if video frame is ready
-  if (scoreVideoLeft.videoWidth === 0) {
-    console.log("Video frame not ready yet – retrying in 100ms");
-    setTimeout(() => document.getElementById('score-snap-btn').click(), 100);
-    return;
-  }
-
-  // Capture full frame from left video (represents full stream)
-  const captured = document.createElement('canvas');
-  captured.width = scoreVideoLeft.videoWidth;
-  captured.height = scoreVideoLeft.videoHeight;
-  captured.getContext('2d').drawImage(scoreVideoLeft, 0, 0);
-  console.log(`Capture dimensions: ${captured.width}x${captured.height}`); // Debug: Should be non-zero
-
-  // Get crop rect based on display
-  const displayRect = { left: 0, top: 0, w: scoreVideoLeft.clientWidth + scoreVideoRight.clientWidth + (scoreVideoLeft.clientWidth / 5), h: scoreVideoLeft.clientHeight }; // Approx full with gap
-  const sourceRect = getVideoSourceRect(displayRect);
-  console.log(`Crop rect: ${JSON.stringify(sourceRect)}`); // Debug: Check if valid
-
-  // Crop to match overlay area
-  const cropped = document.createElement('canvas');
-  cropped.width = sourceRect.w;
-  cropped.height = sourceRect.h;
-  cropped.getContext('2d').drawImage(captured, sourceRect.left, sourceRect.top, sourceRect.w, sourceRect.h, 0, 0, sourceRect.w, sourceRect.h);
-
-  // Get containers and unitW for center skip
-  const containerLeft = document.querySelector('.camera-left');
-  const containerRight = document.querySelector('.camera-right');
-  const unitW = cropped.width / 11;
-
-  // Left side draw (columns 1-5)
-  scoreOutputCanvasLeft.width = containerLeft.clientWidth;
-  scoreOutputCanvasLeft.height = containerLeft.clientHeight;
-  const outCtxLeft = scoreOutputCanvasLeft.getContext('2d');
-  outCtxLeft.drawImage(cropped, 0, 0, 5 * unitW, cropped.height, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height);
-  drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left');
-
-  // Right side draw (columns 7-11, skipping center unitW in source x)
-  scoreOutputCanvasRight.width = containerRight.clientWidth;
-  scoreOutputCanvasRight.height = containerRight.clientHeight;
-  const outCtxRight = scoreOutputCanvasRight.getContext('2d');
-  outCtxRight.drawImage(cropped, 6 * unitW, 0, 5 * unitW, cropped.height, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height);
-  drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right');
-
-  // Freeze: Hide videos and live overlays, show canvases
-  scoreVideoLeft.style.display = 'none';
-  scoreVideoRight.style.display = 'none';
-  document.getElementById('score-grid-overlay-left').style.display = 'none';
-  document.getElementById('score-grid-overlay-right').style.display = 'none';
-  scoreOutputCanvasLeft.style.display = 'block';
-  scoreOutputCanvasRight.style.display = 'block';
-
-  // Visual feedback: White flash then green on both sides
-  setTimeout(() => {
-    drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left', 'rgba(255, 255, 255, 0.95)');
-    drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right', 'rgba(255, 255, 255, 0.95)');
-  }, 80);
-  setTimeout(() => {
-    drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left', 'rgba(74, 222, 128, 0.95)');
-    drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right', 'rgba(74, 222, 128, 0.95)');
-  }, 280); // Slightly longer for settle
-
-  // Hide instructions and snap btn
-  document.getElementById('score-instructions').style.display = 'none';
-  document.getElementById('score-snap-btn').style.display = 'none';
-
-  // Show loading, hide status
-  document.getElementById('score-loading').style.display = 'block';
-  scoreStatusEl.style.display = 'none';
-
-  // Run detection
-  await scoreDetectFromCropped(cropped);
-};
-    
-
+    document.getElementById('score-snap-btn').onclick = async () => {
+      scoreStatusEl.textContent = "Capturing...";
+      // Quick check if video frame is ready
+      if (scoreVideoLeft.videoWidth === 0) {
+        console.log("Video frame not ready yet – retrying in 100ms");
+        setTimeout(() => document.getElementById('score-snap-btn').click(), 100);
+        return;
+      }
+      // Capture full frame from left video (represents full stream)
+      const captured = document.createElement('canvas');
+      captured.width = scoreVideoLeft.videoWidth;
+      captured.height = scoreVideoLeft.videoHeight;
+      captured.getContext('2d').drawImage(scoreVideoLeft, 0, 0);
+      console.log(`Capture dimensions: ${captured.width}x${captured.height}`); // Debug: Should be non-zero
+      // Get crop rect based on display
+      const displayRect = { left: 0, top: 0, w: scoreVideoLeft.clientWidth + scoreVideoRight.clientWidth + (scoreVideoLeft.clientWidth / 5), h: scoreVideoLeft.clientHeight }; // Approx full with gap
+      const sourceRect = getVideoSourceRect(displayRect);
+      console.log(`Crop rect: ${JSON.stringify(sourceRect)}`); // Debug: Check if valid
+      // Crop to match overlay area
+      const cropped = document.createElement('canvas');
+      cropped.width = sourceRect.w;
+      cropped.height = sourceRect.h;
+      cropped.getContext('2d').drawImage(captured, sourceRect.left, sourceRect.top, sourceRect.w, sourceRect.h, 0, 0, sourceRect.w, sourceRect.h);
+      // Get containers and unitW for center skip
+      const containerLeft = document.querySelector('.camera-left');
+      const containerRight = document.querySelector('.camera-right');
+      const unitW = cropped.width / 11;
+      // Left side draw (columns 1-5)
+      scoreOutputCanvasLeft.width = containerLeft.clientWidth;
+      scoreOutputCanvasLeft.height = containerLeft.clientHeight;
+      const outCtxLeft = scoreOutputCanvasLeft.getContext('2d');
+      outCtxLeft.drawImage(cropped, 0, 0, 5 * unitW, cropped.height, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height);
+      drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left');
+      // Right side draw (columns 7-11, skipping center unitW in source x)
+      scoreOutputCanvasRight.width = containerRight.clientWidth;
+      scoreOutputCanvasRight.height = containerRight.clientHeight;
+      const outCtxRight = scoreOutputCanvasRight.getContext('2d');
+      outCtxRight.drawImage(cropped, 6 * unitW, 0, 5 * unitW, cropped.height, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height);
+      drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right');
+      // Freeze: Hide videos and live overlays, show canvases
+      scoreVideoLeft.style.display = 'none';
+      scoreVideoRight.style.display = 'none';
+      document.getElementById('score-grid-overlay-left').style.display = 'none';
+      document.getElementById('score-grid-overlay-right').style.display = 'none';
+      scoreOutputCanvasLeft.style.display = 'block';
+      scoreOutputCanvasRight.style.display = 'block';
+      // Hide instructions and snap btn immediately after showing snapshot
+      document.getElementById('score-instructions').style.display = 'none';
+      document.getElementById('score-snap-btn').style.display = 'none';
+      // Show loading icon right after snapshot is visible (before flash and ML)
+      document.getElementById('loading-container').style.display = 'flex';
+      // Visual feedback: White flash then green on both sides (async, doesn't block)
+      setTimeout(() => {
+        drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left', 'rgba(255, 255, 255, 0.95)');
+        drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right', 'rgba(255, 255, 255, 0.95)');
+      }, 80);
+      setTimeout(() => {
+        drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left', 'rgba(95, 186, 233, 0.95)');
+        drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right', 'rgba(95, 186, 233, 0.95)');
+      }, 280); // Slightly longer for settle
+      // Run detection (loading stays until hidden in scoreDetectFromCropped)
+      await scoreDetectFromCropped(cropped);
+    };
 
     function getCurrentGridRect(w, h) { return { left: 0, top: 0, w, h }; }
 
     function getVideoSourceRect(displayRect) {
-  const vw = scoreVideoLeft.videoWidth;
-  const vh = scoreVideoLeft.videoHeight;
-  const targetAspect = 11 / 7; // Force exact match to container aspect
-  const videoAspect = vw / vh;
-  let sourceW, sourceH, sourceX = 0, sourceY = 0;
-  if (videoAspect > targetAspect) {
-    // Video wider: crop sides
-    sourceH = vh;
-    sourceW = vh * targetAspect;
-    sourceX = (vw - sourceW) / 2;
-  } else {
-    // Video taller: crop top/bottom
-    sourceW = vw;
-    sourceH = vw / targetAspect;
-    sourceY = (vh - sourceH) / 2;
-  }
-  // Scale back to display rect (but now cropped to 11/7)
-  const cw = displayRect.w;
-  const ch = displayRect.h;
-  const scaleW = cw / sourceW;
-  const scaleH = ch / sourceH;
-  const scale = Math.min(scaleW, scaleH); // Use min to avoid stretching
-  return {
-    left: sourceX,
-    top: sourceY,
-    w: sourceW,
-    h: sourceH
-  };
-}
+      const vw = scoreVideoLeft.videoWidth;
+      const vh = scoreVideoLeft.videoHeight;
+      const targetAspect = 11 / 7; // Force exact match to container aspect
+      const videoAspect = vw / vh;
+      let sourceW, sourceH, sourceX = 0, sourceY = 0;
+      if (videoAspect > targetAspect) {
+        // Video wider: crop sides
+        sourceH = vh;
+        sourceW = vh * targetAspect;
+        sourceX = (vw - sourceW) / 2;
+      } else {
+        // Video taller: crop top/bottom
+        sourceW = vw;
+        sourceH = vw / targetAspect;
+        sourceY = (vh - sourceH) / 2;
+      }
+      // Scale back to display rect (but now cropped to 11/7)
+      const cw = displayRect.w;
+      const ch = displayRect.h;
+      const scaleW = cw / sourceW;
+      const scaleH = ch / sourceH;
+      const scale = Math.min(scaleW, scaleH); // Use min to avoid stretching
+      return {
+        left: sourceX,
+        top: sourceY,
+        w: sourceW,
+        h: sourceH
+      };
+    }
+
+    // Replace the entire scoreDetectFromCropped function in your <script> with this complete updated version.
+    // This adds the hide loading icon after processing completes.
 
     async function scoreDetectFromCropped(cropped) {
       const numCols = 11;
@@ -2226,8 +2366,8 @@ document.getElementById('score-snap-btn').onclick = async () => {
         }
       }
       scoreBuildBoard();
-      // After detection, hide loading
-      document.getElementById('score-loading').style.display = 'none';
+      // Hide loading icon after detection completes
+      document.getElementById('loading-container').style.display = 'none';
       // Show review
       document.getElementById('score-review-container').style.display = 'flex';
       document.getElementById('score-score-btn').style.display = 'block';
@@ -2238,38 +2378,38 @@ document.getElementById('score-snap-btn').onclick = async () => {
     }
 
     function renderReviewRows() {
-  const reviewContainer = document.getElementById('score-review-container');
-  reviewContainer.innerHTML = '';
-  const uniqueDoodles = [...new Set(scoreDetectedDoodles.filter(d => d !== 'unknown'))].sort();
-  uniqueDoodles.forEach(doodle => {
-    const row = document.createElement('div');
-    row.className = 'review-row';
-    const digital = document.createElement('div');
-    digital.className = 'digital-doodle';
-    digital.style.backgroundImage = `url('images/${doodle}.png')`;
-    const snippetsDiv = document.createElement('div');
-    snippetsDiv.className = 'snippets';
-    scoreDetectedDoodles.forEach((d, i) => {
-      if (d === doodle) {
-        const img = document.createElement('img');
-        img.className = 'snippet';
-        img.src = scoreCellCanvases[i].toDataURL('image/png');
-        img.dataset.index = i;
-        img.addEventListener('click', () => scoreShowDoodlePopup(i));
-        snippetsDiv.appendChild(img);
-      }
-    });
-    row.appendChild(digital);
-    row.appendChild(snippetsDiv);
-    reviewContainer.appendChild(row);
-    // Optional: Fade-in for new/updated rows
-    row.style.opacity = '0';
-    setTimeout(() => {
-      row.style.transition = 'opacity 0.3s ease';
-      row.style.opacity = '1';
-    }, 50);
-  });
-}
+      const reviewContainer = document.getElementById('score-review-container');
+      reviewContainer.innerHTML = '';
+      const uniqueDoodles = [...new Set(scoreDetectedDoodles.filter(d => d !== 'unknown'))].sort();
+      uniqueDoodles.forEach(doodle => {
+        const row = document.createElement('div');
+        row.className = 'review-row';
+        const digital = document.createElement('div');
+        digital.className = 'digital-doodle';
+        digital.style.backgroundImage = `url('images/${doodle}.png')`;
+        const snippetsDiv = document.createElement('div');
+        snippetsDiv.className = 'snippets';
+        scoreDetectedDoodles.forEach((d, i) => {
+          if (d === doodle) {
+            const img = document.createElement('img');
+            img.className = 'snippet';
+            img.src = scoreCellCanvases[i].toDataURL('image/png');
+            img.dataset.index = i;
+            img.addEventListener('click', () => scoreShowDoodlePopup(i));
+            snippetsDiv.appendChild(img);
+          }
+        });
+        row.appendChild(digital);
+        row.appendChild(snippetsDiv);
+        reviewContainer.appendChild(row);
+        // Optional: Fade-in for new/updated rows
+        row.style.opacity = '0';
+        setTimeout(() => {
+          row.style.transition = 'opacity 0.3s ease';
+          row.style.opacity = '1';
+        }, 50);
+      });
+    }
 
     function scoreBuildBoard() {
       scoreBoard = Array(7).fill().map(() => Array(11).fill(null));
@@ -2280,44 +2420,54 @@ document.getElementById('score-snap-btn').onclick = async () => {
         }
       }
     }
+
     function scoreRenderDetectedGrid() {
       const grid = document.getElementById('score-detected-grid');
       grid.innerHTML = '';
       grid.style.display = 'grid';
       scoreGridCells = [];
-      scoreDetectedDoodles.forEach((d, i) => {
-        const cell = document.createElement('div');
-        cell.className = `grid-cell ${d}`;
-        cell.dataset.index = i;
-        cell.dataset.doodle = d;
-        cell.style.backgroundImage = `url('images/${d}.png')`;
-        if (scoreConfidences[i] < LOW_CONFIDENCE_THRESHOLD) cell.classList.add('low-confidence');
-        cell.addEventListener('click', () => scoreShowDoodlePopup(i));
-        grid.appendChild(cell);
-        scoreGridCells.push(cell);
-      });
+      let flat = 0;
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 11; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'grid-cell';
+          if (c !== 5) {
+            const d = scoreDetectedDoodles[flat];
+            const confidence = scoreConfidences[flat];
+            cell.dataset.index = flat;
+            cell.dataset.doodle = d;
+            if (d !== 'unknown') {
+              cell.style.backgroundImage = `url('images/raw${d}.png')`;
+            }
+            cell.addEventListener('click', () => scoreShowDoodlePopup(flat));
+            flat++;
+          }
+          grid.appendChild(cell);
+          scoreGridCells.push(cell);
+        }
+      }
     }
-    
-let scoreCurrentCellIndex = -1;
-function scoreShowDoodlePopup(index) {
-  scoreCurrentCellIndex = index;
-  const popup = document.getElementById('score-doodle-popup');
-  const grid = document.getElementById('score-popup-grid');
-  grid.innerHTML = '';
-  const opts = allPossibleDoodles; // Use all possible doodles
-  opts.forEach(d => {
-    const item = document.createElement('div');
-    item.className = 'popup-item';
-    item.style.backgroundImage = `url('images/${d}.png')`;
-    item.onclick = () => {
-      scoreDetectedDoodles[index] = d;
-      renderReviewRows(); // Refresh rows to move snippet
-      popup.style.display = 'none';
-    };
-    grid.appendChild(item);
-  });
-  popup.style.display = 'block';
-}
+
+    let scoreCurrentCellIndex = -1;
+    function scoreShowDoodlePopup(index) {
+      scoreCurrentCellIndex = index;
+      const popup = document.getElementById('score-doodle-popup');
+      const grid = document.getElementById('score-popup-grid');
+      grid.innerHTML = '';
+      const opts = allPossibleDoodles; // Use all possible doodles
+      opts.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'popup-item';
+        item.style.backgroundImage = `url('images/${d}.png')`;
+        item.onclick = () => {
+          scoreDetectedDoodles[index] = d;
+          renderReviewRows(); // Refresh rows to move snippet
+          popup.style.display = 'none';
+        };
+        grid.appendChild(item);
+      });
+      popup.style.display = 'block';
+    }
 
     async function scoreExportTrainingData() {
       const zip = new JSZip();
@@ -2336,33 +2486,34 @@ function scoreShowDoodlePopup(index) {
       URL.revokeObjectURL(url);
     }
 
-function initScoreScanner() {
-  scoreVideoLeft = document.getElementById('score-camera-preview-left');
-  scoreVideoRight = document.getElementById('score-camera-preview-right');
-  scoreOutputCanvasLeft = document.getElementById('score-output-canvas-left');
-  scoreOutputCanvasRight = document.getElementById('score-output-canvas-right');
-  scoreStatusEl = document.getElementById('score-status');
-  scoreLoadModel().then(() => scoreStartCamera());
+    function initScoreScanner() {
+      scoreVideoLeft = document.getElementById('score-camera-preview-left');
+      scoreVideoRight = document.getElementById('score-camera-preview-right');
+      scoreOutputCanvasLeft = document.getElementById('score-output-canvas-left');
+      scoreOutputCanvasRight = document.getElementById('score-output-canvas-right');
+      scoreStatusEl = document.getElementById('score-status');
+      scoreLoadModel().then(() => scoreStartCamera());
 
-  // Show initial elements
-  document.querySelector('.camera-container-split').style.display = 'flex';
-  document.getElementById('score-snap-btn').style.display = 'block';
-  document.getElementById('score-review-container').style.display = 'none';
-  document.getElementById('score-detected-grid').style.display = 'none';
-  document.getElementById('score-tally').style.display = 'none';
-  document.getElementById('score-score-btn').style.display = 'none';
+      // Show initial elements
+      document.querySelector('.camera-container-split').style.display = 'flex';
+      document.getElementById('score-snap-btn').textContent = 'SNAP'; // Updated text
+      document.getElementById('score-snap-btn').style.display = 'block';
+      document.getElementById('score-review-container').style.display = 'none';
+      document.getElementById('score-detected-grid').style.display = 'none';
+      document.getElementById('score-tally').style.display = 'none';
+      document.getElementById('score-score-btn').style.display = 'none';
 
-  // Hide canvases initially
-  scoreOutputCanvasLeft.style.display = 'none';
-  scoreOutputCanvasRight.style.display = 'none';
+      // Hide canvases initially
+      scoreOutputCanvasLeft.style.display = 'none';
+      scoreOutputCanvasRight.style.display = 'none';
 
-  // Init overlays and video loaded listener (on left)
-  scoreVideoLeft.addEventListener('loadedmetadata', () => {
-    scoreInitGridOverlay();
-    document.getElementById('score-snap-btn').style.display = 'block';
-    scoreStatusEl.textContent = "Camera ready! Point at notebook and SNAP";
-  }, { once: true });
-}
+      // Init overlays and video loaded listener (on left)
+      scoreVideoLeft.addEventListener('loadedmetadata', () => {
+        scoreInitGridOverlay();
+        document.getElementById('score-snap-btn').style.display = 'block';
+        scoreStatusEl.textContent = "Camera ready! Point at notebook and SNAP";
+      }, { once: true });
+    }
 
     populateLearnGrid();
     // ====================== FULL SCORING ANIMATION ======================
@@ -2705,8 +2856,10 @@ function initScoreScanner() {
         const items = result.perCellList || result.positions || [];
         if (items.length > 0) {
           await Promise.all(items.map(item => {
-            const flat = item.r * 10 + playableCols.indexOf(item.c);
-            const cell = scoreGridCells[flat];
+            const r = item.r;
+            const c = item.c;
+            const gridIdx = r * 11 + c;
+            const cell = scoreGridCells[gridIdx];
             if (cell) return animateCell(cell, item.pts !== undefined ? item.pts : null);
             return Promise.resolve();
           }));
@@ -2729,14 +2882,17 @@ function initScoreScanner() {
       tally.appendChild(totalRow);
       document.getElementById('score-new-scan-btn').style.display = 'block';
     }
+
     document.getElementById('score-score-btn').onclick = () => {
-      // Hide review, show detected grid and tally
+      // Hide review and camera snapshot/overlay
       document.getElementById('score-review-container').style.display = 'none';
+      document.querySelector('.camera-container-split').style.display = 'none'; // Hide snapshot
       document.getElementById('score-score-btn').style.display = 'none';
       scoreRenderDetectedGrid();
       document.getElementById('score-detected-grid').style.display = 'grid';
       runScoringAnimation();
     };
+
     console.log("✅ SCORE SHEET button wired successfully with full animation!");
     document.getElementById('score-new-scan-btn').onclick = () => {
       const tally = document.getElementById('score-tally');
