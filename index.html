@@ -922,7 +922,6 @@
     #score-modal #score-console-log,
     #score-modal #score-tweak-prompt {
       width: 90cqi;
-      max-width: 520px;
       margin: 0 auto;
     }
 
@@ -1184,12 +1183,13 @@
     }
 
     #score-instructions {
-  font-family: 'Fira Sans', sans-serif;
-  font-size: 4.5cqi; /* Matches status size – tweak if needed */
-  text-align: left;
-  margin: 2cqi 0;
-  color: #000000;
-}
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 4.5cqi;
+      /* Matches status size – tweak if needed */
+      text-align: left;
+      margin: 2cqi 0;
+      color: #000000;
+    }
 
     /* New styles for review rows */
     #score-review-container {
@@ -1343,41 +1343,41 @@
    This adds aspect-ratio: 1/1 to enforce square shape, centers it better, and tweaks size/margin for visibility. */
 
     #loading-icon {
-  width: 8cqi !important;
-  aspect-ratio: 1/1;
-  flex-shrink: 0;
-  background-image: url('images/gear1.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  border-radius: 0;
-  margin: 0;
-  padding: 0;
-  animation: spin 1s linear infinite;
-}
+      width: 8cqi !important;
+      aspect-ratio: 1/1;
+      flex-shrink: 0;
+      background-image: url('images/gear1.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      border-radius: 0;
+      margin: 0;
+      padding: 0;
+      animation: spin 1s linear infinite;
+    }
 
-#loading-icon2 {
-  width: 16cqi !important;
-  aspect-ratio: 1/1;
-  flex-shrink: 0;
-  background-image: url('images/gear2.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  border-radius: 0;
-  animation: spin-reverse 2s linear infinite;
-}
+    #loading-icon2 {
+      width: 16cqi !important;
+      aspect-ratio: 1/1;
+      flex-shrink: 0;
+      background-image: url('images/gear2.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      border-radius: 0;
+      animation: spin-reverse 2s linear infinite;
+    }
 
     #loading-container {
-  display: none;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: center;
-  align-items: center;
-  gap: 0cqi;
-  padding: 0;
-  width: fit-content !important;
-}
+      display: none;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0cqi;
+      padding: 0;
+      width: fit-content !important;
+    }
 
     #score-modal .scanner-content #loading-container {
       width: fit-content !important;
