@@ -365,6 +365,7 @@
 
     .modal-top.learn {
       background: #fbb065;
+      color: black;
     }
 
     .modal-top.portfolio {
@@ -393,24 +394,35 @@
       gap: 10.5cqi;
     }
 
-    .close-btn {
-      height: 9cqi;
-      line-height: 9cqi;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 9cqi;
-      border-radius: 2cqi;
-      background: rgba(255, 255, 255, 0.25);
-      color: white;
-    }
+    /* Replace the existing .close-btn style block in your <style> with this updated version. 
+   This adds the close.png as background-image with contain sizing, removes text-related styles, and keeps square shape. */
 
-    .modal-top.portfolio .close-btn,
-    .modal-top.guide .close-btn,
-    .modal-top.score .close-btn {
-      background: rgba(0, 0, 0, 0.15);
-      color: #000;
-    }
+.close-btn {
+  height: 7cqi;
+  width: 7cqi;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2cqi;
+  background: none; /* Remove semi-transparent bg since image handles it */
+  background-image: url('images/close.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: transparent; /* Hide any fallback text */
+  padding: 0;
+  min-width: auto;
+  cursor: pointer;
+}
+
+
+.modal-top.score .close-btn {
+  background-image: url('images/closewhite.png');
+}
+
+.modal-top.guide .close-btn {
+  background-image: url('images/closewhite.png');
+}
 
     .action-btn {
       height: 15cqi;
@@ -935,12 +947,14 @@
       /* Hidden until snap */
     }
 
-    #score-modal .status {
-      font-size: 4.5cqi;
-      text-align: center;
-      margin: 10px 0;
-      color: #fff;
-    }
+#score-modal .status {
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 4.5cqi;
+  text-align: left;
+  margin: 2cqi 0;
+  color: #000000;
+  background: none;
+}
 
     #score-modal .debug {
       font-size: 3.2cqi;
@@ -967,18 +981,18 @@
     }
 
     #score-modal .tweak-prompt {
-      display: none;
-      text-align: center;
-      font-size: 4cqi;
-      color: #ff0;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 2cqi;
-      border-radius: 8px;
-      width: 90cqi;
-      max-width: 520px;
-    }
-
-
+  display: block;
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 5cqi;
+  text-align: left;
+  margin: 2cqi 0;
+  color: #000000;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  width: 90cqi;
+  max-width: 520px;
+}
 
     #score-modal #score-detected-grid {
       display: none;
@@ -1048,6 +1062,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      font-family: 'Fira Sans', sans-serif;
       font-size: 4cqi;
       font-weight: bold;
       color: #fff;
@@ -1078,60 +1093,56 @@
     }
 
     #score-modal .tally-line {
-      flex: 1;
-      height: 3px;
-      background: #555;
-      margin: 0 15px;
-      border-radius: 1cqi;
-    }
+  flex: 1;
+  height: .5cqi;
+  background: #555;
+  margin: 0 15px;
+  border-radius: 3px;
+}
 
     #score-modal .score-box {
       padding: 8px 25px;
-      background: #333;
       border-radius: 9999px;
       font-size: 5.2cqi;
       font-weight: bold;
       min-width: 100px;
       text-align: center;
     }
+    #score-modal .score-box {
+  width: 10cqi; /* Adjust for bubble size – tweak as needed */
+  height: 10cqi;
+  min-width: auto; /* Remove fixed min-width */
+  padding: 0; /* No internal padding – text centers via flex */
+  background-color: transparent; /* Ensure no fallback color */
+  font-size: 3cqi; /* Smaller text to fit inside bubble – adjust */
+}
 
-    #score-modal button {
-      background: #5fbae9;
-      color: white;
-      padding: 4cqi 14cqi;
-      font-size: 6cqi;
-      border: none;
-      border-radius: 9999px;
-      margin-top: 2cqi;
-      cursor: pointer;
-    }
+#score-modal button:not(.close-btn) {
+  background: #5fbae9;
+  color: white;
+  padding: 5cqi 12cqi;
+  font-size: 7cqi;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  width: 85cqi;
+  font-weight: bold;
+}
 
-    #score-modal #score-snap-btn {
-      position: absolute;
-      bottom: 2cqi;
-      /* Space from bottom */
-      left: 50%;
-      transform: translateX(-50%);
-      width: 85%;
-      max-width: 520px;
-      padding: 5cqi 12cqi;
-      font-size: 7cqi;
-    }
+#score-modal #score-snap-btn {
+  position: absolute;
+  bottom: 4cqi; /* Increased from 2cqi for more space from bottom */
+  left: 50%;
+  transform: translateX(-50%);
+}
 
-    #score-modal #score-score-btn {
-      position: absolute;
-      bottom: 2cqi;
-      /* Same position */
-      left: 50%;
-      transform: translateX(-50%);
-      width: 42.5%;
-      /* Half size */
-      max-width: 260px;
-      padding: 2.5cqi 6cqi;
-      font-size: 3.5cqi;
-      font-weight: bold;
-      display: none;
-    }
+#score-modal #score-score-btn {
+  position: absolute;
+  bottom: 4cqi; /* Matches SNAP for consistency and more space */
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+}
 
     #score-modal #score-final-total {
       font-size: 10cqi;
@@ -1179,24 +1190,15 @@
       border-color: #ff0;
     }
 
-    #score-instructions {
-      font-family: 'Fira Sans', sans-serif;
-      font-size: 4.5cqi;
-      /* Matches status size – tweak if needed */
-      text-align: left;
-      margin: 2cqi 0;
-      color: #000000;
-    }
-
-    /* New styles for review rows */
     #score-review-container {
-      display: none;
-      flex: 1;
-      flex-direction: column;
-      overflow-y: auto;
-      width: 100%;
-      padding: 2cqi;
-    }
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  overflow-y: auto;
+  width: 100%;
+  padding: 2cqi;
+  padding-bottom: 12cqi; /* Increased bottom padding to keep rows above the button */
+}
 
     .review-row {
       display: flex;
@@ -1240,7 +1242,6 @@
     #score-debug-info,
     #score-debug-cells,
     #score-console-log,
-    #score-tweak-prompt,
     #score-export-btn,
     #score-new-scan-btn {
       display: none !important;
@@ -1447,7 +1448,7 @@
         <div class="title">Learn a Doodle</div>
         <div class="buttons">
           <button class="action-btn learn" id="modal-learn-btn">Learn</button>
-          <button class="close-btn" id="close-learn">✕</button>
+          <button class="close-btn" id="close-learn"></button>
         </div>
       </div>
       <div id="learn-grid" class="modal-grid"></div>
@@ -1459,7 +1460,7 @@
         <div class="title">Portfolio</div>
         <div class="buttons">
           <button class="action-btn remove" id="modal-remove-btn">Remove</button>
-          <button class="close-btn" id="close-portfolio">✕</button>
+          <button class="close-btn" id="close-portfolio"></button>
         </div>
       </div>
       <div id="portfolio-grid" class="modal-grid"></div>
@@ -1471,7 +1472,7 @@
         <div class="title">Doodle Guide</div>
         <div class="buttons">
           <button id="full-guide-btn">FULL GUIDE</button>
-          <button class="close-btn" id="close-guide">✕</button>
+          <button class="close-btn" id="close-guide"></button>
         </div>
       </div>
       <div id="guide-content"></div>
@@ -1482,7 +1483,7 @@
       <div class="modal-top score">
         <div class="title">Score My Sheet</div>
         <div class="buttons">
-          <button class="close-btn" id="close-score">✕</button>
+          <button class="close-btn" id="close-score"></button>
         </div>
       </div>
       <div id="score-content" class="scanner-content">
@@ -1503,14 +1504,11 @@
           <div id="loading-icon"></div>
           <div id="loading-icon2"></div>
         </div>
-        <p id="score-instructions">Scan your Notebook by aligning the grids with your pages and tapping "SNAP." Ensure
-          that each doodle is fully visible in its own grid cell.</p>
         <div id="score-status" class="status">Waiting for photo...</div>
         <div class="debug" id="score-debug-info">8.0 • Clean scoring mode</div>
         <div id="score-debug-cells" class="debug-cells"></div>
         <div id="score-console-log" class="console-log">Waiting for photo...</div>
-        <div id="score-tweak-prompt" class="tweak-prompt">Detected! Tap any wrong cell to correct (yellow = low
-          confidence)</div>
+        <div id="score-tweak-prompt" class="tweak-prompt">Scan your game sheet by lining up the grids with your two Notebook pages. Ensure each doodle is in its own grid cell, then press SNAP.</div>
         <div id="score-review-container"></div>
         <div id="score-detected-grid"></div>
         <button id="score-score-btn" style="display:none;">SCORE SHEET</button>
@@ -2270,7 +2268,6 @@
       scoreOutputCanvasLeft.style.display = 'block';
       scoreOutputCanvasRight.style.display = 'block';
       // Hide instructions and snap btn immediately after showing snapshot
-      document.getElementById('score-instructions').style.display = 'none';
       document.getElementById('score-snap-btn').style.display = 'none';
       // Show loading icon right after snapshot is visible (before flash and ML)
       document.getElementById('loading-container').style.display = 'flex';
@@ -2364,6 +2361,8 @@
       document.getElementById('score-review-container').style.display = 'flex';
       document.getElementById('score-score-btn').style.display = 'block';
       renderReviewRows();
+      document.getElementById('score-tweak-prompt').textContent = "Make sure your doodles have been identified correctly. Tap misplaced doodles to correct them.";
+document.getElementById('score-tweak-prompt').style.display = 'block';
       // Update status
       scoreStatusEl.textContent = "Review detections below. Tap snippets to correct.";
       scoreStatusEl.style.display = 'block';
@@ -2794,90 +2793,116 @@
       }
       return { total, perCellList };
     }
+    
     async function animateCell(cell, pts) {
-      cell.classList.add('scoring');
-      if (pts !== null && pts !== 0) {
-        const bubble = document.createElement('div');
-        bubble.className = 'point-bubble';
-        bubble.style.backgroundImage = pts < 0 ? "url('images/blackpointbubble.png')" : "url('images/purplepointbubble.png')";
-        bubble.textContent = pts > 0 ? `+${pts}` : pts;
-        cell.appendChild(bubble);
-        bubble.style.transition = 'none';
-        bubble.style.top = '50%'; bubble.style.left = '50%';
-        bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)';
-        bubble.offsetHeight;
-        bubble.style.transition = 'transform 0.9s cubic-bezier(0.68, -0.55, 0.27, 1.55), top 0.9s';
-        bubble.style.transform = 'translate(-50%, -220%) scale(1.4) rotate(360deg)';
-        bubble.style.top = '15%';
-        setTimeout(() => {
-          bubble.style.transition = 'transform 0.7s ease-out, top 0.7s, left 0.7s';
-          bubble.style.transform = 'translate(-50%, -50%) scale(0.3) rotate(360deg)';
-          bubble.style.top = '10%';
-          bubble.style.left = '10%';
-        }, 950);
-      }
-      await new Promise(r => setTimeout(r, 700));
-      cell.classList.remove('scoring');
+  cell.classList.add('scoring');
+  if (pts !== null && pts !== 0) {
+    const bubble = document.createElement('div');
+    bubble.className = 'point-bubble';
+    bubble.style.backgroundImage = pts < 0 ? "url('images/blackpointbubble.png')" : "url('images/purplepointbubble.png')";
+    bubble.textContent = pts > 0 ? `${pts}` : pts;
+    cell.appendChild(bubble);
+    bubble.style.transition = 'none';
+    bubble.style.top = '50%'; // Initial vertical position (centered) – tweak % for start point
+    bubble.style.left = '50%'; // Initial horizontal position (centered) – tweak % for start point
+    bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)'; // Starting transform: scale(1) = normal size, rotate(0deg) = no rotation
+    bubble.offsetHeight;
+    // First phase: Quick hop up with deceleration (fast start, slow end)
+    bubble.style.transition = 'transform 0.15s cubic-bezier(0.1, 0.9, 0.2, 1), top 0.15s cubic-bezier(0.1, 0.9, 0.2, 1)'; // Hop up duration: 0.2s (half of 400ms total hop), ease-out curve for deceleration
+    bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(180deg)'; // Hop up spin: rotate(180deg) halfway (full 360 over up+down), no scale
+    bubble.style.top = '10%'; // Hop peak: '25%' (half way out upward) – tweak % for jump height
+    // After up, hop down with acceleration (slow start, fast end)
+    setTimeout(() => {
+      bubble.style.transition = 'transform 0.15s cubic-bezier(0.7, 0, 0.9, 0.1), top 0.15s cubic-bezier(0.7, 0, 0.9, 0.1)'; // Hop down duration: 0.2s, ease-in curve for acceleration
+      bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(360deg)'; // Hop down spin: complete to 360deg, no scale
+      bubble.style.top = '50%'; // Land back at center
+    }, 200); // Delay for down phase: 200ms (after up completes)
+    // Pause after landing, then second phase: slide to top-left with scale down
+    setTimeout(() => {
+      bubble.style.transition = 'transform 0.5s ease-out, top 0.5s ease-out, left 0.5s ease-out'; // Slide/scale duration: 0.5s (tweak for speed), ease-out curve
+      bubble.style.transform = 'translate(0%, 0%) scale(0.6) rotate(360deg)'; // End: scale(0.5) = 1/2 size (tweak scale), no extra rotate (keeps at 360deg), translate(0%,0%) for top-left pin
+      bubble.style.top = '-35%'; // Slide end vertical: '0%' top-left (tweak %)
+      bubble.style.left = '-35%'; // Slide end horizontal: '0%' top-left (tweak %)
+    }, 400 + 750); // Delay before slide: 400ms (full hop) + 750ms pause
+  }
+  await new Promise(r => setTimeout(r, 700)); // Final pause before removing 'scoring' class: 700ms (tweak for overall cell highlight duration)
+  cell.classList.remove('scoring');
+}
+    
+function addTallyRow(type, subtotal) {
+  const tally = document.getElementById('score-tally');
+  const row = document.createElement('div');
+  row.className = 'tally-row';
+  const img = document.createElement('img');
+  img.src = type === '3dset' ? 'images/cube.png' : type === 'variety' ? '' : `images/${type}.png`;
+  if (type === 'variety') img.style.display = 'none';
+  const line = document.createElement('div'); line.className = 'tally-line';
+  const scoreBox = document.createElement('div');
+  scoreBox.className = 'score-box';
+  scoreBox.style.backgroundImage = subtotal >= 0 ? "url('images/purplepointbubble.png')" : "url('images/blackpointbubble.png')";
+  scoreBox.style.backgroundSize = 'contain';
+  scoreBox.style.backgroundRepeat = 'no-repeat';
+  scoreBox.style.backgroundPosition = 'center';
+  scoreBox.style.display = 'flex';
+  scoreBox.style.alignItems = 'center';
+  scoreBox.style.justifyContent = 'center';
+  scoreBox.style.color = '#fff'; // White text for visibility on bubbles
+  scoreBox.style.textShadow = '0 1px 2px #000'; // Slight shadow for readability
+  scoreBox.textContent = subtotal > 0 ? `+${subtotal}` : subtotal;
+  row.append(img, line, scoreBox);
+  tally.appendChild(row);
+}
+
+async function runScoringAnimation() {
+  console.log("SCORE SHEET clicked – starting full animation");
+  scoreBuildBoard();
+  scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
+  const tally = document.getElementById('score-tally');
+  tally.style.display = 'block';
+  tally.innerHTML = '';
+  let total = 0;
+  for (let rule of scoringRules) {
+    let result = rule.base !== undefined ? calculateBase(rule.type, rule.base) : rule.calc();
+    let subtotal = result.total || 0;
+    total += subtotal;
+    const items = result.perCellList || result.positions || [];
+    if (items.length > 0) {
+      await Promise.all(items.map(item => {
+        const r = item.r;
+        const c = item.c;
+        const gridIdx = r * 11 + c;
+        const cell = scoreGridCells[gridIdx];
+        if (cell) return animateCell(cell, item.pts !== undefined ? item.pts : null);
+        return Promise.resolve();
+      }));
     }
-    function addTallyRow(type, subtotal) {
-      const tally = document.getElementById('score-tally');
-      const row = document.createElement('div');
-      row.className = 'tally-row';
-      const img = document.createElement('img');
-      img.src = type === '3dset' ? 'images/cube.png' : type === 'variety' ? '' : `images/${type}.png`;
-      if (type === 'variety') img.style.display = 'none';
-      const line = document.createElement('div'); line.className = 'tally-line';
-      const scoreBox = document.createElement('div');
-      scoreBox.className = 'score-box';
-      scoreBox.textContent = subtotal >= 0 ? `+${subtotal}` : subtotal;
-      scoreBox.style.color = subtotal >= 0 ? '#5fbae9' : '#ff6666';
-      row.append(img, line, scoreBox);
-      tally.appendChild(row);
+    if (subtotal !== 0) {
+      const displayType = rule.type === '3dset' ? '3dset' : rule.type;
+      addTallyRow(displayType, subtotal);
     }
-    async function runScoringAnimation() {
-      console.log("SCORE SHEET clicked – starting full animation");
-      scoreBuildBoard();
-      scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
-      const tally = document.getElementById('score-tally');
-      tally.style.display = 'block';
-      tally.innerHTML = '';
-      let total = 0;
-      for (let rule of scoringRules) {
-        let result = rule.base !== undefined ? calculateBase(rule.type, rule.base) : rule.calc();
-        total += result.total || 0;
-        const items = result.perCellList || result.positions || [];
-        if (items.length > 0) {
-          await Promise.all(items.map(item => {
-            const r = item.r;
-            const c = item.c;
-            const gridIdx = r * 11 + c;
-            const cell = scoreGridCells[gridIdx];
-            if (cell) return animateCell(cell, item.pts !== undefined ? item.pts : null);
-            return Promise.resolve();
-          }));
-        }
-        const displayType = rule.type === '3dset' ? '3dset' : rule.type;
-        addTallyRow(displayType, result.total || 0);
-        await new Promise(r => setTimeout(r, 420));
-      }
-      const unique = new Set(scoreDetectedDoodles).size;
-      let bonus = unique <= 12 ? -10 : unique <= 14 ? 1 : unique === 15 ? 5 : unique === 16 ? 10 : unique === 17 ? 16 : unique === 18 ? 23 : unique === 19 ? 31 : 40;
-      total += bonus;
-      addTallyRow('variety', bonus);
-      const totalRow = document.createElement('div');
-      totalRow.style.fontSize = '7.5cqi';
-      totalRow.style.fontWeight = 'bold';
-      totalRow.style.color = '#ff0';
-      totalRow.style.textAlign = 'center';
-      totalRow.style.marginTop = '25px';
-      totalRow.textContent = `TOTAL SCORE: ${total}`;
-      tally.appendChild(totalRow);
-      document.getElementById('score-new-scan-btn').style.display = 'block';
-    }
+    await new Promise(r => setTimeout(r, 420));
+  }
+  const unique = new Set(scoreDetectedDoodles).size;
+  let bonus = unique <= 12 ? -10 : unique <= 14 ? 1 : unique === 15 ? 5 : unique === 16 ? 10 : unique === 17 ? 16 : unique === 18 ? 23 : unique === 19 ? 31 : 40;
+  total += bonus;
+  if (bonus !== 0) {
+    addTallyRow('variety', bonus);
+  }
+  const totalRow = document.createElement('div');
+  totalRow.style.fontSize = '7.5cqi';
+  totalRow.style.fontWeight = 'bold';
+  totalRow.style.color = '#ff0';
+  totalRow.style.textAlign = 'center';
+  totalRow.style.marginTop = '25px';
+  totalRow.textContent = `TOTAL SCORE: ${total}`;
+  tally.appendChild(totalRow);
+  document.getElementById('score-new-scan-btn').style.display = 'block';
+}
 
     document.getElementById('score-score-btn').onclick = () => {
       // Hide review and camera snapshot/overlay
       document.getElementById('score-review-container').style.display = 'none';
+      document.getElementById('score-tweak-prompt').style.display = 'none';
       document.querySelector('.camera-container-split').style.display = 'none'; // Hide snapshot
       document.getElementById('score-score-btn').style.display = 'none';
       scoreRenderDetectedGrid();
