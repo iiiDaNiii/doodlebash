@@ -397,32 +397,34 @@
     /* Replace the existing .close-btn style block in your <style> with this updated version. 
    This adds the close.png as background-image with contain sizing, removes text-related styles, and keeps square shape. */
 
-.close-btn {
-  height: 7cqi;
-  width: 7cqi;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 2cqi;
-  background: none; /* Remove semi-transparent bg since image handles it */
-  background-image: url('images/close.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  color: transparent; /* Hide any fallback text */
-  padding: 0;
-  min-width: auto;
-  cursor: pointer;
-}
+    .close-btn {
+      height: 7cqi;
+      width: 7cqi;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 2cqi;
+      background: none;
+      /* Remove semi-transparent bg since image handles it */
+      background-image: url('images/close.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      color: transparent;
+      /* Hide any fallback text */
+      padding: 0;
+      min-width: auto;
+      cursor: pointer;
+    }
 
 
-.modal-top.score .close-btn {
-  background-image: url('images/closewhite.png');
-}
+    .modal-top.score .close-btn {
+      background-image: url('images/closewhite.png');
+    }
 
-.modal-top.guide .close-btn {
-  background-image: url('images/closewhite.png');
-}
+    .modal-top.guide .close-btn {
+      background-image: url('images/closewhite.png');
+    }
 
     .action-btn {
       height: 15cqi;
@@ -885,6 +887,10 @@
       opacity: 1;
     }
 
+    #score-content {
+      container-type: size;
+    }
+
     #score-modal .scanner-content {
       flex: 1;
       display: flex;
@@ -947,14 +953,14 @@
       /* Hidden until snap */
     }
 
-#score-modal .status {
-  font-family: 'Fira Sans', sans-serif;
-  font-size: 4.5cqi;
-  text-align: left;
-  margin: 2cqi 0;
-  color: #000000;
-  background: none;
-}
+    #score-modal .status {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 4.5cqi;
+      text-align: left;
+      margin: 2cqi 0;
+      color: #000000;
+      background: none;
+    }
 
     #score-modal .debug {
       font-size: 3.2cqi;
@@ -981,18 +987,18 @@
     }
 
     #score-modal .tweak-prompt {
-  display: block;
-  font-family: 'Fira Sans', sans-serif;
-  font-size: 5cqi;
-  text-align: left;
-  margin: 2cqi 0;
-  color: #000000;
-  background: none;
-  padding: 0;
-  border-radius: 0;
-  width: 90cqi;
-  max-width: 520px;
-}
+      display: block;
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 5cqi;
+      text-align: left;
+      margin: 2cqi 0;
+      color: #000000;
+      background: none;
+      padding: 6cqi 0cqi 0cqi 0cqi;
+      border-radius: 0;
+      width: 90cqi;
+      max-width: 520px;
+    }
 
     #score-modal #score-detected-grid {
       display: none;
@@ -1049,27 +1055,37 @@
     }
 
     #score-modal .grid-cell.scoring {
-      transform: scale(1.25);
+      transform: scale(1.75);
     }
 
+#score-modal .grid-cell.low-opacity {
+  opacity: 0.5; /* 50% opacity for non-scoring doodles */
+  transition: opacity 0.3s ease; /* Smooth fade for opacity changes */
+}
+
+#score-modal .grid-cell.non-scoring {
+  transform: scale(0.9);
+  transition: transform 0.3s ease; /* Smooth scale for non-scoring doodles */
+}
+
     #score-modal .point-bubble {
-      position: absolute;
-      width: 6cqi;
-      height: 6cqi;
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Fira Sans', sans-serif;
-      font-size: 4cqi;
-      font-weight: bold;
-      color: #fff;
-      pointer-events: none;
-      z-index: 30;
-      transition: all .8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-    }
+  position: absolute;
+  width: 6cqi;
+  height: 6cqi;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 4cqi;
+  font-weight: bold;
+  color: #fff;
+  pointer-events: none;
+  z-index: 30;
+  transition: all .8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
 
     #score-modal #score-tally {
       display: none;
@@ -1093,56 +1109,107 @@
     }
 
     #score-modal .tally-line {
-  flex: 1;
-  height: .5cqi;
-  background: #555;
-  margin: 0 15px;
-  border-radius: 3px;
+      flex: 1;
+      height: .5cqi;
+      background: #555;
+      margin: 1.5cqi 1.5cqi 1.5cqi 1.5cqi;
+      border-radius: 1cqi;
+    }
+
+    .unique-count-box {
+      background: #f0f0f0;
+      /* Light grey */
+      border-radius: 1.5cqi;
+      /* Fully rounded pill shape */
+      padding: 1.5cqi 4cqi;
+      /* Vertical/horizontal padding for number centering */
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 5cqi;
+      font-weight: bold;
+      color: #333333;
+      /* Dark text for contrast */
+      min-width: 10cqi;
+      /* Matches img size for consistency; adjust if needed */
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #score-modal .tally-row:has(.unique-count-box) img {
+  width: 20cqi;
+  height: 20cqi;
+  object-fit: contain;
 }
+
+    .unique-text {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 3cqi;
+      color: #000000;
+      /* White text to match modal theme */
+      margin: 0 2cqi;
+      /* Horizontal spacing around text */
+      white-space: nowrap;
+      /* Prevent wrapping */
+    }
 
     #score-modal .score-box {
       padding: 8px 25px;
       border-radius: 9999px;
       font-size: 5.2cqi;
       font-weight: bold;
+      font-family: 'Fira Sans', sans-serif;
+      /* Matches grid point bubbles */
       min-width: 100px;
       text-align: center;
     }
+
     #score-modal .score-box {
-  width: 10cqi; /* Adjust for bubble size – tweak as needed */
-  height: 10cqi;
-  min-width: auto; /* Remove fixed min-width */
-  padding: 0; /* No internal padding – text centers via flex */
-  background-color: transparent; /* Ensure no fallback color */
-  font-size: 3cqi; /* Smaller text to fit inside bubble – adjust */
-}
+      width: 10cqi;
+      /* Adjust for bubble size – tweak as needed */
+      height: 10cqi;
+      min-width: auto;
+      /* Remove fixed min-width */
+      padding: 0;
+      /* No internal padding – text centers via flex */
+      background-color: transparent;
+      /* Ensure no fallback color */
+      font-size: 3cqi;
+      /* Smaller text to fit inside bubble – adjust */
+    }
 
-#score-modal button:not(.close-btn) {
-  background: #5fbae9;
-  color: white;
-  padding: 5cqi 12cqi;
-  font-size: 7cqi;
-  border: none;
-  border-radius: 9999px;
-  cursor: pointer;
-  width: 85cqi;
-  font-weight: bold;
-}
+    #score-modal button:not(.close-btn) {
+      background: #5fbae9;
+      color: white;
+      font-size: 4cqi;
+      border: none;
+      border-radius: 9999px;
+      cursor: pointer;
+      flex: 1;
+      /* Makes buttons equally share container width */
+      width: auto;
+      /* Overrides any fixed widths */
+      height: 18cqi;
+      min-width: 14cqi;
+      /* Added to match .action-btn */
+      font-family: 'Covered By Your Grace', cursive;
+      /* Explicitly set to match global button font */
+    }
 
-#score-modal #score-snap-btn {
-  position: absolute;
-  bottom: 4cqi; /* Increased from 2cqi for more space from bottom */
-  left: 50%;
-  transform: translateX(-50%);
-}
 
-#score-modal #score-score-btn {
-  position: absolute;
-  bottom: 4cqi; /* Matches SNAP for consistency and more space */
-  left: 50%;
-  transform: translateX(-50%);
-  display: none;
-}
+    #score-modal #score-snap-btn {
+      position: absolute;
+      bottom: 20cqi;
+      /* Increased from 2cqi for more space from bottom */
+      left: 50%;
+      transform: translateX(-50%);
+      width: 65cqi;
+      font-size: 9cqi;
+    }
+
+    #score-modal #score-snap-btn:hover {
+      transform: translateX(-50%) scale(1.12);
+    }
 
     #score-modal #score-final-total {
       font-size: 10cqi;
@@ -1191,14 +1258,15 @@
     }
 
     #score-review-container {
-  display: none;
-  flex: 1;
-  flex-direction: column;
-  overflow-y: auto;
-  width: 100%;
-  padding: 2cqi;
-  padding-bottom: 12cqi; /* Increased bottom padding to keep rows above the button */
-}
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      overflow-y: auto;
+      width: 100%;
+      padding: 2cqi;
+      padding-bottom: 12cqi;
+      /* Increased bottom padding to keep rows above the button */
+    }
 
     .review-row {
       display: flex;
@@ -1242,7 +1310,6 @@
     #score-debug-info,
     #score-debug-cells,
     #score-console-log,
-    #score-export-btn,
     #score-new-scan-btn {
       display: none !important;
     }
@@ -1250,6 +1317,7 @@
     .camera-container-split {
       display: flex;
       width: 90cqw;
+      top: 3cqi;
       aspect-ratio: 11 / 7;
       overflow: hidden;
       position: relative;
@@ -1292,7 +1360,7 @@
 
     .camera-container-split video {
       position: absolute;
-      top: 0;
+      top: 10;
       width: 220%;
       /* Wide enough to cover full + gap shift */
       height: 100%;
@@ -1350,7 +1418,6 @@
       background-position: center;
       border-radius: 0;
       margin: 0;
-      padding: 0;
       animation: spin 1s linear infinite;
     }
 
@@ -1373,7 +1440,7 @@
       justify-content: center;
       align-items: center;
       gap: 0cqi;
-      padding: 0;
+      padding: 10cqi;
       width: fit-content !important;
     }
 
@@ -1408,6 +1475,60 @@
       to {
         transform: rotate(360deg);
       }
+    }
+
+    #score-buttons-container {
+      position: absolute;
+      bottom: 4cqi;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: row;
+      /* Explicitly horizontal (left/right) */
+      flex-wrap: nowrap;
+      /* Prevent wrapping to vertical stack */
+      justify-content: space-between;
+      /* Spread to left/right with gap padding */
+      align-items: center;
+      gap: 3cqi;
+      /* Padding between buttons */
+      width: 90cqi;
+    }
+
+    #score-modal #score-buttons-container button {
+      flex: none;
+      /* Override flex:1 to prevent growing based on content */
+      width: calc((100% - 3cqi) / 2);
+      /* Equal width, accounting for 3cqi gap */
+      min-width: 0;
+      /* Override any min-width that could force inequality */
+      padding: 0 2cqi;
+      /* Horizontal padding for better text centering */
+      text-align: center;
+      /* Center text horizontally */
+      white-space: normal;
+      /* Allow text to wrap to multiple lines */
+      word-break: break-word;
+      /* Break long words to fit */
+      overflow: hidden;
+      /* Hide any overflow if text still doesn't fit */
+      height: 18cqi;
+      /* Keep existing height; fits 1-2 lines of wrapped text */
+      font-size: 4cqi;
+      /* Consistent font size; reduce to 3.5cqi if text overflows too much */
+      position: relative;
+      /* Ensure normal flow positioning */
+      z-index: 1;
+      /* Prevent layering overlap */
+      box-sizing: border-box;
+      /* Reinforce global box-sizing */
+    }
+
+    #score-modal #score-export-btn {
+      background: #fbb065;
+      /* Yellow background from learn theme */
+      color: #000000;
+      /* Black text */
     }
   </style>
 </head>
@@ -1486,6 +1607,7 @@
           <button class="close-btn" id="close-score"></button>
         </div>
       </div>
+
       <div id="score-content" class="scanner-content">
         <div class="camera-container-split">
           <div class="camera-left">
@@ -1508,12 +1630,15 @@
         <div class="debug" id="score-debug-info">8.0 • Clean scoring mode</div>
         <div id="score-debug-cells" class="debug-cells"></div>
         <div id="score-console-log" class="console-log">Waiting for photo...</div>
-        <div id="score-tweak-prompt" class="tweak-prompt">Scan your game sheet by lining up the grids with your two Notebook pages. Ensure each doodle is in its own grid cell, then press SNAP.</div>
+        <div id="score-tweak-prompt" class="tweak-prompt">Scan your game sheet by lining up the grids with your two
+          Notebook pages. Ensure each doodle is in its own grid cell, then press SNAP.</div>
         <div id="score-review-container"></div>
         <div id="score-detected-grid"></div>
-        <button id="score-score-btn" style="display:none;">SCORE SHEET</button>
-        <button id="score-export-btn" style="display:none;">📤 EXPORT TRAINING ZIP</button>
-        <button id="score-snap-btn" style="display:none;">SNAP NOW</button>
+        <div id="score-buttons-container" style="display: none;"> <!-- Hidden initially; shown when buttons appear -->
+          <button id="score-export-btn" style="display:none;">📤 EXPORT DOODLES</button>
+          <button id="score-score-btn" style="display:none;">SCORE SHEET</button>
+        </div>
+        <button id="score-snap-btn" style="display:none;"></button>
         <div id="score-tally"></div>
         <div id="score-final-total" style="display:none;"></div>
         <button id="score-new-scan-btn" style="display:none;">NEW SCAN</button>
@@ -1649,6 +1774,97 @@
         return key;
       });
     }
+
+const audio = {};
+const soundsIndex = {}; // Tracks current index per sound type
+
+const soundFiles = {
+  shuffle: ['sounds/clack1.mp3', 'sounds/clack2.mp3', 'sounds/clack3.mp3'],
+  learn: 'sounds/learn.mp3',
+  remove: 'sounds/remove.mp3',
+  snap: 'sounds/snap.mp3',
+  score: 'sounds/score.mp3',
+  win: 'sounds/win.mp3',
+  modalslide: ['sounds/modalslide1.mp3', 'sounds/modalslide2.mp3', 'sounds/modalslide3.mp3', 'sounds/modalslide4.mp3'],  // ← NEW: Add this line
+  button: ['sounds/button1.mp3', 'sounds/button2.mp3', 'sounds/button3.mp3'],  // ← NEW: Add this line
+  selectbutton: ['sounds/button9.mp3', 'sounds/button10.mp3', 'sounds/button11.mp3']
+};
+
+function preloadAudio() {
+  if (Object.keys(audio).length > 0) return; // already preloaded
+
+  console.log('🎵 Preloading all sound effects...');
+
+  // NEW: Custom volumes per sound type (0.0 silent → 1.0 max)
+  const volumes = {
+    shuffle: 0.6,
+    learn: 0.6,
+    remove: 0.6,
+    snap: 0.6,
+    score: 0.6,
+    win: 0.6,
+    modalslide: 0.3  // ← Half volume for slides (adjust as needed)
+  };
+
+  Object.entries(soundFiles).forEach(([name, files]) => {
+    const vol = volumes[name] || 0.6;  // Fallback to 0.6 if not specified
+    if (Array.isArray(files)) {
+      soundsIndex[name] = 0;
+      files.forEach((src, i) => {
+        const soundKey = `${name}_${i}`;
+        audio[soundKey] = new Audio(src);
+        audio[soundKey].preload = 'auto';
+        audio[soundKey].volume = vol;  // ← Use custom volume
+
+        // Log load errors
+        audio[soundKey].onerror = () => {
+          console.error(`❌ Failed to load ${src}: ${audio[soundKey].error.message}`);
+        };
+        audio[soundKey].onloadeddata = () => {
+          console.log(`   Loaded: ${soundKey} (${src}) at volume ${vol}`);
+        };
+      });
+    } else {
+      audio[name] = new Audio(files);
+      audio[name].preload = 'auto';
+      audio[name].volume = vol;  // ← Use custom volume
+
+      // Log load errors for single files too
+      audio[name].onerror = () => {
+        console.error(`❌ Failed to load ${files}: ${audio[name].error.message}`);
+      };
+      audio[name].onloadeddata = () => {
+        console.log(`   Loaded: ${name} (${files}) at volume ${vol}`);
+      };
+    }
+  });
+  console.log('✅ All sounds preloaded! (Check for errors above)');
+}
+
+// UPDATED playSound – cycles clacks perfectly
+function playSound(name) {
+  const files = soundFiles[name];
+  if (!files) return;
+
+  let soundKey;
+  if (Array.isArray(files)) {
+    const idx = soundsIndex[name];
+    soundKey = `${name}_${idx}`;
+    soundsIndex[name] = (idx + 1) % files.length; // cycle
+  } else {
+    soundKey = name;
+  }
+
+  const sound = audio[soundKey];
+  if (sound) {
+    sound.currentTime = 0;
+    sound.play().catch(e => {
+      console.warn('🔇 Audio blocked (common on first load):', e);
+    });
+  }
+}
+
+
     let currentGuideFilter = null;
     function renderGuide(filterDoodle = null) {
       currentGuideFilter = filterDoodle;
@@ -1803,6 +2019,7 @@
       return tip;
     }
     function openModal(modalId) {
+      playSound('modalslide');  // ← NEW: Play on open
       const modal = document.getElementById(modalId);
       if (!modal) return;
       modal.style.display = 'flex';
@@ -1811,6 +2028,7 @@
     }
 
     function closeModal(modalId) {
+      playSound('modalslide');  // ← NEW: Play on open
       const modal = document.getElementById(modalId);
       if (!modal) return;
       modal.classList.remove('active');
@@ -1832,72 +2050,97 @@
       setTimeout(() => modal.style.display = 'none', 400);
     }
 
-    document.getElementById('guide-btn').addEventListener('click', () => { hideTooltip(); renderGuide(); openModal('guide-modal'); });
+    document.getElementById('guide-btn').addEventListener('click', () => {
+      playSound('button');
+      hideTooltip(); renderGuide(); openModal('guide-modal'); });
     document.getElementById('full-guide-btn').addEventListener('click', () => renderGuide(null));
-    document.getElementById('close-guide').addEventListener('click', () => closeModal('guide-modal'));
-    document.getElementById('learn-btn').addEventListener('click', () => { hideTooltip(); populateLearnGrid(); openModal('learn-modal'); });
-    document.getElementById('close-learn').addEventListener('click', () => closeModal('learn-modal'));
-    document.getElementById('portfolio-btn').addEventListener('click', () => { hideTooltip(); populatePortfolioGrid(); openModal('portfolio-modal'); });
-    document.getElementById('close-portfolio').addEventListener('click', () => closeModal('portfolio-modal'));
-    document.getElementById('score-btn').addEventListener('click', () => { hideTooltip(); openModal('score-modal'); initScoreScanner(); });
+   document.getElementById('close-guide').addEventListener('click', () => { 
+  playSound('selectbutton');  // ← NEW
+  closeModal('guide-modal'); 
+});
+    document.getElementById('learn-btn').addEventListener('click', () => { 
+      playSound('button');
+      hideTooltip(); populateLearnGrid(); openModal('learn-modal'); });
+    document.getElementById('close-learn').addEventListener('click', () => { 
+  playSound('selectbutton');  // ← NEW
+  closeModal('learn-modal'); 
+});
+    document.getElementById('portfolio-btn').addEventListener('click', () => { 
+      playSound('button');
+      hideTooltip(); populatePortfolioGrid(); openModal('portfolio-modal'); });
+    document.getElementById('close-portfolio').addEventListener('click', () => { 
+  playSound('selectbutton');  // ← NEW
+  closeModal('portfolio-modal'); 
+});
+    document.getElementById('score-btn').addEventListener('click', () => { 
+      playSound('button');
+      hideTooltip(); openModal('score-modal'); initScoreScanner(); });
     document.getElementById('close-score').addEventListener('click', () => {
-      closeModal('score-modal');
-      if (scoreStream) { scoreStream.getTracks().forEach(t => t.stop()); scoreStream = null; }
-    });
+  playSound('selectbutton');  // ← NEW
+  closeModal('score-modal');
+  if (scoreStream) { scoreStream.getTracks().forEach(t => t.stop()); scoreStream = null; }
+});
 
-    const shuffleContainer = document.getElementById('shuffle-container');
-    shuffleContainer.addEventListener('click', () => {
-      // Add the spinning class to trigger both animations
-      shuffleContainer.classList.add('spinning');
-      // Remove the class after the animation finishes so it can spin again
+    // Find this existing event listener in your <script> (around line ~500ish) and replace it entirely:
+const shuffleContainer = document.getElementById('shuffle-container');
+shuffleContainer.addEventListener('click', () => {
+  playSound('shuffle');  // ← THIS LINE PLAYS THE CYCLING CLACK!
+  playSound('button');
+
+  // Add the spinning class to trigger both animations
+  shuffleContainer.classList.add('spinning');
+  // Remove the class after the animation finishes so it can spin again
+  setTimeout(() => {
+    shuffleContainer.classList.remove('spinning');
+  }, 1350);
+  // NEW: Unselect any selected doodle and hide tooltip before shuffling
+  mainDoodleContainers.forEach(div => div.classList.remove('selected'));
+  hideTooltip();
+  // Original shuffle logic (unchanged)
+  const drawn = drawSix();
+  if (!drawn) return;
+  const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
+  order.forEach((id, i) => {
+    const div = document.getElementById(id);
+    if (div && div.style.backgroundImage) {
       setTimeout(() => {
-        shuffleContainer.classList.remove('spinning');
-      }, 1350);
-      // NEW: Unselect any selected doodle and hide tooltip before shuffling
-      mainDoodleContainers.forEach(div => div.classList.remove('selected'));
-      hideTooltip();
-      // Original shuffle logic (unchanged)
-      const drawn = drawSix();
-      if (!drawn) return;
-      const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
-      order.forEach((id, i) => {
-        const div = document.getElementById(id);
-        if (div && div.style.backgroundImage) {
-          setTimeout(() => {
-            // Outgoing doodles – add random horizontal spread as they fall
-            const spreadX = (Math.random() * 24 - 12).toFixed(2) + 'cqi'; // ±12cqi (tweak range for more/less spread)
-            div.style.transition = 'transform 0.33s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
-            div.style.transform = `translate(${spreadX}, 120dvh) rotate(-720deg)`;
-          }, i * 5);
-        }
-      });
+        // Outgoing doodles – add random horizontal spread as they fall
+        const spreadX = (Math.random() * 24 - 12).toFixed(2) + 'cqi'; // ±12cqi (tweak range for more/less spread)
+        div.style.transition = 'transform 0.33s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
+        div.style.transform = `translate(${spreadX}, 120dvh) rotate(-720deg)`;
+      }, i * 5);
+    }
+  });
+  setTimeout(() => {
+    order.forEach((id, i) => {
+      const div = document.getElementById(id);
+      if (!div) return;
+      div.style.transition = 'none';
+      // Incoming doodles – start with random horizontal spread below screen
+      const startSpreadX = (Math.random() * 36 - 18).toFixed(2) + 'cqi'; // ±12cqi (tweak range for more/less spread)
+      div.style.transform = `translate(${startSpreadX}, 100dvh) rotate(720deg)`;
+      div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
+      div.dataset.doodle = drawn[i];
+      void div.offsetWidth;
+      // === ORGANIC RANDOM SETTLE IN CQI ===
+      const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi'; // ±1.2 cqi left/right
+      const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi'; // ±0.8 cqi up/down
+      const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg'; // ±2° rotation
       setTimeout(() => {
-        order.forEach((id, i) => {
-          const div = document.getElementById(id);
-          if (!div) return;
-          div.style.transition = 'none';
-          // Incoming doodles – start with random horizontal spread below screen
-          const startSpreadX = (Math.random() * 36 - 18).toFixed(2) + 'cqi'; // ±12cqi (tweak range for more/less spread)
-          div.style.transform = `translate(${startSpreadX}, 100dvh) rotate(720deg)`;
-          div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
-          div.dataset.doodle = drawn[i];
-          void div.offsetWidth;
-          // === ORGANIC RANDOM SETTLE IN CQI ===
-          const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi'; // ±1.2 cqi left/right
-          const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi'; // ±0.8 cqi up/down
-          const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg'; // ±2° rotation
-          setTimeout(() => {
-            div.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            div.style.transform = `translate(${rx}, ${ry}) rotate(${rr})`;
-          }, i * 50);
-        });
-      }, 350);
+        div.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        div.style.transform = `translate(${rx}, ${ry}) rotate(${rr})`;
+      }, i * 50);
     });
+  }, 350);
+});
+ 
+ 
     // Make main doodles selectable on click/tap (so tooltip works there too)
     const mainDoodleContainers = document.querySelectorAll('#shuffle-zone > div[id^="doodle-"]');
     mainDoodleContainers.forEach(div => {
       div.style.cursor = 'pointer';
       div.addEventListener('click', () => {
+        playSound('selectbutton');
         const wasSelected = div.classList.contains('selected');
         mainDoodleContainers.forEach(d => d.classList.remove('selected'));
         if (!wasSelected) {
@@ -1912,17 +2155,20 @@
       });
     });
     function populateLearnGrid() {
-      const grid = document.getElementById('learn-grid');
-      grid.innerHTML = '';
-      allPossibleDoodles.forEach(doodle => {
-        const cell = document.createElement('div');
-        cell.className = 'doodle-cell';
-        cell.dataset.doodle = doodle;
-        cell.innerHTML = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
-        cell.addEventListener('click', () => toggleSelection(cell, grid, 'learn'));
-        grid.appendChild(cell);
-      });
-    }
+  const grid = document.getElementById('learn-grid');
+  grid.innerHTML = '';
+  allPossibleDoodles.forEach(doodle => {
+    const cell = document.createElement('div');
+    cell.className = 'doodle-cell';
+    cell.dataset.doodle = doodle;
+    cell.innerHTML = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`; 
+    cell.addEventListener('click', () => { 
+      playSound('selectbutton');  // ← NEW
+      toggleSelection(cell, grid, 'learn'); 
+    });
+    grid.appendChild(cell);
+  });
+}
     function populatePortfolioGrid() {
       const grid = document.getElementById('portfolio-grid');
       grid.innerHTML = '';
@@ -2229,6 +2475,8 @@
         setTimeout(() => document.getElementById('score-snap-btn').click(), 100);
         return;
       }
+      // Hide the initial instructions immediately on snap
+      document.getElementById('score-tweak-prompt').style.display = 'none';
       // Capture full frame from left video (represents full stream)
       const captured = document.createElement('canvas');
       captured.width = scoreVideoLeft.videoWidth;
@@ -2317,9 +2565,7 @@
       };
     }
 
-    // Replace the entire scoreDetectFromCropped function in your <script> with this complete updated version.
-    // This adds the hide loading icon after processing completes.
-
+    /* Replace the existing async function scoreDetectFromCropped(cropped) { ... } in your <script> (after scoreStartCamera) */
     async function scoreDetectFromCropped(cropped) {
       const numCols = 11;
       const numRows = 7;
@@ -2359,10 +2605,12 @@
       document.getElementById('loading-container').style.display = 'none';
       // Show review
       document.getElementById('score-review-container').style.display = 'flex';
+      document.getElementById('score-buttons-container').style.display = 'flex'; // Show container with both buttons
+      document.getElementById('score-export-btn').style.display = 'block';
       document.getElementById('score-score-btn').style.display = 'block';
       renderReviewRows();
       document.getElementById('score-tweak-prompt').textContent = "Make sure your doodles have been identified correctly. Tap misplaced doodles to correct them.";
-document.getElementById('score-tweak-prompt').style.display = 'block';
+      document.getElementById('score-tweak-prompt').style.display = 'block';
       // Update status
       scoreStatusEl.textContent = "Review detections below. Tap snippets to correct.";
       scoreStatusEl.style.display = 'block';
@@ -2493,6 +2741,8 @@ document.getElementById('score-tweak-prompt').style.display = 'block';
       document.getElementById('score-detected-grid').style.display = 'none';
       document.getElementById('score-tally').style.display = 'none';
       document.getElementById('score-score-btn').style.display = 'none';
+      document.getElementById('score-export-btn').addEventListener('click', scoreExportTrainingData);
+
 
       // Hide canvases initially
       scoreOutputCanvasLeft.style.display = 'none';
@@ -2793,9 +3043,10 @@ document.getElementById('score-tweak-prompt').style.display = 'block';
       }
       return { total, perCellList };
     }
-    
+
     async function animateCell(cell, pts) {
   cell.classList.add('scoring');
+  let animationPromise = Promise.resolve(); // Base promise to chain
   if (pts !== null && pts !== 0) {
     const bubble = document.createElement('div');
     bubble.className = 'point-bubble';
@@ -2803,57 +3054,78 @@ document.getElementById('score-tweak-prompt').style.display = 'block';
     bubble.textContent = pts > 0 ? `${pts}` : pts;
     cell.appendChild(bubble);
     bubble.style.transition = 'none';
-    bubble.style.top = '50%'; // Initial vertical position (centered) – tweak % for start point
-    bubble.style.left = '50%'; // Initial horizontal position (centered) – tweak % for start point
-    bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)'; // Starting transform: scale(1) = normal size, rotate(0deg) = no rotation
+    bubble.style.top = '50%';
+    bubble.style.left = '50%';
+    bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)';
     bubble.offsetHeight;
-    // First phase: Quick hop up with deceleration (fast start, slow end)
-    bubble.style.transition = 'transform 0.15s cubic-bezier(0.1, 0.9, 0.2, 1), top 0.15s cubic-bezier(0.1, 0.9, 0.2, 1)'; // Hop up duration: 0.2s (half of 400ms total hop), ease-out curve for deceleration
-    bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(180deg)'; // Hop up spin: rotate(180deg) halfway (full 360 over up+down), no scale
-    bubble.style.top = '10%'; // Hop peak: '25%' (half way out upward) – tweak % for jump height
-    // After up, hop down with acceleration (slow start, fast end)
-    setTimeout(() => {
-      bubble.style.transition = 'transform 0.15s cubic-bezier(0.7, 0, 0.9, 0.1), top 0.15s cubic-bezier(0.7, 0, 0.9, 0.1)'; // Hop down duration: 0.2s, ease-in curve for acceleration
-      bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(360deg)'; // Hop down spin: complete to 360deg, no scale
-      bubble.style.top = '50%'; // Land back at center
-    }, 200); // Delay for down phase: 200ms (after up completes)
-    // Pause after landing, then second phase: slide to top-left with scale down
-    setTimeout(() => {
-      bubble.style.transition = 'transform 0.5s ease-out, top 0.5s ease-out, left 0.5s ease-out'; // Slide/scale duration: 0.5s (tweak for speed), ease-out curve
-      bubble.style.transform = 'translate(0%, 0%) scale(0.6) rotate(360deg)'; // End: scale(0.5) = 1/2 size (tweak scale), no extra rotate (keeps at 360deg), translate(0%,0%) for top-left pin
-      bubble.style.top = '-35%'; // Slide end vertical: '0%' top-left (tweak %)
-      bubble.style.left = '-35%'; // Slide end horizontal: '0%' top-left (tweak %)
-    }, 400 + 750); // Delay before slide: 400ms (full hop) + 750ms pause
+    // Chain phases with promises for full completion
+    animationPromise = new Promise(resolve => {
+      // Hop up
+      bubble.style.transition = 'transform 0.15s cubic-bezier(0.1, 0.9, 0.2, 1), top 0.15s cubic-bezier(0.1, 0.9, 0.2, 1)';
+      bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(360deg)';
+      bubble.style.top = '10%';
+      setTimeout(() => {
+        // Hop down
+        bubble.style.transition = 'transform 0.15s cubic-bezier(0.7, 0, 0.9, 0.1), top 0.15s cubic-bezier(0.7, 0, 0.9, 0.1)';
+        bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(720deg)';
+        bubble.style.top = '50%';
+        setTimeout(() => {
+          // Slide to top-left
+          bubble.style.transition = 'transform 0.5s ease-out, top 0.5s ease-out, left 0.5s ease-out';
+          bubble.style.transform = 'translate(0%, 0%) scale(0.6) rotate(720deg)';
+          bubble.style.top = '-35%';
+          bubble.style.left = '-35%';
+          // Resolve after slide completes (500ms duration)
+          setTimeout(resolve, 500);
+        }, 750); // Pause after hop
+      }, 200); // Delay after up
+    });
   }
-  await new Promise(r => setTimeout(r, 700)); // Final pause before removing 'scoring' class: 700ms (tweak for overall cell highlight duration)
+  // Wait for bubble animation (if any) + final pause
+  await animationPromise;
+  await new Promise(r => setTimeout(r, 700)); // Existing final pause (adjust if needed)
   cell.classList.remove('scoring');
 }
-    
-function addTallyRow(type, subtotal) {
-  const tally = document.getElementById('score-tally');
-  const row = document.createElement('div');
-  row.className = 'tally-row';
-  const img = document.createElement('img');
-  img.src = type === '3dset' ? 'images/cube.png' : type === 'variety' ? '' : `images/${type}.png`;
-  if (type === 'variety') img.style.display = 'none';
-  const line = document.createElement('div'); line.className = 'tally-line';
-  const scoreBox = document.createElement('div');
-  scoreBox.className = 'score-box';
-  scoreBox.style.backgroundImage = subtotal >= 0 ? "url('images/purplepointbubble.png')" : "url('images/blackpointbubble.png')";
-  scoreBox.style.backgroundSize = 'contain';
-  scoreBox.style.backgroundRepeat = 'no-repeat';
-  scoreBox.style.backgroundPosition = 'center';
-  scoreBox.style.display = 'flex';
-  scoreBox.style.alignItems = 'center';
-  scoreBox.style.justifyContent = 'center';
-  scoreBox.style.color = '#fff'; // White text for visibility on bubbles
-  scoreBox.style.textShadow = '0 1px 2px #000'; // Slight shadow for readability
-  scoreBox.textContent = subtotal > 0 ? `+${subtotal}` : subtotal;
-  row.append(img, line, scoreBox);
-  tally.appendChild(row);
-}
 
-async function runScoringAnimation() {
+    function addTallyRow(type, subtotal) {
+      const tally = document.getElementById('score-tally');
+      const row = document.createElement('div');
+      row.className = 'tally-row';
+      const img = document.createElement('img');
+      img.src = type === '3dset' ? 'images/cube.png' : type === 'variety' ? 'images/varietybonus.png' : `images/${type}.png`;
+      img.style.width = '10cqi'; // Ensure consistent sizing (already from .tally-row img, but explicit here)
+      img.style.height = '10cqi';
+      img.style.objectFit = 'contain';
+      const line = document.createElement('div'); line.className = 'tally-line';
+      const scoreBox = document.createElement('div');
+      scoreBox.className = 'score-box';
+      scoreBox.style.backgroundImage = subtotal >= 0 ? "url('images/purplepointbubble.png')" : "url('images/blackpointbubble.png')";
+      scoreBox.style.backgroundSize = 'contain';
+      scoreBox.style.backgroundRepeat = 'no-repeat';
+      scoreBox.style.backgroundPosition = 'center';
+      scoreBox.style.display = 'flex';
+      scoreBox.style.alignItems = 'center';
+      scoreBox.style.justifyContent = 'center';
+      scoreBox.style.color = '#fff';
+      scoreBox.style.textShadow = '0 1px 2px #000';
+
+      scoreBox.textContent = subtotal < 0 ? `${subtotal}` : `${Math.abs(subtotal)}`; // - for negative, plain for positive/zero
+      if (type === 'variety') {
+        const unique = new Set(scoreDetectedDoodles.filter(d => d !== 'unknown')).size; // Calculate unique doodles (exclude 'unknown')
+        const countBox = document.createElement('div');
+        countBox.className = 'unique-count-box';
+        countBox.textContent = unique;
+        const textSpan = document.createElement('span');
+        textSpan.className = 'unique-text';
+        textSpan.textContent = 'unique doodles';
+        row.append(img, countBox, textSpan, line, scoreBox); // Special order for variety
+      } else {
+        row.append(img, line, scoreBox); // Standard for others
+      }
+      tally.appendChild(row);
+    }
+
+    async function runScoringAnimation() {
   console.log("SCORE SHEET clicked – starting full animation");
   scoreBuildBoard();
   scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
@@ -2861,33 +3133,77 @@ async function runScoringAnimation() {
   tally.style.display = 'block';
   tally.innerHTML = '';
   let total = 0;
+  // Pre-compute all scoring results and collect only those with non-zero subtotals
+  const nonZeroResults = [];
   for (let rule of scoringRules) {
     let result = rule.base !== undefined ? calculateBase(rule.type, rule.base) : rule.calc();
     let subtotal = result.total || 0;
-    total += subtotal;
-    const items = result.perCellList || result.positions || [];
-    if (items.length > 0) {
-      await Promise.all(items.map(item => {
-        const r = item.r;
-        const c = item.c;
-        const gridIdx = r * 11 + c;
-        const cell = scoreGridCells[gridIdx];
-        if (cell) return animateCell(cell, item.pts !== undefined ? item.pts : null);
-        return Promise.resolve();
-      }));
-    }
     if (subtotal !== 0) {
-      const displayType = rule.type === '3dset' ? '3dset' : rule.type;
-      addTallyRow(displayType, subtotal);
+      nonZeroResults.push({ rule, result, subtotal });
     }
-    await new Promise(r => setTimeout(r, 420));
+    total += subtotal;
   }
-  const unique = new Set(scoreDetectedDoodles).size;
+  // Compute variety bonus separately (always, as it's global)
+  const unique = new Set(scoreDetectedDoodles.filter(d => d !== 'unknown')).size;
   let bonus = unique <= 12 ? -10 : unique <= 14 ? 1 : unique === 15 ? 5 : unique === 16 ? 10 : unique === 17 ? 16 : unique === 18 ? 23 : unique === 19 ? 31 : 40;
   total += bonus;
+  // Animate and add tally rows only for non-zero entries
+  for (let entry of nonZeroResults) {
+    const { rule, result, subtotal } = entry;
+    const items = result.perCellList || result.positions || [];
+   
+    if (items.length > 0) {
+  // Before animations: Add low-opacity and non-scoring classes to all non-unknown doodle cells
+  scoreGridCells.forEach(gridCell => {
+    if (gridCell.dataset.doodle && gridCell.dataset.doodle !== 'unknown') {
+      gridCell.classList.add('low-opacity', 'non-scoring');
+    }
+  });
+  // Remove from current group (items)
+  items.forEach(item => {
+    const gridIdx = item.r * 11 + item.c;
+    const cell = scoreGridCells[gridIdx];
+    if (cell) {
+      cell.classList.remove('low-opacity', 'non-scoring');
+    }
+  });
+  // Force reflow to ensure classes take effect and transition starts
+  scoreGridCells.forEach(gridCell => { void gridCell.offsetHeight; });
+  // Delay to let the fade/scale transition visibly play out before animations start
+  await new Promise(r => setTimeout(r, 500)); // 500ms – tweak to see the effect clearly
+  const staggerDelay = 10; // ms between each cell's animation start (tweak for wave speed)
+  const animationPromises = []; // Collect promises to await all completions at end
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    const r = item.r;
+    const c = item.c;
+    const gridIdx = r * 11 + c;
+    const cell = scoreGridCells[gridIdx];
+    if (cell) {
+      setTimeout(() => {
+        animationPromises.push(animateCell(cell, item.pts !== undefined ? item.pts : null));
+      }, i * staggerDelay);
+    }
+  }
+  await Promise.all(animationPromises); // Wait for all staggered animations to fully finish
+  const displayType = rule.type === '3dset' ? '3dset' : rule.type;
+  addTallyRow(displayType, subtotal);
+  // Explicit pause AFTER animations finish and BEFORE resetting classes
+  await new Promise(r => setTimeout(r, 3000));
+  // After pause: Remove classes from all cells
+  scoreGridCells.forEach(gridCell => {
+    gridCell.classList.remove('low-opacity', 'non-scoring');
+  });
+  // Force reflow again to reset transitions for the next iteration
+  scoreGridCells.forEach(gridCell => { void gridCell.offsetHeight; });
+}
+  }
+  // Add variety if non-zero (no animation needed, just tally + shorter delay)
   if (bonus !== 0) {
     addTallyRow('variety', bonus);
+    await new Promise(r => setTimeout(r, 500)); // Shorter for variety (tweak if needed)
   }
+  // Add total row
   const totalRow = document.createElement('div');
   totalRow.style.fontSize = '7.5cqi';
   totalRow.style.fontWeight = 'bold';
@@ -2898,13 +3214,14 @@ async function runScoringAnimation() {
   tally.appendChild(totalRow);
   document.getElementById('score-new-scan-btn').style.display = 'block';
 }
-
+    
     document.getElementById('score-score-btn').onclick = () => {
       // Hide review and camera snapshot/overlay
       document.getElementById('score-review-container').style.display = 'none';
       document.getElementById('score-tweak-prompt').style.display = 'none';
       document.querySelector('.camera-container-split').style.display = 'none'; // Hide snapshot
       document.getElementById('score-score-btn').style.display = 'none';
+      document.getElementById('score-export-btn').style.display = 'none';
       scoreRenderDetectedGrid();
       document.getElementById('score-detected-grid').style.display = 'grid';
       runScoringAnimation();
@@ -3065,6 +3382,8 @@ async function runScoringAnimation() {
         }, 300); // Matches animation duration
       });
     });
+    // === IMMEDIATE PRELOAD (guarantees sounds work even if load event already fired) ===
+  preloadAudio();
   </script>
 </body>
 
