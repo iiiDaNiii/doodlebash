@@ -55,28 +55,30 @@
       /* your starting centered point */
       height: 100%;
       width: auto;
-      transform: translateX(-50%);
+      transform: translateX(-50%) scalex(1.0);
       display: block;
     }
 
     /* Header: faster, moves right first (your current direction) */
     #header-bg img {
-      animation: slideHeader 50s ease-in-out infinite alternate;
+      animation: slideHeader 40s ease-in-out infinite alternate;
     }
 
     /* Footer: slower, starts on the right and moves left (opposite direction) */
     #footer-bg img {
-      animation: slideFooter 30s ease-in-out infinite alternate;
+      animation: slideFooter 20s ease-in-out infinite alternate;
     }
 
     /* Header keyframes (left → right) */
     @keyframes slideHeader {
       from {
         left: calc(50% - 50vh);
+        transform: translateX(-50%) scalex(1.0)
       }
 
       to {
         left: calc(50% + 50vh);
+        transform:translateX(-50%) scalex(1.3);
       }
     }
 
@@ -84,10 +86,12 @@
     @keyframes slideFooter {
       from {
         left: calc(50% + 50vh);
+        transform: translateX(-50%) scalex(1.3)
       }
 
       to {
         left: calc(50% - 50vh);
+        transform: translateX(-50%) scalex(1.0)
       }
     }
 
@@ -1787,14 +1791,13 @@ const soundFiles = {
   win: 'sounds/win.mp3',
   modalslide: ['sounds/modalslide1.mp3', 'sounds/modalslide2.mp3', 'sounds/modalslide3.mp3', 'sounds/modalslide4.mp3'],  // ← NEW: Add this line
   button: ['sounds/button1.mp3', 'sounds/button2.mp3', 'sounds/button3.mp3'],  // ← NEW: Add this line
-  selectbutton: ['sounds/button9.mp3', 'sounds/button10.mp3', 'sounds/button11.mp3']
+  selectbutton: ['sounds/button9.mp3', 'sounds/button10.mp3', 'sounds/button11.mp3'],
+  bgm: 'sounds/lofi1.mp3'
 };
 
 function preloadAudio() {
   if (Object.keys(audio).length > 0) return; // already preloaded
-
   console.log('🎵 Preloading all sound effects...');
-
   // NEW: Custom volumes per sound type (0.0 silent → 1.0 max)
   const volumes = {
     shuffle: 0.6,
@@ -1803,67 +1806,64 @@ function preloadAudio() {
     snap: 0.6,
     score: 0.6,
     win: 0.6,
-    modalslide: 0.3  // ← Half volume for slides (adjust as needed)
+    modalslide: 0.3, // ← Half volume for slides (adjust as needed)
+    selectbutton: 0.3,
+    bgm: 0.3  // Lower volume for BGM to not overpower SFX (adjust as needed)
   };
-
   Object.entries(soundFiles).forEach(([name, files]) => {
-    const vol = volumes[name] || 0.6;  // Fallback to 0.6 if not specified
+    const vol = volumes[name] || 0.6; // Fallback to 0.6 if not specified
     if (Array.isArray(files)) {
       soundsIndex[name] = 0;
       files.forEach((src, i) => {
         const soundKey = `${name}_${i}`;
         audio[soundKey] = new Audio(src);
         audio[soundKey].preload = 'auto';
-        audio[soundKey].volume = vol;  // ← Use custom volume
-
+        audio[soundKey].volume = vol; // ← Use custom volume
         // Log load errors
         audio[soundKey].onerror = () => {
           console.error(`❌ Failed to load ${src}: ${audio[soundKey].error.message}`);
         };
         audio[soundKey].onloadeddata = () => {
-          console.log(`   Loaded: ${soundKey} (${src}) at volume ${vol}`);
+          console.log(` Loaded: ${soundKey} (${src}) at volume ${vol}`);
         };
       });
     } else {
       audio[name] = new Audio(files);
       audio[name].preload = 'auto';
-      audio[name].volume = vol;  // ← Use custom volume
-
+      audio[name].volume = vol; // ← Use custom volume
       // Log load errors for single files too
       audio[name].onerror = () => {
         console.error(`❌ Failed to load ${files}: ${audio[name].error.message}`);
       };
       audio[name].onloadeddata = () => {
-        console.log(`   Loaded: ${name} (${files}) at volume ${vol}`);
+        console.log(` Loaded: ${name} (${files}) at volume ${vol}`);
+        if (name === 'bgm') {
+          audio.bgm.loop = true;  // Enable seamless looping for BGM
+        }
       };
     }
   });
   console.log('✅ All sounds preloaded! (Check for errors above)');
 }
 
-// UPDATED playSound – cycles clacks perfectly
+// UPDATED playSound – cycles through variations automatically (NO BGM HERE)
 function playSound(name) {
   const files = soundFiles[name];
   if (!files) return;
-
   let soundKey;
   if (Array.isArray(files)) {
     const idx = soundsIndex[name];
     soundKey = `${name}_${idx}`;
-    soundsIndex[name] = (idx + 1) % files.length; // cycle
+    soundsIndex[name] = (idx + 1) % files.length; // Cycle to next
   } else {
     soundKey = name;
   }
-
   const sound = audio[soundKey];
   if (sound) {
     sound.currentTime = 0;
-    sound.play().catch(e => {
-      console.warn('🔇 Audio blocked (common on first load):', e);
-    });
+    sound.play().catch(e => console.warn('🔇 Audio blocked:', e));
   }
 }
-
 
     let currentGuideFilter = null;
     function renderGuide(filterDoodle = null) {
@@ -1970,33 +1970,43 @@ function playSound(name) {
       document.getElementById('full-guide-btn').style.display = filterDoodle ? 'block' : 'none';
     }
     // NEW: Helper function to append a merge row (extracted for reuse)
+    // 
+
     function appendMergeRow(content, inputs, output) {
-      const row = document.createElement('div');
-      row.className = 'merge-row';
-      const inputsDiv = document.createElement('div');
-      inputsDiv.className = 'inputs';
-      inputs.forEach(d => {
-        const img = document.createElement('img');
-        img.src = `images/${d}.png`;
-        img.className = 'guide-doodle';
-        img.addEventListener('click', () => renderGuide(d));
-        inputsDiv.appendChild(img);
-      });
-      row.appendChild(inputsDiv);
-      const arrowContainer = document.createElement('div');
-      arrowContainer.className = 'arrow-container';
-      arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
-      row.appendChild(arrowContainer);
-      const resultDiv = document.createElement('div');
-      resultDiv.className = 'result';
-      const resultImg = document.createElement('img');
-      resultImg.src = `images/${output}.png`;
-      resultImg.className = 'guide-doodle';
-      resultImg.addEventListener('click', () => renderGuide(output));
-      resultDiv.appendChild(resultImg);
-      row.appendChild(resultDiv);
-      content.appendChild(row);
-    }
+  const row = document.createElement('div');
+  row.className = 'merge-row';
+  const inputsDiv = document.createElement('div');
+  inputsDiv.className = 'inputs';
+  inputs.forEach(d => {
+    const img = document.createElement('img');
+    img.src = `images/${d}.png`;
+    img.className = 'guide-doodle';
+    img.addEventListener('click', () => { 
+      playSound('selectbutton');  // ← NEW
+      renderGuide(d); 
+    });
+    inputsDiv.appendChild(img);
+  });
+  row.appendChild(inputsDiv);
+  const arrowContainer = document.createElement('div');
+  arrowContainer.className = 'arrow-container';
+  arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
+  row.appendChild(arrowContainer);
+  const resultDiv = document.createElement('div');
+  resultDiv.className = 'result';
+  const resultImg = document.createElement('img');
+  resultImg.src = `images/${output}.png`;
+  resultImg.className = 'guide-doodle';
+  resultImg.addEventListener('click', () => { 
+    playSound('selectbutton');  // ← NEW
+    renderGuide(output); 
+  });
+  resultDiv.appendChild(resultImg);
+  row.appendChild(resultDiv);
+  content.appendChild(row);
+}
+    
+    
     function createGuideTooltip(doodle) {
       const tip = document.createElement('div');
       tip.className = 'tooltip guide-tooltip';
@@ -2012,48 +2022,53 @@ function playSound(name) {
       const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
       inlineDoodles.forEach(img => {
         img.addEventListener('click', (e) => {
+          playSound('selectbutton');  // ← NEW
           e.stopImmediatePropagation();
           handleGuideInlineClick(img.dataset.doodle);
         });
       });
       return tip;
     }
-    function openModal(modalId) {
-      playSound('modalslide');  // ← NEW: Play on open
-      const modal = document.getElementById(modalId);
-      if (!modal) return;
-      modal.style.display = 'flex';
-      modal.offsetHeight;
-      modal.classList.add('active');
-    }
+    
+    function openModal(modalId, options = {}) {
+  if (!options.silent) playSound('modalslide');  // ← Updated: Skip if silent
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  modal.style.display = 'flex';
+  modal.offsetHeight;
+  modal.classList.add('active');
+}
 
-    function closeModal(modalId) {
-      playSound('modalslide');  // ← NEW: Play on open
-      const modal = document.getElementById(modalId);
-      if (!modal) return;
-      modal.classList.remove('active');
-      hideTooltip();
-      if (modalId === 'learn-modal' || modalId === 'portfolio-modal') {
-        const btnId = modalId === 'learn-modal' ? 'modal-learn-btn' : 'modal-remove-btn';
-        const btn = document.getElementById(btnId);
-        if (btn) {
-          const buttonsDiv = modal.querySelector('.buttons');
-          if (buttonsDiv && !buttonsDiv.contains(btn)) {
-            buttonsDiv.appendChild(btn);
-          }
-          btn.style.display = 'none';
-          btn.style.top = '';
-          btn.style.left = '';
-          btn.style.opacity = '';
-        }
+function closeModal(modalId, options = {}) {
+  if (!options.silent) playSound('modalslide');  // ← Updated: Skip if silent
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  modal.classList.remove('active');
+  hideTooltip();
+  if (modalId === 'learn-modal' || modalId === 'portfolio-modal') {
+    const btnId = modalId === 'learn-modal' ? 'modal-learn-btn' : 'modal-remove-btn';
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      const buttonsDiv = modal.querySelector('.buttons');
+      if (buttonsDiv && !buttonsDiv.contains(btn)) {
+        buttonsDiv.appendChild(btn);
       }
-      setTimeout(() => modal.style.display = 'none', 400);
+      btn.style.display = 'none';
+      btn.style.top = '';
+      btn.style.left = '';
+      btn.style.opacity = '';
     }
+  }
+  setTimeout(() => modal.style.display = 'none', 400);
+}
 
     document.getElementById('guide-btn').addEventListener('click', () => {
       playSound('button');
       hideTooltip(); renderGuide(); openModal('guide-modal'); });
-    document.getElementById('full-guide-btn').addEventListener('click', () => renderGuide(null));
+    document.getElementById('full-guide-btn').addEventListener('click', () => { 
+  playSound('selectbutton');  // ← NEW
+  renderGuide(null); 
+});
    document.getElementById('close-guide').addEventListener('click', () => { 
   playSound('selectbutton');  // ← NEW
   closeModal('guide-modal'); 
@@ -2169,27 +2184,32 @@ shuffleContainer.addEventListener('click', () => {
     grid.appendChild(cell);
   });
 }
-    function populatePortfolioGrid() {
-      const grid = document.getElementById('portfolio-grid');
-      grid.innerHTML = '';
-      const doodlesInDeck = [];
-      for (let [doodle, count] of Object.entries(deck)) {
-        if (count > 0) {
-          for (let i = 0; i < count; i++) {
-            doodlesInDeck.push(doodle);
-          }
-        }
+
+function populatePortfolioGrid() {
+  const grid = document.getElementById('portfolio-grid');
+  grid.innerHTML = '';
+  const doodlesInDeck = [];
+  for (let [doodle, count] of Object.entries(deck)) {
+    if (count > 0) {
+      for (let i = 0; i < count; i++) {
+        doodlesInDeck.push(doodle);
       }
-      doodlesInDeck.forEach((doodle, index) => {
-        const cell = document.createElement('div');
-        cell.className = 'doodle-cell';
-        cell.dataset.doodle = doodle;
-        cell.dataset.index = index;
-        cell.innerHTML = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
-        cell.addEventListener('click', () => toggleSelection(cell, grid, 'portfolio'));
-        grid.appendChild(cell);
-      });
     }
+  }
+  doodlesInDeck.forEach((doodle, index) => {
+    const cell = document.createElement('div');
+    cell.className = 'doodle-cell';
+    cell.dataset.doodle = doodle;
+    cell.dataset.index = index;
+    cell.innerHTML = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
+    cell.addEventListener('click', () => { 
+      playSound('selectbutton');  // ← This line triggers the sound – add it if missing!
+      toggleSelection(cell, grid, 'portfolio'); 
+    });
+    grid.appendChild(cell);
+  });
+}
+
     function toggleSelection(cell, grid, modalType) {
       const isSelected = cell.classList.contains('selected');
       const actionBtn = modalType === 'learn' ? document.getElementById('modal-learn-btn') : document.getElementById('modal-remove-btn');
@@ -2261,6 +2281,7 @@ shuffleContainer.addEventListener('click', () => {
       }
     }
     document.getElementById('modal-learn-btn').addEventListener('click', () => {
+      playSound('selectbutton');  // ← NEW
       const btn = document.getElementById('modal-learn-btn');
       btn.classList.remove('pulsing'); // ← NEW: Remove pulsing to avoid animation conflict
       btn.classList.add('animate-shrink'); // ← Add shrink immediately after
@@ -2270,18 +2291,21 @@ shuffleContainer.addEventListener('click', () => {
         deck[doodle] = (deck[doodle] || 0) + 1;
         selected.classList.add('animate-learn');
         setTimeout(() => {
-          // NEW: Don't remove 'animate-learn' class – instead, permanently hide the cell to prevent reappearance
-          selected.style.opacity = '0'; // Ensure it stays invisible
-          selected.style.pointerEvents = 'none'; // Optional: Disable interaction
-          selected.classList.remove('selected');
-          btn.style.display = 'none'; // Still hide after animation (but animation handles visual disappear)
-          btn.classList.remove('animate-shrink'); // Reset class for future uses
-          hideTooltip();
-          // Chain to close learn and open portfolio simultaneously
-          closeModal('learn-modal');
-          populatePortfolioGrid(); // Refresh portfolio grid with new doodle
-          openModal('portfolio-modal');
-          // Find the newly added doodle cell (last one in the grid, since we append)
+  // NEW: Play modalslide manually once for the whole switch
+  playSound('modalslide');
+
+  // Existing: Don't remove 'animate-learn' class – instead, permanently hide the cell to prevent reappearance
+  selected.style.opacity = '0'; // Ensure it stays invisible
+  selected.style.pointerEvents = 'none'; // Optional: Disable interaction
+  selected.classList.remove('selected');
+  btn.style.display = 'none'; // Still hide after animation (but animation handles visual disappear)
+  btn.classList.remove('animate-shrink'); // Reset class for future uses
+  hideTooltip();
+  
+  // Chain to close learn and open portfolio simultaneously – with silent: true
+  closeModal('learn-modal', { silent: true });
+  populatePortfolioGrid(); // Refresh portfolio grid with new doodle
+  openModal('portfolio-modal', { silent: true });
           const portfolioCells = document.querySelectorAll('#portfolio-grid .doodle-cell');
           const newCell = portfolioCells[portfolioCells.length - 1];
           if (newCell && newCell.dataset.doodle === doodle) {
@@ -2308,6 +2332,7 @@ shuffleContainer.addEventListener('click', () => {
       }
     });
     document.getElementById('modal-remove-btn').addEventListener('click', () => {
+      playSound('selectbutton');  // ← NEW
       const btn = document.getElementById('modal-remove-btn');
       btn.classList.remove('pulsing');
       btn.classList.add('animate-shrink');
@@ -2468,6 +2493,7 @@ shuffleContainer.addEventListener('click', () => {
     }
 
     document.getElementById('score-snap-btn').onclick = async () => {
+      playSound('snap');
       scoreStatusEl.textContent = "Capturing...";
       // Quick check if video frame is ready
       if (scoreVideoLeft.videoWidth === 0) {
@@ -3237,70 +3263,74 @@ shuffleContainer.addEventListener('click', () => {
     // ====================== SMART TOOLTIP ON SELECT ======================
 
     function showTooltipForDoodle(doodle, element) {
-      const tooltip = document.getElementById('tooltip');
-      const desc = document.getElementById('tooltip-desc');
-      if (!doodleDescriptions[doodle]) return;
-      desc.innerHTML = renderDescription(doodleDescriptions[doodle]);
-      // Make inline doodle images clickable
-      const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
-      inlineDoodles.forEach(img => {
-        img.addEventListener('click', (e) => {
-          e.stopImmediatePropagation(); // prevent closing the tooltip accidentally
-          const targetDoodle = img.dataset.doodle;
-          handleInlineDoodleClick(targetDoodle);
-        });
-      });
-      const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
-      if (oldBtn) oldBtn.remove();
-      const container = document.getElementById('game-container');
-      const containerRect = container.getBoundingClientRect();
-      const doodleRect = element.getBoundingClientRect();
-      tooltip.style.width = '75cqi';
-      tooltip.style.maxWidth = '75cqi';
-      tooltip.style.visibility = 'hidden';
-      tooltip.classList.add('show');
-      const tooltipHeightPx = tooltip.offsetHeight;
-      tooltip.classList.remove('show');
-      tooltip.style.visibility = 'visible';
-      tooltip.style.left = '50%';
-      tooltip.style.transform = 'translateX(-50%)';
-      const normalGapCqi = 2; //
-      const safetyPx = 28;
-      const containerWidthPx = containerRect.width;
-      const normalGapPx = (normalGapCqi / 100) * containerWidthPx;
-      const relDoodleTop = doodleRect.top - containerRect.top;
-      const doodleCenterPx = relDoodleTop + (doodleRect.height / 2);
-      const relDoodleBottom = relDoodleTop + doodleRect.height;
-      const spaceBelowPx = containerRect.height - relDoodleBottom;
-      let proposedTopPx;
-      if (spaceBelowPx >= tooltipHeightPx + normalGapPx + safetyPx) {
-        // BELOW: top of tooltip = center + half doodle + gap
-        const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
-        proposedTopPx = doodleCenterPx + offsetFromCenterPx;
-      } else {
-        // ABOVE: bottom of tooltip = center - half doodle - gap - EXTRA full doodle height
-        const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
-        const extraAboveClearancePx = doodleRect.height * 0.7; //
-        const totalOffsetAbovePx = offsetFromCenterPx + extraAboveClearancePx;
-        const tooltipBottomPx = doodleCenterPx - totalOffsetAbovePx;
-        proposedTopPx = tooltipBottomPx - tooltipHeightPx;
-      }
-      // Clamp
-      proposedTopPx = Math.max(18, Math.min(proposedTopPx, containerRect.height - tooltipHeightPx - 18));
-      // To cqi
-      const proposedTopCqi = (proposedTopPx / containerWidthPx) * 100;
-      tooltip.style.top = `${proposedTopCqi.toFixed(2)}cqi`;
-      const guideBtn = document.createElement('button');
-      guideBtn.className = 'tooltip-guide-btn';
-      guideBtn.textContent = 'See in Guide';
-      guideBtn.onclick = () => {
-        hideTooltip();
-        renderGuide(doodle);
-        openModal('guide-modal');
-      };
-      tooltip.appendChild(guideBtn);
-      tooltip.classList.add('show');
-    }
+  const tooltip = document.getElementById('tooltip');
+  const desc = document.getElementById('tooltip-desc');
+  if (!doodleDescriptions[doodle]) return;
+  desc.innerHTML = renderDescription(doodleDescriptions[doodle]);
+  // Make inline doodle images clickable
+  const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
+  inlineDoodles.forEach(img => {
+    img.addEventListener('click', (e) => {
+      playSound('selectbutton');
+      e.stopImmediatePropagation();
+      const targetDoodle = img.dataset.doodle;
+      handleInlineDoodleClick(targetDoodle);
+    });
+  });
+  const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
+  if (oldBtn) oldBtn.remove();
+  const container = document.getElementById('game-container');
+  const containerRect = container.getBoundingClientRect();
+  const doodleRect = element.getBoundingClientRect();
+  tooltip.style.width = '75cqi';
+  tooltip.style.maxWidth = '75cqi';
+  tooltip.style.visibility = 'hidden';
+  tooltip.classList.add('show');
+  const tooltipHeightPx = tooltip.offsetHeight;
+  tooltip.classList.remove('show');
+  tooltip.style.visibility = 'visible';
+  tooltip.style.left = '50%';
+  tooltip.style.transform = 'translateX(-50%)';
+  const normalGapCqi = 2; //
+  const safetyPx = 28;
+  const containerWidthPx = containerRect.width;
+  const normalGapPx = (normalGapCqi / 100) * containerWidthPx;
+  const relDoodleTop = doodleRect.top - containerRect.top;
+  const doodleCenterPx = relDoodleTop + (doodleRect.height / 2);
+  const relDoodleBottom = relDoodleTop + doodleRect.height;
+  const spaceBelowPx = containerRect.height - relDoodleBottom;
+  let proposedTopPx;
+  if (spaceBelowPx >= tooltipHeightPx + normalGapPx + safetyPx) {
+    // BELOW: top of tooltip = center + half doodle + gap
+    const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
+    proposedTopPx = doodleCenterPx + offsetFromCenterPx;
+  } else {
+    // ABOVE: bottom of tooltip = center - half doodle - gap - EXTRA full doodle height
+    const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
+    const extraAboveClearancePx = doodleRect.height * 0.7; //
+    const totalOffsetAbovePx = offsetFromCenterPx + extraAboveClearancePx;
+    const tooltipBottomPx = doodleCenterPx - totalOffsetAbovePx;
+    proposedTopPx = tooltipBottomPx - tooltipHeightPx;
+  }
+  // Clamp
+  proposedTopPx = Math.max(18, Math.min(proposedTopPx, containerRect.height - tooltipHeightPx - 18));
+  // To cqi
+  const proposedTopCqi = (proposedTopPx / containerWidthPx) * 100;
+  tooltip.style.top = `${proposedTopCqi.toFixed(2)}cqi`;
+  const guideBtn = document.createElement('button');
+  guideBtn.className = 'tooltip-guide-btn';
+  guideBtn.textContent = 'See in Guide';
+  guideBtn.onclick = () => {
+    playSound('selectbutton');  // ← NEW: Add this line for sound on "See in Guide" click
+    hideTooltip();
+    renderGuide(doodle);
+    openModal('guide-modal');
+  };
+  tooltip.appendChild(guideBtn);
+  tooltip.classList.add('show');
+}
+
+    
     function hideTooltip() {
       const tooltip = document.getElementById('tooltip');
       const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
@@ -3384,6 +3414,24 @@ shuffleContainer.addEventListener('click', () => {
     });
     // === IMMEDIATE PRELOAD (guarantees sounds work even if load event already fired) ===
   preloadAudio();
+  // === BGM AUTO-START ON FIRST INTERACTION (FIXED) ===
+  let bgmPlaying = false;
+function startBGM() {
+  if (bgmPlaying) return; // Already playing
+  if (audio.bgm) {
+    audio.bgm.play().then(() => {
+      bgmPlaying = true;
+      console.log('🎼 BGM started on first interaction!');
+    }).catch(e => {
+      console.warn('🔇 BGM blocked (retry on next interaction):', e);
+    });
+  } else {
+    console.warn('🔇 BGM not loaded yet – check preloadAudio() and file path');
+  }
+}
+// Trigger BGM on FIRST user gesture (click/tap anywhere)
+document.addEventListener('click', startBGM, { once: true });
+document.addEventListener('touchstart', startBGM, { once: true }); // For mobile
   </script>
 </body>
 
