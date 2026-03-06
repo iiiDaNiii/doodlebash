@@ -78,7 +78,7 @@
 
       to {
         left: calc(50% + 50vh);
-        transform:translateX(-50%) scalex(1.3);
+        transform: translateX(-50%) scalex(1.3);
       }
     }
 
@@ -267,12 +267,10 @@
       pointer-events: none;
     }
 
-    #shuffle-main {
+    #shuffle-container {
       z-index: 1;
-    }
-
-    #shuffle-outline {
-      z-index: 2;
+      animation: gentleRock .7s ease-in-out infinite alternate;
+      /* ← Add this line */
     }
 
     /* === SINGLE SEAMLESS CURVE === */
@@ -283,6 +281,14 @@
     #shuffle-container.spinning #shuffle-outline {
       animation: spinOutline 1s cubic-bezier(0.68, -0.8, 0.32, 1.8) forwards;
     }
+
+/* Replace the existing #header-bg.shifting and #footer-bg.shifting rules in <style> with these (updates the curve to remove overshoot) */
+#header-bg.shifting {
+  animation: shiftUp 1s cubic-bezier(0.95, 0, 0.05, 1) forwards; /* No anticipation (y1=0), no overshoot (y2=1) */
+}
+#footer-bg.shifting {
+  animation: shiftDown 1s cubic-bezier(0.95, 0, 0.05, 1) forwards; /* No anticipation (y1=0), no overshoot (y2=1) */
+}
 
     @keyframes spinMain {
       0% {
@@ -1001,7 +1007,6 @@
       padding: 6cqi 0cqi 0cqi 0cqi;
       border-radius: 0;
       width: 90cqi;
-      max-width: 520px;
     }
 
     #score-modal #score-detected-grid {
@@ -1033,6 +1038,16 @@
       /* Prevent size overflow from any borders/padding */
     }
 
+    /* Add this new rule anywhere in <style> (e.g., after .grid-cell styles) */
+.grid-cell .doodle-inner {
+  position: absolute;
+  inset: 0;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: transform 0.4s; /* Existing transition */
+}
+
     #score-modal .scanner-content {
       overflow-y: auto;
       /* Ensure scrolling if tally grows long */
@@ -1058,38 +1073,42 @@
       transform: scale(1.12);
     }
 
-    #score-modal .grid-cell.scoring {
-      transform: scale(1.75);
+    /* Replace the existing .grid-cell.scoring rule in <style> with this (moves scale to inner div) */
+.grid-cell.scoring .doodle-inner {
+  transform: scale(1.75);
+}
+
+    #score-modal .grid-cell.low-opacity {
+      opacity: 0.5;
+      /* 50% opacity for non-scoring doodles */
+      transition: opacity 0.3s ease;
+      /* Smooth fade for opacity changes */
     }
 
-#score-modal .grid-cell.low-opacity {
-  opacity: 0.5; /* 50% opacity for non-scoring doodles */
-  transition: opacity 0.3s ease; /* Smooth fade for opacity changes */
-}
-
-#score-modal .grid-cell.non-scoring {
-  transform: scale(0.9);
-  transition: transform 0.3s ease; /* Smooth scale for non-scoring doodles */
-}
+    #score-modal .grid-cell.non-scoring {
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+      /* Smooth scale for non-scoring doodles */
+    }
 
     #score-modal .point-bubble {
-  position: absolute;
-  width: 6cqi;
-  height: 6cqi;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Fira Sans', sans-serif;
-  font-size: 4cqi;
-  font-weight: bold;
-  color: #fff;
-  pointer-events: none;
-  z-index: 30;
-  transition: all .8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-}
+      position: absolute;
+      width: 6cqi;
+      height: 6cqi;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 4cqi;
+      font-weight: bold;
+      color: #fff;
+      pointer-events: none;
+      z-index: 30;
+      transition: all .8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
 
     #score-modal #score-tally {
       display: none;
@@ -1120,31 +1139,28 @@
       border-radius: 1cqi;
     }
 
-    .unique-count-box {
-      background: #f0f0f0;
-      /* Light grey */
-      border-radius: 1.5cqi;
-      /* Fully rounded pill shape */
-      padding: 1.5cqi 4cqi;
-      /* Vertical/horizontal padding for number centering */
-      font-family: 'Fira Sans', sans-serif;
-      font-size: 5cqi;
-      font-weight: bold;
-      color: #333333;
-      /* Dark text for contrast */
-      min-width: 10cqi;
-      /* Matches img size for consistency; adjust if needed */
-      text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    /* Find the existing .unique-count-box rule in <style> and replace it with this (adds margin-left for spacing) */
+.unique-count-box {
+  background: #f0f0f0; /* Light grey */
+  border-radius: 1.5cqi; /* Fully rounded pill shape */
+  padding: 1.5cqi 4cqi; /* Vertical/horizontal padding for number centering */
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 5cqi;
+  font-weight: bold;
+  color: #333333; /* Dark text for contrast */
+  min-width: 10cqi; /* Matches img size for consistency; adjust if needed */
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 2.5cqi; /* ← NEW: Adds space between varietybonus.png and the count box (tweak value as needed, e.g., 3cqi for more) */
+}
 
     #score-modal .tally-row:has(.unique-count-box) img {
-  width: 20cqi;
-  height: 20cqi;
-  object-fit: contain;
-}
+      width: 20cqi;
+      height: 20cqi;
+      object-fit: contain;
+    }
 
     .unique-text {
       font-family: 'Fira Sans', sans-serif;
@@ -1534,6 +1550,45 @@
       color: #000000;
       /* Black text */
     }
+
+    @keyframes gentleRock {
+      from {
+        transform: rotate(-7deg);
+      }
+
+      to {
+        transform: rotate(7deg);
+      }
+    }
+
+    /* Add these new keyframes at the end of your <style> (after existing @keyframes like spinFadeScale, spin, etc.) */
+    @keyframes shiftUp {
+      0% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-20cqh);
+      }
+
+      100% {
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes shiftDown {
+      0% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(20cqh);
+      }
+
+      100% {
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
 
@@ -1779,23 +1834,25 @@
       });
     }
 
-const audio = {};
-const soundsIndex = {}; // Tracks current index per sound type
+    const audio = {};
+    const soundsIndex = {}; // Tracks current index per sound type
 
-const soundFiles = {
-  shuffle: ['sounds/clack1.mp3', 'sounds/clack2.mp3', 'sounds/clack3.mp3'],
-  learn: 'sounds/learn.mp3',
-  remove: 'sounds/remove.mp3',
-  snap: 'sounds/snap.mp3',
-  score: 'sounds/score.mp3',
-  win: 'sounds/win.mp3',
-  modalslide: ['sounds/modalslide1.mp3', 'sounds/modalslide2.mp3', 'sounds/modalslide3.mp3', 'sounds/modalslide4.mp3'],
-  button: ['sounds/button1.mp3', 'sounds/button2.mp3', 'sounds/button3.mp3'],
-  selectbutton: ['sounds/button9.mp3', 'sounds/button10.mp3', 'sounds/button11.mp3'],
-  bgm: 'sounds/lofi1.mp3',
-  flap: ['sounds/flap1.mp3', 'sounds/flap2.mp3', 'sounds/flap3.mp3', 'sounds/flap4.mp3', 'sounds/flap5.mp3', 'sounds/flap6.mp3']
-};
+    const soundFiles = {
+      shuffle: ['sounds/clack1.mp3', 'sounds/clack2.mp3', 'sounds/clack3.mp3'],
+      learn: 'sounds/learn.mp3',
+      remove: 'sounds/remove.mp3',
+      snap: 'sounds/snap.mp3',
+      score: 'sounds/score.mp3',
+      win: 'sounds/win.mp3',
+      modalslide: ['sounds/modalslide1.mp3', 'sounds/modalslide2.mp3', 'sounds/modalslide3.mp3', 'sounds/modalslide4.mp3'],
+      button: ['sounds/button1.mp3', 'sounds/button2.mp3', 'sounds/button3.mp3'],
+      selectbutton: ['sounds/button9.mp3', 'sounds/button10.mp3', 'sounds/button11.mp3'],
+      bgm: 'sounds/lofi1.mp3',
+      flap: ['sounds/flap1.mp3', 'sounds/flap2.mp3', 'sounds/flap3.mp3', 'sounds/flap4.mp3', 'sounds/flap5.mp3', 'sounds/flap6.mp3'],
+      pointbubble: ['sounds/pointbubble1.mp3', 'sounds/pointbubble2.mp3', 'sounds/pointbubble3.mp3', 'sounds/pointbubble4.mp3']
+    };
 
+    /* Replace the existing function preloadAudio() { ... } in <script> with this full version (adds pointbubble: 0.5 volume) */
 function preloadAudio() {
   if (Object.keys(audio).length > 0) return; // already preloaded
   console.log('🎵 Preloading all sound effects...');
@@ -1809,17 +1866,19 @@ function preloadAudio() {
     modalslide: 0.3,
     selectbutton: 0.3,
     bgm: 0.3,
-    flap: 0.4  // Subtle volume for card riffle effect
+    flap: 0.4,
+    pointbubble: 0.5  // Balanced volume for point bubbles (adjust as needed)
   };
   Object.entries(soundFiles).forEach(([name, files]) => {
-    const vol = volumes[name] || 0.6;
+    const vol = volumes[name] || 0.6; // Fallback to 0.6 if not specified
     if (Array.isArray(files)) {
       soundsIndex[name] = 0;
       files.forEach((src, i) => {
         const soundKey = `${name}_${i}`;
         audio[soundKey] = new Audio(src);
         audio[soundKey].preload = 'auto';
-        audio[soundKey].volume = vol;
+        audio[soundKey].volume = vol; // ← Use custom volume
+        // Log load errors
         audio[soundKey].onerror = () => {
           console.error(`❌ Failed to load ${src}: ${audio[soundKey].error.message}`);
         };
@@ -1830,14 +1889,15 @@ function preloadAudio() {
     } else {
       audio[name] = new Audio(files);
       audio[name].preload = 'auto';
-      audio[name].volume = vol;
+      audio[name].volume = vol; // ← Use custom volume
+      // Log load errors for single files too
       audio[name].onerror = () => {
         console.error(`❌ Failed to load ${files}: ${audio[name].error.message}`);
       };
       audio[name].onloadeddata = () => {
         console.log(` Loaded: ${name} (${files}) at volume ${vol}`);
         if (name === 'bgm') {
-          audio.bgm.loop = true;
+          audio.bgm.loop = true; // ← Enable seamless looping
         }
       };
     }
@@ -1845,28 +1905,28 @@ function preloadAudio() {
   console.log('✅ All sounds preloaded! (Check for errors above)');
 }
 
-function playSound(name) {
-  const files = soundFiles[name];
-  if (!files) return;
-  let soundKey;
-  if (Array.isArray(files)) {
-    let idx;
-    if (name === 'flap') {
-      idx = Math.floor(Math.random() * files.length);  // Random for flap riffle
-    } else {
-      idx = soundsIndex[name];
-      soundsIndex[name] = (idx + 1) % files.length;  // Cycle for others
+    function playSound(name) {
+      const files = soundFiles[name];
+      if (!files) return;
+      let soundKey;
+      if (Array.isArray(files)) {
+        let idx;
+        if (name === 'flap') {
+          idx = Math.floor(Math.random() * files.length);  // Random for flap riffle
+        } else {
+          idx = soundsIndex[name];
+          soundsIndex[name] = (idx + 1) % files.length;  // Cycle for others
+        }
+        soundKey = `${name}_${idx}`;
+      } else {
+        soundKey = name;
+      }
+      const sound = audio[soundKey];
+      if (sound) {
+        sound.currentTime = 0;
+        sound.play().catch(e => console.warn('🔇 Audio blocked:', e));
+      }
     }
-    soundKey = `${name}_${idx}`;
-  } else {
-    soundKey = name;
-  }
-  const sound = audio[soundKey];
-  if (sound) {
-    sound.currentTime = 0;
-    sound.play().catch(e => console.warn('🔇 Audio blocked:', e));
-  }
-}
 
     let currentGuideFilter = null;
     function renderGuide(filterDoodle = null) {
@@ -1950,7 +2010,7 @@ function playSound(name) {
           tip = createGuideTooltip(filterDoodle);
           content.appendChild(tip);
         }
-                // NEW: Animate rows sliding in (only when filtering)
+        // NEW: Animate rows sliding in (only when filtering)
         if (filterDoodle) {
           const rows = content.querySelectorAll('.merge-row');
           rows.forEach((row, index) => {
@@ -1977,40 +2037,40 @@ function playSound(name) {
     // 
 
     function appendMergeRow(content, inputs, output) {
-  const row = document.createElement('div');
-  row.className = 'merge-row';
-  const inputsDiv = document.createElement('div');
-  inputsDiv.className = 'inputs';
-  inputs.forEach(d => {
-    const img = document.createElement('img');
-    img.src = `images/${d}.png`;
-    img.className = 'guide-doodle';
-    img.addEventListener('click', () => { 
-      playSound('selectbutton');  // ← NEW
-      renderGuide(d); 
-    });
-    inputsDiv.appendChild(img);
-  });
-  row.appendChild(inputsDiv);
-  const arrowContainer = document.createElement('div');
-  arrowContainer.className = 'arrow-container';
-  arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
-  row.appendChild(arrowContainer);
-  const resultDiv = document.createElement('div');
-  resultDiv.className = 'result';
-  const resultImg = document.createElement('img');
-  resultImg.src = `images/${output}.png`;
-  resultImg.className = 'guide-doodle';
-  resultImg.addEventListener('click', () => { 
-    playSound('selectbutton');  // ← NEW
-    renderGuide(output); 
-  });
-  resultDiv.appendChild(resultImg);
-  row.appendChild(resultDiv);
-  content.appendChild(row);
-}
-    
-    
+      const row = document.createElement('div');
+      row.className = 'merge-row';
+      const inputsDiv = document.createElement('div');
+      inputsDiv.className = 'inputs';
+      inputs.forEach(d => {
+        const img = document.createElement('img');
+        img.src = `images/${d}.png`;
+        img.className = 'guide-doodle';
+        img.addEventListener('click', () => {
+          playSound('selectbutton');  // ← NEW
+          renderGuide(d);
+        });
+        inputsDiv.appendChild(img);
+      });
+      row.appendChild(inputsDiv);
+      const arrowContainer = document.createElement('div');
+      arrowContainer.className = 'arrow-container';
+      arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
+      row.appendChild(arrowContainer);
+      const resultDiv = document.createElement('div');
+      resultDiv.className = 'result';
+      const resultImg = document.createElement('img');
+      resultImg.src = `images/${output}.png`;
+      resultImg.className = 'guide-doodle';
+      resultImg.addEventListener('click', () => {
+        playSound('selectbutton');  // ← NEW
+        renderGuide(output);
+      });
+      resultDiv.appendChild(resultImg);
+      row.appendChild(resultDiv);
+      content.appendChild(row);
+    }
+
+
     function createGuideTooltip(doodle) {
       const tip = document.createElement('div');
       tip.className = 'tooltip guide-tooltip';
@@ -2033,84 +2093,96 @@ function playSound(name) {
       });
       return tip;
     }
-    
-    function openModal(modalId, options = {}) {
-  if (!options.silent) playSound('modalslide');  // ← Updated: Skip if silent
-  const modal = document.getElementById(modalId);
-  if (!modal) return;
-  modal.style.display = 'flex';
-  modal.offsetHeight;
-  modal.classList.add('active');
-}
 
-function closeModal(modalId, options = {}) {
-  if (!options.silent) playSound('modalslide');  // ← Updated: Skip if silent
-  const modal = document.getElementById(modalId);
-  if (!modal) return;
-  modal.classList.remove('active');
-  hideTooltip();
-  if (modalId === 'learn-modal' || modalId === 'portfolio-modal') {
-    const btnId = modalId === 'learn-modal' ? 'modal-learn-btn' : 'modal-remove-btn';
-    const btn = document.getElementById(btnId);
-    if (btn) {
-      const buttonsDiv = modal.querySelector('.buttons');
-      if (buttonsDiv && !buttonsDiv.contains(btn)) {
-        buttonsDiv.appendChild(btn);
-      }
-      btn.style.display = 'none';
-      btn.style.top = '';
-      btn.style.left = '';
-      btn.style.opacity = '';
+    function openModal(modalId, options = {}) {
+      if (!options.silent) playSound('modalslide');  // ← Updated: Skip if silent
+      const modal = document.getElementById(modalId);
+      if (!modal) return;
+      modal.style.display = 'flex';
+      modal.offsetHeight;
+      modal.classList.add('active');
     }
-  }
-  setTimeout(() => modal.style.display = 'none', 400);
-}
+
+    function closeModal(modalId, options = {}) {
+      if (!options.silent) playSound('modalslide');  // ← Updated: Skip if silent
+      const modal = document.getElementById(modalId);
+      if (!modal) return;
+      modal.classList.remove('active');
+      hideTooltip();
+      if (modalId === 'learn-modal' || modalId === 'portfolio-modal') {
+        const btnId = modalId === 'learn-modal' ? 'modal-learn-btn' : 'modal-remove-btn';
+        const btn = document.getElementById(btnId);
+        if (btn) {
+          const buttonsDiv = modal.querySelector('.buttons');
+          if (buttonsDiv && !buttonsDiv.contains(btn)) {
+            buttonsDiv.appendChild(btn);
+          }
+          btn.style.display = 'none';
+          btn.style.top = '';
+          btn.style.left = '';
+          btn.style.opacity = '';
+        }
+      }
+      setTimeout(() => modal.style.display = 'none', 400);
+    }
 
     document.getElementById('guide-btn').addEventListener('click', () => {
       playSound('button');
-      hideTooltip(); renderGuide(); openModal('guide-modal'); });
-    document.getElementById('full-guide-btn').addEventListener('click', () => { 
-  playSound('selectbutton');  // ← NEW
-  renderGuide(null); 
-});
-   document.getElementById('close-guide').addEventListener('click', () => { 
-  playSound('selectbutton');  // ← NEW
-  closeModal('guide-modal'); 
-});
-    document.getElementById('learn-btn').addEventListener('click', () => { 
+      hideTooltip(); renderGuide(); openModal('guide-modal');
+    });
+    document.getElementById('full-guide-btn').addEventListener('click', () => {
+      playSound('selectbutton');  // ← NEW
+      renderGuide(null);
+    });
+    document.getElementById('close-guide').addEventListener('click', () => {
+      playSound('selectbutton');  // ← NEW
+      closeModal('guide-modal');
+    });
+    document.getElementById('learn-btn').addEventListener('click', () => {
       playSound('button');
-      hideTooltip(); populateLearnGrid(); openModal('learn-modal'); });
-    document.getElementById('close-learn').addEventListener('click', () => { 
-  playSound('selectbutton');  // ← NEW
-  closeModal('learn-modal'); 
-});
-    document.getElementById('portfolio-btn').addEventListener('click', () => { 
+      hideTooltip(); populateLearnGrid(); openModal('learn-modal');
+    });
+    document.getElementById('close-learn').addEventListener('click', () => {
+      playSound('selectbutton');  // ← NEW
+      closeModal('learn-modal');
+    });
+    document.getElementById('portfolio-btn').addEventListener('click', () => {
       playSound('button');
-      hideTooltip(); populatePortfolioGrid(); openModal('portfolio-modal'); });
-    document.getElementById('close-portfolio').addEventListener('click', () => { 
-  playSound('selectbutton');  // ← NEW
-  closeModal('portfolio-modal'); 
-});
-    document.getElementById('score-btn').addEventListener('click', () => { 
+      hideTooltip(); populatePortfolioGrid(); openModal('portfolio-modal');
+    });
+    document.getElementById('close-portfolio').addEventListener('click', () => {
+      playSound('selectbutton');  // ← NEW
+      closeModal('portfolio-modal');
+    });
+    document.getElementById('score-btn').addEventListener('click', () => {
       playSound('button');
-      hideTooltip(); openModal('score-modal'); initScoreScanner(); });
+      hideTooltip(); openModal('score-modal'); initScoreScanner();
+    });
     document.getElementById('close-score').addEventListener('click', () => {
-  playSound('selectbutton');  // ← NEW
-  closeModal('score-modal');
-  if (scoreStream) { scoreStream.getTracks().forEach(t => t.stop()); scoreStream = null; }
-});
+      playSound('selectbutton');  // ← NEW
+      closeModal('score-modal');
+      if (scoreStream) { scoreStream.getTracks().forEach(t => t.stop()); scoreStream = null; }
+    });
 
     // Find this existing event listener in your <script> (around line ~500ish) and replace it entirely:
-const shuffleContainer = document.getElementById('shuffle-container');
+    const shuffleContainer = document.getElementById('shuffle-container');
+    
+    /* Replace the existing shuffleContainer.addEventListener('click', ...) in <script> with this full version (adds shifting class add/remove) */
 shuffleContainer.addEventListener('click', () => {
-  playSound('shuffle');  // ← THIS LINE PLAYS THE CYCLING CLACK!
+  playSound('shuffle');
   playSound('button');
-
   // Add the spinning class to trigger both animations
   shuffleContainer.classList.add('spinning');
-  // Remove the class after the animation finishes so it can spin again
+  // NEW: Add shifting to backgrounds
+  const headerBg = document.getElementById('header-bg');
+  const footerBg = document.getElementById('footer-bg');
+  headerBg.classList.add('shifting');
+  footerBg.classList.add('shifting');
+  // Remove classes after the animation finishes so they can animate again
   setTimeout(() => {
     shuffleContainer.classList.remove('spinning');
+    headerBg.classList.remove('shifting');
+    footerBg.classList.remove('shifting');
   }, 1350);
   // NEW: Unselect any selected doodle and hide tooltip before shuffling
   mainDoodleContainers.forEach(div => div.classList.remove('selected'));
@@ -2152,8 +2224,7 @@ shuffleContainer.addEventListener('click', () => {
     });
   }, 350);
 });
- 
- 
+
     // Make main doodles selectable on click/tap (so tooltip works there too)
     const mainDoodleContainers = document.querySelectorAll('#shuffle-zone > div[id^="doodle-"]');
     mainDoodleContainers.forEach(div => {
@@ -2174,45 +2245,45 @@ shuffleContainer.addEventListener('click', () => {
       });
     });
     function populateLearnGrid() {
-  const grid = document.getElementById('learn-grid');
-  grid.innerHTML = '';
-  allPossibleDoodles.forEach(doodle => {
-    const cell = document.createElement('div');
-    cell.className = 'doodle-cell';
-    cell.dataset.doodle = doodle;
-    cell.innerHTML = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`; 
-    cell.addEventListener('click', () => { 
-      playSound('selectbutton');  // ← NEW
-      toggleSelection(cell, grid, 'learn'); 
-    });
-    grid.appendChild(cell);
-  });
-}
-
-function populatePortfolioGrid() {
-  const grid = document.getElementById('portfolio-grid');
-  grid.innerHTML = '';
-  const doodlesInDeck = [];
-  for (let [doodle, count] of Object.entries(deck)) {
-    if (count > 0) {
-      for (let i = 0; i < count; i++) {
-        doodlesInDeck.push(doodle);
-      }
+      const grid = document.getElementById('learn-grid');
+      grid.innerHTML = '';
+      allPossibleDoodles.forEach(doodle => {
+        const cell = document.createElement('div');
+        cell.className = 'doodle-cell';
+        cell.dataset.doodle = doodle;
+        cell.innerHTML = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
+        cell.addEventListener('click', () => {
+          playSound('selectbutton');  // ← NEW
+          toggleSelection(cell, grid, 'learn');
+        });
+        grid.appendChild(cell);
+      });
     }
-  }
-  doodlesInDeck.forEach((doodle, index) => {
-    const cell = document.createElement('div');
-    cell.className = 'doodle-cell';
-    cell.dataset.doodle = doodle;
-    cell.dataset.index = index;
-    cell.innerHTML = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
-    cell.addEventListener('click', () => { 
-      playSound('selectbutton');  // ← This line triggers the sound – add it if missing!
-      toggleSelection(cell, grid, 'portfolio'); 
-    });
-    grid.appendChild(cell);
-  });
-}
+
+    function populatePortfolioGrid() {
+      const grid = document.getElementById('portfolio-grid');
+      grid.innerHTML = '';
+      const doodlesInDeck = [];
+      for (let [doodle, count] of Object.entries(deck)) {
+        if (count > 0) {
+          for (let i = 0; i < count; i++) {
+            doodlesInDeck.push(doodle);
+          }
+        }
+      }
+      doodlesInDeck.forEach((doodle, index) => {
+        const cell = document.createElement('div');
+        cell.className = 'doodle-cell';
+        cell.dataset.doodle = doodle;
+        cell.dataset.index = index;
+        cell.innerHTML = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
+        cell.addEventListener('click', () => {
+          playSound('selectbutton');  // ← This line triggers the sound – add it if missing!
+          toggleSelection(cell, grid, 'portfolio');
+        });
+        grid.appendChild(cell);
+      });
+    }
 
     function toggleSelection(cell, grid, modalType) {
       const isSelected = cell.classList.contains('selected');
@@ -2295,21 +2366,21 @@ function populatePortfolioGrid() {
         deck[doodle] = (deck[doodle] || 0) + 1;
         selected.classList.add('animate-learn');
         setTimeout(() => {
-  // NEW: Play modalslide manually once for the whole switch
-  playSound('modalslide');
+          // NEW: Play modalslide manually once for the whole switch
+          playSound('modalslide');
 
-  // Existing: Don't remove 'animate-learn' class – instead, permanently hide the cell to prevent reappearance
-  selected.style.opacity = '0'; // Ensure it stays invisible
-  selected.style.pointerEvents = 'none'; // Optional: Disable interaction
-  selected.classList.remove('selected');
-  btn.style.display = 'none'; // Still hide after animation (but animation handles visual disappear)
-  btn.classList.remove('animate-shrink'); // Reset class for future uses
-  hideTooltip();
-  
-  // Chain to close learn and open portfolio simultaneously – with silent: true
-  closeModal('learn-modal', { silent: true });
-  populatePortfolioGrid(); // Refresh portfolio grid with new doodle
-  openModal('portfolio-modal', { silent: true });
+          // Existing: Don't remove 'animate-learn' class – instead, permanently hide the cell to prevent reappearance
+          selected.style.opacity = '0'; // Ensure it stays invisible
+          selected.style.pointerEvents = 'none'; // Optional: Disable interaction
+          selected.classList.remove('selected');
+          btn.style.display = 'none'; // Still hide after animation (but animation handles visual disappear)
+          btn.classList.remove('animate-shrink'); // Reset class for future uses
+          hideTooltip();
+
+          // Chain to close learn and open portfolio simultaneously – with silent: true
+          closeModal('learn-modal', { silent: true });
+          populatePortfolioGrid(); // Refresh portfolio grid with new doodle
+          openModal('portfolio-modal', { silent: true });
           const portfolioCells = document.querySelectorAll('#portfolio-grid .doodle-cell');
           const newCell = portfolioCells[portfolioCells.length - 1];
           if (newCell && newCell.dataset.doodle === doodle) {
@@ -2690,32 +2761,37 @@ function populatePortfolioGrid() {
       }
     }
 
-    function scoreRenderDetectedGrid() {
-      const grid = document.getElementById('score-detected-grid');
-      grid.innerHTML = '';
-      grid.style.display = 'grid';
-      scoreGridCells = [];
-      let flat = 0;
-      for (let r = 0; r < 7; r++) {
-        for (let c = 0; c < 11; c++) {
-          const cell = document.createElement('div');
-          cell.className = 'grid-cell';
-          if (c !== 5) {
-            const d = scoreDetectedDoodles[flat];
-            const confidence = scoreConfidences[flat];
-            cell.dataset.index = flat;
-            cell.dataset.doodle = d;
-            if (d !== 'unknown') {
-              cell.style.backgroundImage = `url('images/raw${d}.png')`;
-            }
-            cell.addEventListener('click', () => scoreShowDoodlePopup(flat));
-            flat++;
-          }
-          grid.appendChild(cell);
-          scoreGridCells.push(cell);
+    /* Replace the existing function scoreRenderDetectedGrid() { ... } in <script> with this full version (adds doodle-inner wrapper) */
+function scoreRenderDetectedGrid() {
+  const grid = document.getElementById('score-detected-grid');
+  grid.innerHTML = '';
+  grid.style.display = 'grid';
+  scoreGridCells = [];
+  let flat = 0;
+  for (let r = 0; r < 7; r++) {
+    for (let c = 0; c < 11; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'grid-cell';
+      if (c !== 5) {
+        const d = scoreDetectedDoodles[flat];
+        const confidence = scoreConfidences[flat];
+        cell.dataset.index = flat;
+        cell.dataset.doodle = d;
+        // NEW: Wrap background in inner div
+        const inner = document.createElement('div');
+        inner.className = 'doodle-inner';
+        if (d !== 'unknown') {
+          inner.style.backgroundImage = `url('images/raw${d}.png')`;
         }
+        cell.appendChild(inner);
+        cell.addEventListener('click', () => scoreShowDoodlePopup(flat));
+        flat++;
       }
+      grid.appendChild(cell);
+      scoreGridCells.push(cell);
     }
+  }
+}
 
     let scoreCurrentCellIndex = -1;
     function scoreShowDoodlePopup(index) {
@@ -2825,17 +2901,47 @@ function populatePortfolioGrid() {
       }
       return { total, perCellList };
     }
-    function calculate3DSet() {
-      let cubes = 0, pyramids = 0, cylinders = 0, positions = [];
-      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-        let d = scoreBoard[r][c];
-        if (d === 'cube') { cubes++; positions.push({ r, c }); }
-        else if (d === 'pyramid') { pyramids++; positions.push({ r, c }); }
-        else if (d === 'cylinder') { cylinders++; positions.push({ r, c }); }
-      }
-      let sets = Math.min(Math.floor(cubes / 2), Math.floor(pyramids / 3), Math.floor(cylinders / 2));
-      return { total: sets * 20, positions, isGlobal: true };
-    }
+
+/* Replace the existing function calculate3DSet() in <script> with this (corrects to 10pts per {cube + pyramid + cylinder} set) */
+function calculate3DSet() {
+  let cubes = 0, pyramids = 0, cylinders = 0;
+  let cubePositions = [], pyramidPositions = [], cylinderPositions = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    let d = scoreBoard[r][c];
+    if (d === 'cube') { cubes++; cubePositions.push({ r, c }); }
+    else if (d === 'pyramid') { pyramids++; pyramidPositions.push({ r, c }); }
+    else if (d === 'cylinder') { cylinders++; cylinderPositions.push({ r, c }); }
+  }
+  let sets = Math.min(cubes, pyramids, cylinders);
+  let total = sets * 10;
+
+  // For animation: All positions to highlight
+  let allPositions = [...cubePositions, ...pyramidPositions, ...cylinderPositions];
+
+  // Determine limiting type for bubbles (fewest count; tie: cylinder > cube > pyramid)
+  let limitingType = 'cylinder';
+  let limitingCount = cylinders;
+  let limitingPositions = cylinderPositions;
+  if (pyramids < limitingCount || (pyramids === limitingCount && limitingType !== 'pyramid')) {
+    limitingType = 'pyramid';
+    limitingCount = pyramids;
+    limitingPositions = pyramidPositions;
+  }
+  if (cubes < limitingCount || (cubes === limitingCount && ['cylinder', 'pyramid'].includes(limitingType))) {
+    limitingType = 'cube';
+    limitingCount = cubes;
+    limitingPositions = cubePositions;
+  }
+
+  // Assign +10 pts bubbles only to limiting positions (up to sets)
+  let perCellList = limitingPositions.slice(0, sets).map(pos => ({ ...pos, pts: 10 }));
+
+  // Add to perCellScore for all (even non-bubble ones), but evenly distribute if needed (though since it's global, maybe not necessary—but for die/copy consistency)
+  allPositions.forEach(pos => { scorePerCellScore[pos.r][pos.c] += (total / allPositions.length) || 0; }); // Optional: average, but probably skip if not needed
+
+  return { total, perCellList, allPositions }; // Return allPositions for full highlight
+}
+
     function calculateChest() {
       let total = 0, perCellList = [];
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
@@ -2878,41 +2984,50 @@ function populatePortfolioGrid() {
       }
       return { total, perCellList };
     }
-    function calculateCloud() {
-      let total = 0, perCellList = [];
-      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-        if (scoreBoard[r][c] === 'cloud') {
-          let count = 0;
-          let isLeft = c < 5;
-          for (let rr = r + 1; rr < 7; rr++) {
-            if (scoreBoard[rr][c] === 'drop' && (c < 5 === isLeft)) count++;
-          }
-          let pts = count * 1;
-          total += pts;
-          perCellList.push({ r, c, pts });
-          scorePerCellScore[r][c] += pts;
+    
+    /* Replace the existing function calculateCloud() in <script> with this (counts drops below on same page, any column) */
+function calculateCloud() {
+  let total = 0, perCellList = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    if (scoreBoard[r][c] === 'cloud') {
+      let count = 0;
+      const pageCols = c < 5 ? [0,1,2,3,4] : [6,7,8,9,10];
+      for (let rr = r + 1; rr < 7; rr++) {
+        for (let pc of pageCols) {
+          if (scoreBoard[rr][pc] === 'drop') count++;
         }
       }
-      return { total, perCellList };
+      let pts = count * 1;
+      total += pts;
+      perCellList.push({ r, c, pts });
+      scorePerCellScore[r][c] += pts;
     }
-    function calculateUmbrella() {
-      let total = 0, perCellList = [];
-      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-        if (scoreBoard[r][c] === 'umbrella') {
-          let count = 0;
-          let isLeft = c < 5;
-          for (let rr = 0; rr < r; rr++) {
-            if (scoreBoard[rr][c] === 'drop' && (c < 5 === isLeft)) count++;
-          }
-          let pts = count * 1;
-          total += pts;
-          perCellList.push({ r, c, pts });
-          scorePerCellScore[r][c] += pts;
+  }
+  return { total, perCellList };
+}
+
+/* Replace the existing function calculateUmbrella() in <script> with this (counts drops above on same page, any column) */
+function calculateUmbrella() {
+  let total = 0, perCellList = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    if (scoreBoard[r][c] === 'umbrella') {
+      let count = 0;
+      const pageCols = c < 5 ? [0,1,2,3,4] : [6,7,8,9,10];
+      for (let rr = 0; rr < r; rr++) {
+        for (let pc of pageCols) {
+          if (scoreBoard[rr][pc] === 'drop') count++;
         }
       }
-      return { total, perCellList };
+      let pts = count * 1;
+      total += pts;
+      perCellList.push({ r, c, pts });
+      scorePerCellScore[r][c] += pts;
     }
-    function calculateMug() {
+  }
+  return { total, perCellList };
+}
+
+function calculateMug() {
       let total = 0, perCellList = [];
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'mug') {
@@ -3039,23 +3154,28 @@ function populatePortfolioGrid() {
       }
       return { total, perCellList };
     }
-    function calculateBoat() {
-      let total = 0, perCellList = [];
-      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-        if (scoreBoard[r][c] === 'boat') {
-          let count = 0;
-          let isLeft = c < 5;
-          for (let rr = r + 1; rr < 7; rr++) {
-            if (scoreBoard[rr][c] === 'fish' && (c < 5 === isLeft)) count++;
-          }
-          let pts = count * 2;
-          total += pts;
-          perCellList.push({ r, c, pts });
-          scorePerCellScore[r][c] += pts;
+
+/* Replace the existing function calculateBoat() in <script> with this (counts fish below on same page, any column) */
+function calculateBoat() {
+  let total = 0, perCellList = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    if (scoreBoard[r][c] === 'boat') {
+      let count = 0;
+      const pageCols = c < 5 ? [0,1,2,3,4] : [6,7,8,9,10];
+      for (let rr = r + 1; rr < 7; rr++) {
+        for (let pc of pageCols) {
+          if (scoreBoard[rr][pc] === 'fish') count++;
         }
       }
-      return { total, perCellList };
+      let pts = count * 2;
+      total += pts;
+      perCellList.push({ r, c, pts });
+      scorePerCellScore[r][c] += pts;
     }
+  }
+  return { total, perCellList };
+}
+
     function calculateDie() {
       let total = 0, perCellList = [];
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
@@ -3074,7 +3194,8 @@ function populatePortfolioGrid() {
       return { total, perCellList };
     }
 
-    async function animateCell(cell, pts) {
+    /* Replace the existing async function animateCell(cell, pts) { ... } in <script> with this (adds playSound at bubble creation) */
+async function animateCell(cell, pts) {
   cell.classList.add('scoring');
   let animationPromise = Promise.resolve(); // Base promise to chain
   if (pts !== null && pts !== 0) {
@@ -3091,18 +3212,18 @@ function populatePortfolioGrid() {
     // Chain phases with promises for full completion
     animationPromise = new Promise(resolve => {
       // Hop up
-      bubble.style.transition = 'transform 0.15s cubic-bezier(0.1, 0.9, 0.2, 1), top 0.15s cubic-bezier(0.1, 0.9, 0.2, 1)';
-      bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(360deg)';
-      bubble.style.top = '10%';
+      bubble.style.transition = 'transform 0.15s ease-out, top 0.15s ease-out';
+      bubble.style.transform = 'translate(-50%, -50%) scale(1.2) rotate(180deg)';
+      bubble.style.top = '-20%';
       setTimeout(() => {
         // Hop down
-        bubble.style.transition = 'transform 0.15s cubic-bezier(0.7, 0, 0.9, 0.1), top 0.15s cubic-bezier(0.7, 0, 0.9, 0.1)';
-        bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(720deg)';
-        bubble.style.top = '50%';
+        bubble.style.transition = 'transform 0.15s ease-in, top 0.15s ease-out';
+        bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(360deg)';
+        bubble.style.top = '15%';
         setTimeout(() => {
           // Slide to top-left
           bubble.style.transition = 'transform 0.5s ease-out, top 0.5s ease-out, left 0.5s ease-out';
-          bubble.style.transform = 'translate(0%, 0%) scale(0.6) rotate(720deg)';
+          bubble.style.transform = 'translate(0%, 0%) scale(0.7) rotate(360deg)';
           bubble.style.top = '-35%';
           bubble.style.left = '-35%';
           // Resolve after slide completes (500ms duration)
@@ -3155,96 +3276,171 @@ function populatePortfolioGrid() {
       tally.appendChild(row);
     }
 
+    
     async function runScoringAnimation() {
   console.log("SCORE SHEET clicked – starting full animation");
   scoreBuildBoard();
   scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
+
   const tally = document.getElementById('score-tally');
   tally.style.display = 'block';
   tally.innerHTML = '';
+
   let total = 0;
-  // Pre-compute all scoring results and collect only those with non-zero subtotals
+
+  // Pre-compute all scoring results
   const nonZeroResults = [];
   for (let rule of scoringRules) {
-    let result = rule.base !== undefined ? calculateBase(rule.type, rule.base) : rule.calc();
+    let result = rule.base !== undefined 
+      ? calculateBase(rule.type, rule.base) 
+      : rule.calc();
     let subtotal = result.total || 0;
     if (subtotal !== 0) {
       nonZeroResults.push({ rule, result, subtotal });
     }
     total += subtotal;
   }
-  // Compute variety bonus separately (always, as it's global)
+
+  // Variety bonus
   const unique = new Set(scoreDetectedDoodles.filter(d => d !== 'unknown')).size;
   let bonus = unique <= 12 ? -10 : unique <= 14 ? 1 : unique === 15 ? 5 : unique === 16 ? 10 : unique === 17 ? 16 : unique === 18 ? 23 : unique === 19 ? 31 : 40;
   total += bonus;
-  // Animate and add tally rows only for non-zero entries
+
+  // === ANIMATE EACH DOODLE TYPE GROUP ===
   for (let entry of nonZeroResults) {
     const { rule, result, subtotal } = entry;
-    const items = result.perCellList || result.positions || [];
-   
-    if (items.length > 0) {
-  // Before animations: Add low-opacity and non-scoring classes to all non-unknown doodle cells
-  scoreGridCells.forEach(gridCell => {
-    if (gridCell.dataset.doodle && gridCell.dataset.doodle !== 'unknown') {
-      gridCell.classList.add('low-opacity', 'non-scoring');
+
+    // For normal rules use perCellList / positions
+    // For 3D set use special allPositions for highlighting
+    const bubbleItems = result.perCellList || result.positions || [];
+    const highlightItems = (rule.type === '3dset' && result.allPositions) 
+      ? result.allPositions 
+      : bubbleItems;
+
+    if (highlightItems.length === 0) continue;
+
+    // Fade everything except the current group
+    scoreGridCells.forEach(gridCell => {
+      if (gridCell.dataset.doodle && gridCell.dataset.doodle !== 'unknown') {
+        gridCell.classList.add('low-opacity', 'non-scoring');
+      }
+    });
+    highlightItems.forEach(item => {
+      const gridIdx = item.r * 11 + item.c;
+      const cell = scoreGridCells[gridIdx];
+      if (cell) cell.classList.remove('low-opacity', 'non-scoring');
+    });
+    void document.body.offsetHeight; // Force reflow
+
+    await new Promise(r => setTimeout(r, 400)); // Give fade time to be visible
+
+    // === POINT BUBBLE SOUNDS (max 4 per doodle type) ===
+    let soundCount = 0;
+    const maxSounds = 4;
+
+    const animationPromises = [];
+    for (let i = 0; i < bubbleItems.length; i++) {
+      const item = bubbleItems[i];
+      const gridIdx = item.r * 11 + item.c;
+      const cell = scoreGridCells[gridIdx];
+
+      if (cell) {
+        setTimeout(() => {
+          if (soundCount < maxSounds && item.pts !== null && item.pts !== 0) {
+            playSound('pointbubble');
+            soundCount++;
+          }
+          animationPromises.push(animateCell(cell, item.pts !== undefined ? item.pts : null));
+        }, i * 12);
+      }
     }
-  });
-  // Remove from current group (items)
-  items.forEach(item => {
-    const gridIdx = item.r * 11 + item.c;
-    const cell = scoreGridCells[gridIdx];
-    if (cell) {
-      cell.classList.remove('low-opacity', 'non-scoring');
+
+    await Promise.all(animationPromises);
+
+    // === TALLY ROW (special 3-image row for 3D set) ===
+    if (rule.type === '3dset') {
+      const row = document.createElement('div');
+      row.className = 'tally-row';
+      // Three doodles in order: cylinder, cube, pyramid
+      ['cylinder', 'cube', 'pyramid'].forEach(doodle => {
+        const img = document.createElement('img');
+        img.src = `images/${doodle}.png`;
+        img.style.width = '10cqi';
+        img.style.height = '10cqi';
+        img.style.objectFit = 'contain';
+        row.appendChild(img);
+      });
+      const line = document.createElement('div'); line.className = 'tally-line';
+      const scoreBox = document.createElement('div');
+      scoreBox.className = 'score-box';
+      scoreBox.style.backgroundImage = "url('images/purplepointbubble.png')";
+      scoreBox.style.backgroundSize = 'contain';
+      scoreBox.style.backgroundRepeat = 'no-repeat';
+      scoreBox.style.backgroundPosition = 'center';
+      scoreBox.style.display = 'flex';
+      scoreBox.style.alignItems = 'center';
+      scoreBox.style.justifyContent = 'center';
+      scoreBox.style.color = '#fff';
+      scoreBox.style.textShadow = '0 1px 2px #000';
+      scoreBox.textContent = `${Math.abs(subtotal)}`;
+      row.append(line, scoreBox);
+      tally.appendChild(row);
+    } else {
+      addTallyRow(rule.type, subtotal);
     }
-  });
-  // Force reflow to ensure classes take effect and transition starts
-  scoreGridCells.forEach(gridCell => { void gridCell.offsetHeight; });
-  // Delay to let the fade/scale transition visibly play out before animations start
-  await new Promise(r => setTimeout(r, 500)); // 500ms – tweak to see the effect clearly
-  const staggerDelay = 10; // ms between each cell's animation start (tweak for wave speed)
-  const animationPromises = []; // Collect promises to await all completions at end
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    const r = item.r;
-    const c = item.c;
-    const gridIdx = r * 11 + c;
-    const cell = scoreGridCells[gridIdx];
-    if (cell) {
-      setTimeout(() => {
-        animationPromises.push(animateCell(cell, item.pts !== undefined ? item.pts : null));
-      }, i * staggerDelay);
-    }
+
+    // Pause before next doodle type
+    await new Promise(r => setTimeout(r, 2800)); // ← Change this number to adjust pause (ms)
   }
-  await Promise.all(animationPromises); // Wait for all staggered animations to fully finish
-  const displayType = rule.type === '3dset' ? '3dset' : rule.type;
-  addTallyRow(displayType, subtotal);
-  // Explicit pause AFTER animations finish and BEFORE resetting classes
-  await new Promise(r => setTimeout(r, 3000));
-  // After pause: Remove classes from all cells
-  scoreGridCells.forEach(gridCell => {
-    gridCell.classList.remove('low-opacity', 'non-scoring');
-  });
-  // Force reflow again to reset transitions for the next iteration
-  scoreGridCells.forEach(gridCell => { void gridCell.offsetHeight; });
-}
-  }
-  // Add variety if non-zero (no animation needed, just tally + shorter delay)
+
+  // Variety bonus row
   if (bonus !== 0) {
     addTallyRow('variety', bonus);
-    await new Promise(r => setTimeout(r, 500)); // Shorter for variety (tweak if needed)
+    await new Promise(r => setTimeout(r, 600));
   }
-  // Add total row
-  const totalRow = document.createElement('div');
-  totalRow.style.fontSize = '7.5cqi';
-  totalRow.style.fontWeight = 'bold';
-  totalRow.style.color = '#ff0';
-  totalRow.style.textAlign = 'center';
-  totalRow.style.marginTop = '25px';
-  totalRow.textContent = `TOTAL SCORE: ${total}`;
-  tally.appendChild(totalRow);
+
+  // === FINAL TOTAL (custom text + large bubble) ===
+  const totalContainer = document.createElement('div');
+  totalContainer.style.textAlign = 'center';
+  totalContainer.style.marginTop = '25px';
+
+  // Text: "Total Score:" in black, Covered By Your Grace
+  const totalText = document.createElement('div');
+  totalText.style.fontFamily = "'Covered By Your Grace', cursive";
+  totalText.style.fontSize = '7.5cqi';
+  totalText.style.fontWeight = '400'; // Normal weight for Grace font
+  totalText.style.color = '#000000'; // Black
+  totalText.textContent = 'Total Score:';
+  totalContainer.appendChild(totalText);
+
+  // Large purple bubble centered below, 3x size (30cqi w/h, font 9cqi)
+  const totalBubble = document.createElement('div');
+  totalBubble.className = 'score-box';
+  totalBubble.style.backgroundImage = "url('images/purplepointbubble.png')";
+  totalBubble.style.backgroundSize = 'contain';
+  totalBubble.style.backgroundRepeat = 'no-repeat';
+  totalBubble.style.backgroundPosition = 'center';
+  totalBubble.style.display = 'flex';
+  totalBubble.style.alignItems = 'center';
+  totalBubble.style.justifyContent = 'center';
+  totalBubble.style.color = '#fff';
+  totalBubble.style.textShadow = '0 3px 6px #000'; // Scaled shadow for larger size
+  totalBubble.style.fontFamily = "'Fira Sans', sans-serif";
+  totalBubble.style.fontSize = '9cqi'; // 3x original 3cqi
+  totalBubble.style.fontWeight = 'bold';
+  totalBubble.style.width = '30cqi'; // 3x original 10cqi
+  totalBubble.style.height = '30cqi'; // 3x original 10cqi
+  totalBubble.style.minWidth = 'auto';
+  totalBubble.style.padding = '0';
+  totalBubble.style.margin = '2cqi auto 0'; // Centered horizontally, small top margin from text
+  totalBubble.textContent = `${total}`;
+  totalContainer.appendChild(totalBubble);
+
+  tally.appendChild(totalContainer);
+
   document.getElementById('score-new-scan-btn').style.display = 'block';
 }
-    
+
     document.getElementById('score-score-btn').onclick = () => {
       // Hide review and camera snapshot/overlay
       document.getElementById('score-review-container').style.display = 'none';
@@ -3267,74 +3463,74 @@ function populatePortfolioGrid() {
     // ====================== SMART TOOLTIP ON SELECT ======================
 
     function showTooltipForDoodle(doodle, element) {
-  const tooltip = document.getElementById('tooltip');
-  const desc = document.getElementById('tooltip-desc');
-  if (!doodleDescriptions[doodle]) return;
-  desc.innerHTML = renderDescription(doodleDescriptions[doodle]);
-  // Make inline doodle images clickable
-  const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
-  inlineDoodles.forEach(img => {
-    img.addEventListener('click', (e) => {
-      playSound('selectbutton');
-      e.stopImmediatePropagation();
-      const targetDoodle = img.dataset.doodle;
-      handleInlineDoodleClick(targetDoodle);
-    });
-  });
-  const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
-  if (oldBtn) oldBtn.remove();
-  const container = document.getElementById('game-container');
-  const containerRect = container.getBoundingClientRect();
-  const doodleRect = element.getBoundingClientRect();
-  tooltip.style.width = '75cqi';
-  tooltip.style.maxWidth = '75cqi';
-  tooltip.style.visibility = 'hidden';
-  tooltip.classList.add('show');
-  const tooltipHeightPx = tooltip.offsetHeight;
-  tooltip.classList.remove('show');
-  tooltip.style.visibility = 'visible';
-  tooltip.style.left = '50%';
-  tooltip.style.transform = 'translateX(-50%)';
-  const normalGapCqi = 2; //
-  const safetyPx = 28;
-  const containerWidthPx = containerRect.width;
-  const normalGapPx = (normalGapCqi / 100) * containerWidthPx;
-  const relDoodleTop = doodleRect.top - containerRect.top;
-  const doodleCenterPx = relDoodleTop + (doodleRect.height / 2);
-  const relDoodleBottom = relDoodleTop + doodleRect.height;
-  const spaceBelowPx = containerRect.height - relDoodleBottom;
-  let proposedTopPx;
-  if (spaceBelowPx >= tooltipHeightPx + normalGapPx + safetyPx) {
-    // BELOW: top of tooltip = center + half doodle + gap
-    const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
-    proposedTopPx = doodleCenterPx + offsetFromCenterPx;
-  } else {
-    // ABOVE: bottom of tooltip = center - half doodle - gap - EXTRA full doodle height
-    const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
-    const extraAboveClearancePx = doodleRect.height * 0.7; //
-    const totalOffsetAbovePx = offsetFromCenterPx + extraAboveClearancePx;
-    const tooltipBottomPx = doodleCenterPx - totalOffsetAbovePx;
-    proposedTopPx = tooltipBottomPx - tooltipHeightPx;
-  }
-  // Clamp
-  proposedTopPx = Math.max(18, Math.min(proposedTopPx, containerRect.height - tooltipHeightPx - 18));
-  // To cqi
-  const proposedTopCqi = (proposedTopPx / containerWidthPx) * 100;
-  tooltip.style.top = `${proposedTopCqi.toFixed(2)}cqi`;
-  const guideBtn = document.createElement('button');
-  guideBtn.className = 'tooltip-guide-btn';
-  guideBtn.textContent = 'See in Guide';
-  guideBtn.onclick = () => {
-    playSound('selectbutton');  // ← NEW: Add this line for sound on "See in Guide" click
-    hideTooltip();
-    renderGuide(doodle);
-    openModal('guide-modal');
-  };
-  tooltip.appendChild(guideBtn);
-  tooltip.classList.add('show');
-}
+      const tooltip = document.getElementById('tooltip');
+      const desc = document.getElementById('tooltip-desc');
+      if (!doodleDescriptions[doodle]) return;
+      desc.innerHTML = renderDescription(doodleDescriptions[doodle]);
+      // Make inline doodle images clickable
+      const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
+      inlineDoodles.forEach(img => {
+        img.addEventListener('click', (e) => {
+          playSound('selectbutton');
+          e.stopImmediatePropagation();
+          const targetDoodle = img.dataset.doodle;
+          handleInlineDoodleClick(targetDoodle);
+        });
+      });
+      const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
+      if (oldBtn) oldBtn.remove();
+      const container = document.getElementById('game-container');
+      const containerRect = container.getBoundingClientRect();
+      const doodleRect = element.getBoundingClientRect();
+      tooltip.style.width = '75cqi';
+      tooltip.style.maxWidth = '75cqi';
+      tooltip.style.visibility = 'hidden';
+      tooltip.classList.add('show');
+      const tooltipHeightPx = tooltip.offsetHeight;
+      tooltip.classList.remove('show');
+      tooltip.style.visibility = 'visible';
+      tooltip.style.left = '50%';
+      tooltip.style.transform = 'translateX(-50%)';
+      const normalGapCqi = 2; //
+      const safetyPx = 28;
+      const containerWidthPx = containerRect.width;
+      const normalGapPx = (normalGapCqi / 100) * containerWidthPx;
+      const relDoodleTop = doodleRect.top - containerRect.top;
+      const doodleCenterPx = relDoodleTop + (doodleRect.height / 2);
+      const relDoodleBottom = relDoodleTop + doodleRect.height;
+      const spaceBelowPx = containerRect.height - relDoodleBottom;
+      let proposedTopPx;
+      if (spaceBelowPx >= tooltipHeightPx + normalGapPx + safetyPx) {
+        // BELOW: top of tooltip = center + half doodle + gap
+        const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
+        proposedTopPx = doodleCenterPx + offsetFromCenterPx;
+      } else {
+        // ABOVE: bottom of tooltip = center - half doodle - gap - EXTRA full doodle height
+        const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
+        const extraAboveClearancePx = doodleRect.height * 0.7; //
+        const totalOffsetAbovePx = offsetFromCenterPx + extraAboveClearancePx;
+        const tooltipBottomPx = doodleCenterPx - totalOffsetAbovePx;
+        proposedTopPx = tooltipBottomPx - tooltipHeightPx;
+      }
+      // Clamp
+      proposedTopPx = Math.max(18, Math.min(proposedTopPx, containerRect.height - tooltipHeightPx - 18));
+      // To cqi
+      const proposedTopCqi = (proposedTopPx / containerWidthPx) * 100;
+      tooltip.style.top = `${proposedTopCqi.toFixed(2)}cqi`;
+      const guideBtn = document.createElement('button');
+      guideBtn.className = 'tooltip-guide-btn';
+      guideBtn.textContent = 'See in Guide';
+      guideBtn.onclick = () => {
+        playSound('selectbutton');  // ← NEW: Add this line for sound on "See in Guide" click
+        hideTooltip();
+        renderGuide(doodle);
+        openModal('guide-modal');
+      };
+      tooltip.appendChild(guideBtn);
+      tooltip.classList.add('show');
+    }
 
-    
+
     function hideTooltip() {
       const tooltip = document.getElementById('tooltip');
       const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
@@ -3417,25 +3613,25 @@ function populatePortfolioGrid() {
       });
     });
     // === IMMEDIATE PRELOAD (guarantees sounds work even if load event already fired) ===
-  preloadAudio();
-  // === BGM AUTO-START ON FIRST INTERACTION (FIXED) ===
-  let bgmPlaying = false;
-function startBGM() {
-  if (bgmPlaying) return; // Already playing
-  if (audio.bgm) {
-    audio.bgm.play().then(() => {
-      bgmPlaying = true;
-      console.log('🎼 BGM started on first interaction!');
-    }).catch(e => {
-      console.warn('🔇 BGM blocked (retry on next interaction):', e);
-    });
-  } else {
-    console.warn('🔇 BGM not loaded yet – check preloadAudio() and file path');
-  }
-}
-// Trigger BGM on FIRST user gesture (click/tap anywhere)
-document.addEventListener('click', startBGM, { once: true });
-document.addEventListener('touchstart', startBGM, { once: true }); // For mobile
+    preloadAudio();
+    // === BGM AUTO-START ON FIRST INTERACTION (FIXED) ===
+    let bgmPlaying = false;
+    function startBGM() {
+      if (bgmPlaying) return; // Already playing
+      if (audio.bgm) {
+        audio.bgm.play().then(() => {
+          bgmPlaying = true;
+          console.log('🎼 BGM started on first interaction!');
+        }).catch(e => {
+          console.warn('🔇 BGM blocked (retry on next interaction):', e);
+        });
+      } else {
+        console.warn('🔇 BGM not loaded yet – check preloadAudio() and file path');
+      }
+    }
+    // Trigger BGM on FIRST user gesture (click/tap anywhere)
+    document.addEventListener('click', startBGM, { once: true });
+    document.addEventListener('touchstart', startBGM, { once: true }); // For mobile
   </script>
 </body>
 
