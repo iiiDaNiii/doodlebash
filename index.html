@@ -1789,16 +1789,16 @@ const soundFiles = {
   snap: 'sounds/snap.mp3',
   score: 'sounds/score.mp3',
   win: 'sounds/win.mp3',
-  modalslide: ['sounds/modalslide1.mp3', 'sounds/modalslide2.mp3', 'sounds/modalslide3.mp3', 'sounds/modalslide4.mp3'],  // ← NEW: Add this line
-  button: ['sounds/button1.mp3', 'sounds/button2.mp3', 'sounds/button3.mp3'],  // ← NEW: Add this line
+  modalslide: ['sounds/modalslide1.mp3', 'sounds/modalslide2.mp3', 'sounds/modalslide3.mp3', 'sounds/modalslide4.mp3'],
+  button: ['sounds/button1.mp3', 'sounds/button2.mp3', 'sounds/button3.mp3'],
   selectbutton: ['sounds/button9.mp3', 'sounds/button10.mp3', 'sounds/button11.mp3'],
-  bgm: 'sounds/lofi1.mp3'
+  bgm: 'sounds/lofi1.mp3',
+  flap: ['sounds/flap1.mp3', 'sounds/flap2.mp3', 'sounds/flap3.mp3', 'sounds/flap4.mp3', 'sounds/flap5.mp3', 'sounds/flap6.mp3']
 };
 
 function preloadAudio() {
   if (Object.keys(audio).length > 0) return; // already preloaded
   console.log('🎵 Preloading all sound effects...');
-  // NEW: Custom volumes per sound type (0.0 silent → 1.0 max)
   const volumes = {
     shuffle: 0.6,
     learn: 0.6,
@@ -1806,20 +1806,20 @@ function preloadAudio() {
     snap: 0.6,
     score: 0.6,
     win: 0.6,
-    modalslide: 0.3, // ← Half volume for slides (adjust as needed)
+    modalslide: 0.3,
     selectbutton: 0.3,
-    bgm: 0.3  // Lower volume for BGM to not overpower SFX (adjust as needed)
+    bgm: 0.3,
+    flap: 0.4  // Subtle volume for card riffle effect
   };
   Object.entries(soundFiles).forEach(([name, files]) => {
-    const vol = volumes[name] || 0.6; // Fallback to 0.6 if not specified
+    const vol = volumes[name] || 0.6;
     if (Array.isArray(files)) {
       soundsIndex[name] = 0;
       files.forEach((src, i) => {
         const soundKey = `${name}_${i}`;
         audio[soundKey] = new Audio(src);
         audio[soundKey].preload = 'auto';
-        audio[soundKey].volume = vol; // ← Use custom volume
-        // Log load errors
+        audio[soundKey].volume = vol;
         audio[soundKey].onerror = () => {
           console.error(`❌ Failed to load ${src}: ${audio[soundKey].error.message}`);
         };
@@ -1830,15 +1830,14 @@ function preloadAudio() {
     } else {
       audio[name] = new Audio(files);
       audio[name].preload = 'auto';
-      audio[name].volume = vol; // ← Use custom volume
-      // Log load errors for single files too
+      audio[name].volume = vol;
       audio[name].onerror = () => {
         console.error(`❌ Failed to load ${files}: ${audio[name].error.message}`);
       };
       audio[name].onloadeddata = () => {
         console.log(` Loaded: ${name} (${files}) at volume ${vol}`);
         if (name === 'bgm') {
-          audio.bgm.loop = true;  // Enable seamless looping for BGM
+          audio.bgm.loop = true;
         }
       };
     }
@@ -1846,15 +1845,19 @@ function preloadAudio() {
   console.log('✅ All sounds preloaded! (Check for errors above)');
 }
 
-// UPDATED playSound – cycles through variations automatically (NO BGM HERE)
 function playSound(name) {
   const files = soundFiles[name];
   if (!files) return;
   let soundKey;
   if (Array.isArray(files)) {
-    const idx = soundsIndex[name];
+    let idx;
+    if (name === 'flap') {
+      idx = Math.floor(Math.random() * files.length);  // Random for flap riffle
+    } else {
+      idx = soundsIndex[name];
+      soundsIndex[name] = (idx + 1) % files.length;  // Cycle for others
+    }
     soundKey = `${name}_${idx}`;
-    soundsIndex[name] = (idx + 1) % files.length; // Cycle to next
   } else {
     soundKey = name;
   }
@@ -1947,7 +1950,7 @@ function playSound(name) {
           tip = createGuideTooltip(filterDoodle);
           content.appendChild(tip);
         }
-        // NEW: Animate rows sliding in (only when filtering)
+                // NEW: Animate rows sliding in (only when filtering)
         if (filterDoodle) {
           const rows = content.querySelectorAll('.merge-row');
           rows.forEach((row, index) => {
@@ -1955,7 +1958,8 @@ function playSound(name) {
             row.style.transform = 'translateY(4cqi)'; // Start lower
             setTimeout(() => {
               row.classList.add('animate-in');
-            }, index * 60); // Stagger by 80ms per row for smooth sequence
+              playSound('flap');  // Random flap sound per row for card riffle effect
+            }, index * 60); // Stagger by 60ms per row for smooth sequence
           });
           // NEW: Animate tooltip sliding in (after rows, for sequencing)
           if (tip) {
