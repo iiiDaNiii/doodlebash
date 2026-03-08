@@ -27,6 +27,7 @@
     body {
       overflow: hidden;
       touch-action: manipulation;
+
     }
 
     #header-bg,
@@ -38,6 +39,10 @@
       z-index: 5;
       /* behind game container */
       pointer-events: none;
+      container-type: size;
+      /* Changed from inline-size to support cqh reliably */
+      transition: transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+      /* ← NEW: Enables animated add/remove of .adjusted */
     }
 
     #header-bg {
@@ -57,6 +62,14 @@
       width: auto;
       transform: translateX(-50%) scalex(1.0);
       display: block;
+    }
+
+    #header-bg.adjusted {
+      transform: translateY(-10cqh);
+    }
+
+    #footer-bg.adjusted {
+      transform: translateY(10cqh);
     }
 
     /* Header: faster, moves right first (your current direction) */
@@ -81,6 +94,8 @@
         transform: translateX(-50%) scalex(1.3);
       }
     }
+
+
 
     /* Footer keyframes (right → left) */
     @keyframes slideFooter {
@@ -122,7 +137,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 4cqi;
+      gap: 2cqi;
     }
 
     #shuffle-zone {
@@ -220,6 +235,16 @@
         buttonScale 0.5s cubic-bezier(0.3, -0.6, 0.3, 1);
     }
 
+    #menu-btn {
+      height: 12cqi;
+      /* 0.6x original 20cqi */
+    }
+
+    #audio-btn {
+      height: 13cqi;
+      /* Matches menu button size (0.6x original) */
+    }
+
     @keyframes buttonScale {
       0% {
         transform: scale(1.0);
@@ -282,13 +307,16 @@
       animation: spinOutline 1s cubic-bezier(0.68, -0.8, 0.32, 1.8) forwards;
     }
 
-/* Replace the existing #header-bg.shifting and #footer-bg.shifting rules in <style> with these (updates the curve to remove overshoot) */
-#header-bg.shifting {
-  animation: shiftUp 1s cubic-bezier(0.95, 0, 0.05, 1) forwards; /* No anticipation (y1=0), no overshoot (y2=1) */
-}
-#footer-bg.shifting {
-  animation: shiftDown 1s cubic-bezier(0.95, 0, 0.05, 1) forwards; /* No anticipation (y1=0), no overshoot (y2=1) */
-}
+    /* Replace the existing #header-bg.shifting and #footer-bg.shifting rules in <style> with these (updates the curve to remove overshoot) */
+    #header-bg.shifting {
+      animation: shiftUp 1s cubic-bezier(0.95, 0, 0.05, 1) forwards;
+      /* No anticipation (y1=0), no overshoot (y2=1) */
+    }
+
+    #footer-bg.shifting {
+      animation: shiftDown 1s cubic-bezier(0.95, 0, 0.05, 1) forwards;
+      /* No anticipation (y1=0), no overshoot (y2=1) */
+    }
 
     @keyframes spinMain {
       0% {
@@ -1039,14 +1067,15 @@
     }
 
     /* Add this new rule anywhere in <style> (e.g., after .grid-cell styles) */
-.grid-cell .doodle-inner {
-  position: absolute;
-  inset: 0;
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  transition: transform 0.4s; /* Existing transition */
-}
+    .grid-cell .doodle-inner {
+      position: absolute;
+      inset: 0;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: transform 0.4s;
+      /* Existing transition */
+    }
 
     #score-modal .scanner-content {
       overflow-y: auto;
@@ -1074,9 +1103,9 @@
     }
 
     /* Replace the existing .grid-cell.scoring rule in <style> with this (moves scale to inner div) */
-.grid-cell.scoring .doodle-inner {
-  transform: scale(1.75);
-}
+    .grid-cell.scoring .doodle-inner {
+      transform: scale(1.75);
+    }
 
     #score-modal .grid-cell.low-opacity {
       opacity: 0.5;
@@ -1140,21 +1169,27 @@
     }
 
     /* Find the existing .unique-count-box rule in <style> and replace it with this (adds margin-left for spacing) */
-.unique-count-box {
-  background: #f0f0f0; /* Light grey */
-  border-radius: 1.5cqi; /* Fully rounded pill shape */
-  padding: 1.5cqi 4cqi; /* Vertical/horizontal padding for number centering */
-  font-family: 'Fira Sans', sans-serif;
-  font-size: 5cqi;
-  font-weight: bold;
-  color: #333333; /* Dark text for contrast */
-  min-width: 10cqi; /* Matches img size for consistency; adjust if needed */
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 2.5cqi; /* ← NEW: Adds space between varietybonus.png and the count box (tweak value as needed, e.g., 3cqi for more) */
-}
+    .unique-count-box {
+      background: #f0f0f0;
+      /* Light grey */
+      border-radius: 1.5cqi;
+      /* Fully rounded pill shape */
+      padding: 1.5cqi 4cqi;
+      /* Vertical/horizontal padding for number centering */
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 5cqi;
+      font-weight: bold;
+      color: #333333;
+      /* Dark text for contrast */
+      min-width: 10cqi;
+      /* Matches img size for consistency; adjust if needed */
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 2.5cqi;
+      /* ← NEW: Adds space between varietybonus.png and the count box (tweak value as needed, e.g., 3cqi for more) */
+    }
 
     #score-modal .tally-row:has(.unique-count-box) img {
       width: 20cqi;
@@ -1589,6 +1624,433 @@
         transform: translateY(0);
       }
     }
+
+    /* Replace the existing #main-menu style block in <style> with this (centers buttons vertically) */
+    #main-menu {
+      position: absolute;
+      inset: 4cqh;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(1cqi);
+      border-radius: 1.5cqh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      /* ← Changed from flex-start to center for vertical centering */
+      align-items: center;
+      padding-top: 15cqi;
+      /* ← Removed top padding to balance centering */
+      gap: 4cqi;
+      /* Spacing between buttons */
+      z-index: 50;
+      /* Above game elements */
+      container-type: inline-size;
+    }
+
+    #logo-container {
+      width: 75cqi;
+      height: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: auto;
+      margin-bottom: 5cqi;
+      overflow: hidden;
+      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease-out;
+      /* ← Added: Matches button animation for fall-in */
+    }
+
+    /* Menu Buttons (shared style) */
+    .menu-btn {
+      font-family: 'Covered By Your Grace', cursive;
+      font-size: 7cqi;
+      /* Large, playful font */
+      padding: 2cqi 8cqi;
+      border-radius: 9999px;
+      background: #4dbde5;
+      /* Blue theme from guide */
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      width: 60cqi;
+      /* Wide buttons */
+      text-align: center;
+    }
+
+    .menu-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .menu-btn.disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* Replace the existing #logo-container style block in <style> with this (ensures logo fits within game-container) */
+    #logo-container {
+      width: 60cqi;
+      /* ← 75% of game-container inline-size (via cqi) */
+      height: auto;
+      /* Keep aspect ratio */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: auto;
+      /* Optional: Push to bottom if needed */
+      margin-bottom: 15cqi;
+      /* Spacing from bottom edge */
+      overflow: hidden;
+      /* ← Added: Prevents overshoot if img is larger */
+    }
+
+    #logo-container img {
+      width: 100%;
+      /* ← Fill container while respecting aspect */
+      height: auto;
+    }
+
+    /* Arcade Sub-Menu */
+    #arcade-sub-menu {
+      position: absolute;
+      inset: 4cqh;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(1cqi);
+      border-radius: 1.5cqh;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 4cqi;
+      z-index: 60;
+      container-type: inline-size;
+    }
+
+    #arcade-sub-menu.active {
+      display: flex;
+    }
+
+    #arcade-text {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 5cqi;
+      text-align: center;
+      width: 80cqi;
+      color: #222;
+    }
+
+    /* Abandon Prompt Modal */
+    #abandon-prompt {
+      position: absolute;
+      inset: 10cqi;
+      background: rgba(255, 255, 255, 0.9);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 4cqi;
+      z-index: 70;
+      border-radius: 4cqi;
+      box-shadow: 0 2cqi 8cqi rgba(0, 0, 0, 0.2);
+      container-type: inline-size;
+    }
+
+    #abandon-prompt.active {
+      display: flex;
+    }
+
+    #prompt-text {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 4.5cqi;
+      text-align: center;
+      width: 80cqi;
+      color: #222;
+    }
+
+    #prompt-buttons {
+      display: flex;
+      gap: 4cqi;
+    }
+
+    .prompt-btn {
+      font-family: 'Covered By Your Grace', cursive;
+      font-size: 6cqi;
+      padding: 2cqi 6cqi;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    #prompt-yes {
+      background: #fbb065;
+      /* Yellow */
+      color: #000;
+    }
+
+    #prompt-no {
+      background: #7f2a8f;
+      /* Purple */
+      color: white;
+    }
+
+    .prompt-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* Add these new styles to the end of your <style> block */
+
+    /* Audio Controls Box (styled like tooltip) */
+    #audio-controls {
+      position: absolute;
+      bottom: 28cqi;
+      /* Positioned above footer buttons; adjust based on footer height/gap */
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ccecf8;
+      border-radius: 3.2cqi;
+      padding: 4.5cqi 5.5cqi;
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 4.5cqi;
+      line-height: 1.55;
+      z-index: 250;
+      display: none;
+      box-shadow: 0 1.1cqi 4.2cqi rgba(0, 0, 0, 0.12);
+      width: 60cqi;
+      flex-direction: column;
+      gap: 3cqi;
+      pointer-events: auto;
+    }
+
+    #audio-controls.show {
+      display: flex;
+    }
+
+    /* Slider Labels */
+    .audio-label {
+      font-weight: 500;
+      color: #222;
+    }
+
+    /* Sliders */
+    .audio-slider {
+      width: 100%;
+      height: 2cqi;
+      cursor: pointer;
+    }
+
+    /* Add these new styles to the end of your <style> block (after existing audio CSS) */
+
+    /* Replace the existing #getting-started-sub-menu style block in <style> with this (centers buttons vertically) */
+    #getting-started-sub-menu {
+      position: absolute;
+      inset: 4cqh;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(1cqi);
+      border-radius: 1.5cqh;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      /* ← Changed from flex-start to center for vertical centering */
+      align-items: center;
+      padding-top: 0;
+      /* ← Removed top padding to balance centering */
+      gap: 3cqi;
+      z-index: 60;
+      container-type: inline-size;
+    }
+
+    /* Mission Buttons (slightly different from main menu for variety) */
+    .mission-btn {
+      font-family: 'Covered By Your Grace', cursive;
+      font-size: 7cqi;
+      padding: 2.5cqi 7cqi;
+      border-radius: 9999px;
+      background: #fbb065;
+      /* Yellow from learn theme */
+      color: #000;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      width: 70cqi;
+      text-align: center;
+    }
+
+    .mission-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* Mission Detail Screen */
+    #mission-detail {
+      position: absolute;
+      font-family: 'Fira Sans', sans-serif;
+      text-align: left;
+      font-size: 4.5cqi;
+      line-height: 1.5;
+      inset: 4cqh;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(1cqi);
+      border-radius: 1.5cqh;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 8cqi;
+      gap: 4cqi;
+      z-index: 60;
+      container-type: inline-size;
+      overflow-y: auto;
+      /* ← Added: Enables vertical scrolling if content overflows */
+      overflow-x: hidden;
+      /* ← Added: Hides horizontal overflow */
+    }
+
+    #mission-title {
+      font-family: 'Covered By Your Grace', cursive;
+      font-size: 12cqi;
+      color: #4dbde5;
+      /* Blue accent */
+      text-align: center;
+    }
+
+    .mission-text {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 4.5cqi;
+      line-height: 1.5;
+      text-align: center;
+      color: #222;
+    }
+
+    #mission-goal-box {
+      background: #f9d5b4;
+      border-radius: 3.5cqi;
+      padding: 4cqi;
+    }
+
+    .goal-heading {
+      font-family: 'Covered By Your Grace', cursive;
+      font-size: 10cqi;
+      color: #000;
+      margin-bottom: 2cqi;
+    }
+
+    @keyframes fallIn {
+      from {
+        transform: translateY(-100vh);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+
+
+    /* Sub-Menu Close Buttons (top-left, styled like modal closes) */
+    .sub-close-btn {
+      position: absolute;
+      top: 4cqi;
+      /* Padding from top */
+      left: 4cqi;
+      /* Padding from left */
+      height: 7cqi;
+      width: 7cqi;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image: url('images/close.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      cursor: pointer;
+      z-index: 70;
+      /* Above other sub-menu content */
+      transition: transform 0.2s ease;
+    }
+
+    .sub-close-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* Add this new style block anywhere in <style> (e.g., after existing modal styles) for menu slide animations */
+    .menu-panel {
+      transform: translateY(-110%) rotate(-5deg);
+      /* ← Start off-screen up, like .modal.learn */
+      transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      /* ← Matches modal bouncy curve */
+    }
+
+    .menu-panel.active {
+      transform: translateY(0) rotate(0deg);
+      /* ← Slides in to center */
+    }
+
+    .menu-panel.slide-out {
+      transform: translateY(-110%) rotate(-5deg);
+      /* ← Slides out up on hide */
+    }
+
+    /* Add this new style block anywhere in <style> (e.g., after existing nav-btn or shuffle-container styles) for game element slide-ins */
+    #header.slide-in,
+    #footer.slide-in {
+      transform: translateY(-100%);
+      /* Start off-screen up for header; adjust for footer below */
+      transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      /* Matches modal bouncy curve */
+    }
+
+    #footer.slide-in {
+      transform: translateY(100%);
+      /* Start off-screen down for footer */
+    }
+
+    #header.slide-in.active,
+    #footer.slide-in.active {
+      transform: translateY(0);
+      /* Slide to position */
+    }
+
+    #shuffle-container.slide-in {
+      transform: translateY(100%);
+      /* Start off-screen down for shuffle (or adjust to from center/sides) */
+      transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+
+    #shuffle-container.slide-in.active {
+      transform: translateY(0);
+    }
+
+    /* Add these new class rules anywhere in <style> (e.g., after existing .slide-in rules) for reverse slide-out */
+#header.slide-out {
+  transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Matches slide-in curve */
+  transform: translateY(-100%);
+}
+#shuffle-zone.slide-out,
+#footer.slide-out {
+  transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  transform: translateY(150%);
+}
+
+    /* Optional stagger via delay (add to JS, but CSS for base) */
+
+    /* Add these new styles to the end of your <style> block (after existing @keyframes and menu-panel styles) */
+    .offscreen-top {
+      transform: translateY(-100%);
+    }
+
+    .offscreen-bottom {
+      transform: translateY(100%);
+    }
+
+    .slide-in {
+      transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+
+    .slide-in.active {
+      transform: translateY(0);
+    }
+
+
+    
   </style>
 </head>
 
@@ -1602,7 +2064,9 @@
   </div>
   <div id="game-container">
     <div id="header">
+
       <img id="guide-btn" src="images/guidebutton.png" class="nav-btn" alt="Guide">
+      <img id="menu-btn" src="images/menu.png" class="nav-btn" alt="Menu">
       <img id="learn-btn" src="images/learnbutton.png" class="nav-btn" alt="Learn">
     </div>
     <div id="shuffle-zone">
@@ -1620,8 +2084,52 @@
     </div>
     <div id="footer">
       <img id="portfolio-btn" src="images/portfoliobutton.png" class="nav-btn" alt="Portfolio">
+      <img id="audio-btn" src="images/audio.png" class="nav-btn" alt="Audio">
       <img id="score-btn" src="images/scorebutton.png" class="nav-btn" alt="Score">
     </div>
+    <!-- Main Menu -->
+    <div id="main-menu" class="menu-panel">
+      <!-- Buttons will be dynamically added here via JS -->
+      <div id="logo-container">
+        <img src="images/doodlebashlogo.png" alt="Doodle Bash Logo" style="width: 75cqi; height: auto;">
+      </div>
+    </div>
+
+    <!-- Arcade Sub-Menu -->
+    <div id="arcade-sub-menu" class="menu-panel">
+      <img id="arcade-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
+      <div id="arcade-text">Start a new game of Doodle Bash:</div>
+      <button class="menu-btn" id="arcade-play-btn">Play</button>
+    </div>
+
+    <!-- Abandon Game Prompt -->
+    <div id="abandon-prompt" class="menu-panel">
+      <img id="abandon-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
+      <div id="prompt-text">You have a game in progress. Do you want to abandon that game and start a new one?</div>
+      <div id="prompt-buttons">
+        <button class="prompt-btn" id="prompt-yes">Yes</button>
+        <button class="prompt-btn" id="prompt-no">No</button>
+      </div>
+    </div>
+
+    <!-- Add this new HTML inside #game-container, right after #abandon-prompt and before #learn-modal -->
+    <!-- Getting Started Sub-Menu -->
+    <div id="getting-started-sub-menu" class="menu-panel" style="display: none;">
+      <img id="getting-started-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
+    </div> <!-- Buttons added dynamically via JS -->
+
+    <!-- Mission Detail Screen -->
+    <div id="mission-detail" class="menu-panel" style="display: none;">
+      <img id="mission-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
+      <div id="mission-title"></div>
+      <div id="mission-instructions"></div>
+      <div id="mission-goal-box">
+        <div class="goal-heading">Goal:</div>
+        <div id="mission-goal-text"></div>
+      </div>
+      <button class="menu-btn" id="mission-play-btn">Play</button>
+    </div>
+
     <!-- LEARN MODAL -->
     <div id="learn-modal" class="modal learn">
       <div class="modal-top learn">
@@ -1712,6 +2220,7 @@
     </div>
     <!-- TOAST -->
     <div id="toast"></div>
+    <div id="audio-controls"></div>
   </div>
   <script>
     let deck = {
@@ -1732,6 +2241,16 @@
       "mug", "toiletpaper", "chest", "present", "diamond",
       "icecream"
     ];
+
+    // Add this new constant right after const allPossibleDoodles = [...] in <script> (before doodleDescriptions)
+    const customImages = [
+      "gettingstarted1ptgoal",
+      "gettingstarted2ptgoal",
+      "gettingstarted3ptgoal",
+      "gettingstarted4ptgoal",
+      "gettingstarted5ptgoal"
+    ];
+
     const doodleDescriptions = {
       circle: "{circle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
       square: "{square} is a basic shape that can merge to create many doodles (see Doodle Guide).",
@@ -1816,15 +2335,17 @@
     function formatName(name) {
       return name.charAt(0).toUpperCase() + name.slice(1);
     }
+
+    // Replace the existing function renderDescription(text) { ... } with this updated version (adds customImages check)
     function renderDescription(text) {
       return text.replace(/\{(\w+)\}/gi, (match, key) => {
         const lower = key.toLowerCase();
-        if (allPossibleDoodles.includes(lower)) {
+        if (allPossibleDoodles.includes(lower) || customImages.includes(lower)) {
           return `<img src="images/${lower}.png"
-                   class="inline-doodle"
-                   alt="${formatName(lower)}"
-                   data-doodle="${lower}"
-                   style="cursor:pointer;">`;
+               class="inline-doodle"
+               alt="${formatName(lower)}"
+               data-doodle="${lower}"
+               style="cursor:pointer;">`;
         }
         if (/^\d+pt$/.test(lower) || lower === 'minus2pt') {
           const ptFile = lower === 'minus2pt' ? 'minus2pt' : lower;
@@ -1833,9 +2354,10 @@
         return key;
       });
     }
-
     const audio = {};
     const soundsIndex = {}; // Tracks current index per sound type
+    let sfxVolume = 0.6; // Default SFX volume (matches most in volumes{})
+    let musicVolume = 0.3; // Default BGM volume
 
     const soundFiles = {
       shuffle: ['sounds/clack1.mp3', 'sounds/clack2.mp3', 'sounds/clack3.mp3'],
@@ -1847,63 +2369,525 @@
       modalslide: ['sounds/modalslide1.mp3', 'sounds/modalslide2.mp3', 'sounds/modalslide3.mp3', 'sounds/modalslide4.mp3'],
       button: ['sounds/button1.mp3', 'sounds/button2.mp3', 'sounds/button3.mp3'],
       selectbutton: ['sounds/button9.mp3', 'sounds/button10.mp3', 'sounds/button11.mp3'],
-      bgm: 'sounds/lofi1.mp3',
+      bgm: 'sounds/lofidisabled.mp3',
       flap: ['sounds/flap1.mp3', 'sounds/flap2.mp3', 'sounds/flap3.mp3', 'sounds/flap4.mp3', 'sounds/flap5.mp3', 'sounds/flap6.mp3'],
       pointbubble: ['sounds/pointbubble1.mp3', 'sounds/pointbubble2.mp3', 'sounds/pointbubble3.mp3', 'sounds/pointbubble4.mp3']
     };
 
-    /* Replace the existing function preloadAudio() { ... } in <script> with this full version (adds pointbubble: 0.5 volume) */
-function preloadAudio() {
-  if (Object.keys(audio).length > 0) return; // already preloaded
-  console.log('🎵 Preloading all sound effects...');
-  const volumes = {
-    shuffle: 0.6,
-    learn: 0.6,
-    remove: 0.6,
-    snap: 0.6,
-    score: 0.6,
-    win: 0.6,
-    modalslide: 0.3,
-    selectbutton: 0.3,
-    bgm: 0.3,
-    flap: 0.4,
-    pointbubble: 0.5  // Balanced volume for point bubbles (adjust as needed)
-  };
-  Object.entries(soundFiles).forEach(([name, files]) => {
-    const vol = volumes[name] || 0.6; // Fallback to 0.6 if not specified
-    if (Array.isArray(files)) {
-      soundsIndex[name] = 0;
-      files.forEach((src, i) => {
-        const soundKey = `${name}_${i}`;
-        audio[soundKey] = new Audio(src);
-        audio[soundKey].preload = 'auto';
-        audio[soundKey].volume = vol; // ← Use custom volume
-        // Log load errors
-        audio[soundKey].onerror = () => {
-          console.error(`❌ Failed to load ${src}: ${audio[soundKey].error.message}`);
-        };
-        audio[soundKey].onloadeddata = () => {
-          console.log(` Loaded: ${soundKey} (${src}) at volume ${vol}`);
-        };
-      });
-    } else {
-      audio[name] = new Audio(files);
-      audio[name].preload = 'auto';
-      audio[name].volume = vol; // ← Use custom volume
-      // Log load errors for single files too
-      audio[name].onerror = () => {
-        console.error(`❌ Failed to load ${files}: ${audio[name].error.message}`);
-      };
-      audio[name].onloadeddata = () => {
-        console.log(` Loaded: ${name} (${files}) at volume ${vol}`);
-        if (name === 'bgm') {
-          audio.bgm.loop = true; // ← Enable seamless looping
+    // NEW: Menu State Management
+    let hasGameInProgress = false; // Track if deck has been modified (set true on learn/remove)
+    const defaultDeck = { circle: 2, square: 2, triangle: 2, dot: 2, line: 2 }; // Your starting deck
+    let currentMode = 'menu'; // 'menu', 'arcade-sub', 'game'
+    let currentMission = null; // Tracks selected mission (1-5 or null for arcade/full)
+    let pendingNewGameAction = null;
+    const missionDoodles = [
+      [], // Placeholder for index 0
+      ['cube', 'cylinder', 'pyramid', 'drop', 'letter', 'house', 'smiley', 'coin', 'music', 'pizza', 'heart', 'mug'], // Mission 1
+      ['lens', 'teeth', 'rocket', 'piano', 'planet', 'star'], // Mission 2 (additive)
+      ['halfcircle', 'die', 'umbrella', 'crown', 'diamond', 'chest'], // Mission 3
+      ['sword', 'butterfly', 'flower', 'fish', 'boat', 'cloud'], // Mission 4
+      ['cat', 'icecream', 'toiletpaper', 'turd', 'present', 'wireless'] // Mission 5
+    ];
+
+    // Add these constant arrays right after const missionDoodles = [...] (before getAllowedDoodles function)
+    const missionInstructions = [
+      '', // Placeholder for index 0
+      'For your first game, there are 12 doodles to discover, including two advanced doodles.<br><br>{cube}{cylinder}{pyramid}{drop}{letter}{house}{smiley}{coin}{music}{pizza}{heart}{mug}<br><br> Use the Doodle Guide as a reference and try to learn as many of them as you can in one game.', // Mission 1
+      'You’re doing great! Time to learn a few more doodles! We’ll add these ones to the mix:<br><br>{lens}{teeth}{rocket}{planet}{star}{piano}<br><br>Try to draw as many of the new doodles as you can!', // Mission 2
+      'New doodles bring new scoring opportunities. Let’s see if you can handle six more!<br><br>{halfcircle}{die}{umbrella}{crown}{diamond}{chest}<br>', // Mission 3
+      'New doodles unlocked! The cloud {cloud} is yet another way to score {drop} and there are several new advanced doodles!<br><br>{cloud}{sword}{butterfly}{flower}{fish}{boat}<br>', // Mission 4
+      'From this point on, you\'ll be playing with the complete Doodle Guide.<br><br> You’ve now unlocked a final set of doodles to complete your repertoire. Five advanced doodles offer even more clever scoring opportunities, and the Wireless {wireless} symbol comes with a powerful, in-game ability!<br><br>{cat}{icecream}{toiletpaper}{turd}{present}{wireless}<br>' // Mission 5
+    ];
+
+    const missionGoals = [
+      '', // Placeholder for index 0
+      'Finish the game with <b><i>at least 8 unique doodles</i></b> in your Notebook (not basic shapes) and score at least {gettingstarted1ptgoal}.', // Mission 1
+      'Finish the game with <b><i>at least one of each <u>NEW</u> doodle</i></b> and score at least {gettingstarted2ptgoal}.', // Mission 2
+      'Finish the game with <b><i>at least one of each <u>NEW</u> doodle</i></b> and score at least {gettingstarted3ptgoal}', // Mission 3
+      'Finish the game with <b><i>at least four of the <u>NEW</u> advanced doodles</i></b> (orange tiles) and score at least {gettingstarted4ptgoal}.', // Mission 4
+      'Finish the game with <b><i>at least five <u>unique</u>, <u>new</u> doodles</i></b> and score at least {gettingstarted5ptgoal}.' // Mission 5
+    ];
+
+
+    const baseDoodles = ['circle', 'square', 'triangle', 'dot', 'line'];
+    let menuAdjustedTimeout = null;
+    // NEW: Helper to get cumulative allowed doodles for a mission (base + up to that mission)
+    function getAllowedDoodles(missionNum) {
+      let allowed = [...baseDoodles]; // Always include base
+      if (missionNum) {
+        for (let i = 1; i <= missionNum; i++) {
+          allowed = [...allowed, ...missionDoodles[i]];
         }
-      };
+      } else {
+        allowed = allPossibleDoodles; // Full for arcade/non-getting-started
+      }
+      return allowed;
     }
+
+    // Replace the entire showMainMenu function with this (adds optional { fromGame: false } param to skip offscreen/hide when called from game)
+function showMainMenu(options = { fromGame: false }) {
+  showMenuPanel('main-menu'); // ← Replaced style.display = 'flex'
+  hideMenuPanel('arcade-sub-menu'); // ← Replaced classList.remove('active')
+  hideMenuPanel('abandon-prompt'); // ← Replaced classList.remove('active')
+  // Hide modals if open
+  closeAllModals();
+  currentMode = 'menu';
+  renderMenuButtons();
+  if (!options.fromGame) {
+    // NEW: Skip when fromGame (listener handles anim + hide)
+    // NEW: Re-apply offscreen classes to game elements FIRST (while still visible, to apply transforms)
+    const header = document.getElementById('header');
+    const shuffleZone = document.getElementById('shuffle-zone');
+    const footer = document.getElementById('footer');
+    header.classList.add('offscreen-top');
+    shuffleZone.classList.add('offscreen-bottom');
+    footer.classList.add('offscreen-bottom');
+    // Force reflow to ensure offscreen transforms are computed
+    void header.offsetHeight;
+    void shuffleZone.offsetHeight;
+    void footer.offsetHeight;
+    // Then hide visibility (elements now hidden but with offscreen transforms applied)
+    
+  }
+  // Staggered fall-in for menu buttons (unchanged)
+  const menu = document.getElementById('main-menu');
+  const buttons = menu.querySelectorAll('.menu-btn');
+  buttons.forEach((btn, i) => {
+    btn.style.transition = 'none';
+    btn.style.opacity = '0';
+    btn.style.transform = 'translateY(-100vh)';
+    void btn.offsetHeight;
+    setTimeout(() => {
+      btn.style.transition = 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease-out';
+      btn.style.transform = 'translateY(0)';
+      btn.style.opacity = '1';
+    }, (buttons.length - 1 - i) * 100);
   });
-  console.log('✅ All sounds preloaded! (Check for errors above)');
+  // Delay 'adjusted' + update until after menu animations (increased to 800ms for full settle + reflow)
+  if (menuAdjustedTimeout) clearTimeout(menuAdjustedTimeout); // Clear any pending
+  menuAdjustedTimeout = setTimeout(() => {
+    const headerBg = document.getElementById('header-bg');
+    const footerBg = document.getElementById('footer-bg');
+    headerBg.classList.add('adjusted');
+    footerBg.classList.add('adjusted');
+    // Force reflow after add
+    void headerBg.offsetHeight;
+    void footerBg.offsetHeight;
+    // Update backgrounds after adjusted (ensures proper heights for menu state)
+    updateAnimatedBackgrounds();
+    menuAdjustedTimeout = null; // Reset after run
+  }, 800); // Longer delay to ensure DOM fully painted after menu fall-in
 }
+
+    function renderMenuButtons() {
+      const menu = document.getElementById('main-menu');
+      menu.innerHTML = ''; // Reset fully (no static logo)
+      const buttons = [
+        { text: 'Resume', id: 'resume-btn', disabled: !hasGameInProgress },
+        { text: 'Getting Started', id: 'getting-started-btn', disabled: false },
+        { text: 'Arcade', id: 'arcade-btn', disabled: false },
+        { text: 'Multiplayer', id: 'multiplayer-btn', disabled: true },
+        { text: 'Campaign', id: 'campaign-btn', disabled: true },
+        { text: 'Options', id: 'options-btn', disabled: true }
+      ];
+      buttons.forEach(btnInfo => {
+        if (btnInfo.text === 'Resume' && !hasGameInProgress) return; // Skip if no game
+        const btn = document.createElement('button');
+        btn.className = 'menu-btn';
+        btn.id = btnInfo.id;
+        btn.textContent = btnInfo.text;
+        if (btnInfo.disabled) btn.classList.add('disabled');
+        menu.appendChild(btn);
+      });
+      // Add logo dynamically below buttons
+      const logoContainer = document.createElement('div');
+      logoContainer.id = 'logo-container';
+      const logoImg = document.createElement('img');
+      logoImg.src = 'images/doodlebashlogo.png';
+      logoImg.alt = 'Doodle Bash Logo';
+      logoContainer.appendChild(logoImg);
+      menu.appendChild(logoContainer);
+      // Wire buttons (as before)
+      document.getElementById('arcade-btn').addEventListener('click', showArcadeSubMenu);
+      const resumeBtn = document.getElementById('resume-btn');
+      if (resumeBtn) resumeBtn.addEventListener('click', startGame);
+      document.getElementById('getting-started-btn').addEventListener('click', showGettingStartedSubMenu);
+    }
+
+    // Replace the entire showArcadeSubMenu function with this (sets pendingAction before prompt)
+function showArcadeSubMenu() {
+  if (hasGameInProgress) {
+    pendingNewGameAction = 'arcade';
+    showMenuPanel('abandon-prompt');
+  } else {
+    hideMenuPanel('main-menu'); // ← Added: Slide out main-menu
+    showMenuPanel('arcade-sub-menu', { silent: true }); // ← Silent to play sound only once (from hide)
+    currentMode = 'arcade-sub';
+  }
+}
+
+    // Replace the existing showMainMenu() function with this version (moves offscreen add BEFORE visibility hidden + adds reflow for reliable transform application)
+    function showMainMenu() {
+      showMenuPanel('main-menu'); // ← Replaced style.display = 'flex'
+      hideMenuPanel('arcade-sub-menu'); // ← Replaced classList.remove('active')
+      hideMenuPanel('abandon-prompt'); // ← Replaced classList.remove('active')
+      // Hide modals if open
+      closeAllModals();
+      currentMode = 'menu';
+      renderMenuButtons();
+
+      // NEW: Re-apply offscreen classes to game elements FIRST (while still visible, to apply transforms)
+      const header = document.getElementById('header');
+      const shuffleZone = document.getElementById('shuffle-zone');
+      const footer = document.getElementById('footer');
+      header.classList.add('offscreen-top');
+      shuffleZone.classList.add('offscreen-bottom');
+      footer.classList.add('offscreen-bottom');
+      // Force reflow to ensure offscreen transforms are computed
+      void header.offsetHeight;
+      void shuffleZone.offsetHeight;
+      void footer.offsetHeight;
+
+      // Then hide visibility (elements now hidden but with offscreen transforms applied)
+      
+
+      // Staggered fall-in for menu buttons (unchanged)
+      const menu = document.getElementById('main-menu');
+      const buttons = menu.querySelectorAll('.menu-btn');
+      buttons.forEach((btn, i) => {
+        btn.style.transition = 'none';
+        btn.style.opacity = '0';
+        btn.style.transform = 'translateY(-100vh)';
+        void btn.offsetHeight;
+        setTimeout(() => {
+          btn.style.transition = 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease-out';
+          btn.style.transform = 'translateY(0)';
+          btn.style.opacity = '1';
+        }, (buttons.length - 1 - i) * 100);
+      });
+    }
+    
+// Replace the entire showGettingStartedSubMenu function with this (adds hasGameInProgress check + pendingAction)
+function showGettingStartedSubMenu() {
+  playSound('button');
+  if (hasGameInProgress) {
+    pendingNewGameAction = 'getting-started';
+    showMenuPanel('abandon-prompt');
+    return; // Don't show sub-menu yet
+  }
+  hideMenuPanel('main-menu'); // ← Added: Slide out main-menu
+  const subMenu = document.getElementById('getting-started-sub-menu');
+  subMenu.innerHTML = ''; // Clear if needed
+  // Dynamically add close button (top-left)
+  const closeBtn = document.createElement('img');
+  closeBtn.id = 'getting-started-close-btn';
+  closeBtn.src = 'images/close.png';
+  closeBtn.className = 'sub-close-btn';
+  closeBtn.alt = 'Close';
+  subMenu.appendChild(closeBtn); // Add first (absolute positioning keeps it top-left)
+  // Re-add listener (since recreated)
+  closeBtn.addEventListener('click', () => {
+    playSound('selectbutton');
+    hideMenuPanel('getting-started-sub-menu'); // ← Updated to use hideMenuPanel
+    showMainMenu(); // Back to main menu
+  });
+  const missions = [
+    '1) First Scribbles',
+    '2) Blasting Off',
+    '3) Buried Treasure',
+    '4) Oodles of Doodles',
+    '5) The Big Leagues'
+  ];
+  missions.forEach((title, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'mission-btn';
+    btn.textContent = title;
+    btn.addEventListener('click', () => selectMission(idx + 1));
+    subMenu.appendChild(btn);
+  });
+  showMenuPanel('getting-started-sub-menu', { silent: true }); // ← Silent to play sound only once (from hide)
+  currentMode = 'getting-started-sub';
+}
+
+    // Replace the existing selectMission(missionNum) function with this version (uses innerHTML with renderDescription for inline doodles)
+    function selectMission(missionNum) {
+      playSound('selectbutton');
+      currentMission = missionNum;
+      document.getElementById('getting-started-sub-menu').style.display = 'none';
+      const detail = document.getElementById('mission-detail');
+      // Check/add close button dynamically (in case of any future clears)
+      let closeBtn = document.getElementById('mission-close-btn');
+      if (!closeBtn) {
+        closeBtn = document.createElement('img');
+        closeBtn.id = 'mission-close-btn';
+        closeBtn.src = 'images/close.png';
+        closeBtn.className = 'sub-close-btn';
+        closeBtn.alt = 'Close';
+        detail.insertBefore(closeBtn, detail.firstChild); // Add as first child (top-left)
+        // Add listener
+        closeBtn.addEventListener('click', () => {
+          playSound('selectbutton');
+          hideMenuPanel('mission-detail'); // ← Replaced style.display = 'none'
+          showGettingStartedSubMenu(); // Back to getting-started sub-menu
+        });
+      }
+      document.getElementById('mission-title').textContent = [
+        'First Scribbles',
+        'Blasting Off',
+        'Buried Treasure',
+        'Oodles of Doodles',
+        'The Big Leagues'
+      ][missionNum - 1];
+      document.getElementById('mission-instructions').innerHTML = renderDescription(missionInstructions[missionNum]); // ← Changed to innerHTML with renderDescription
+      document.getElementById('mission-goal-text').innerHTML = renderDescription(missionGoals[missionNum]); // ← Changed to innerHTML with renderDescription
+      showMenuPanel('mission-detail'); // ← Replaced style.display = 'flex'
+      currentMode = 'mission-detail';
+    }
+
+    // In showAbandonPrompt() function: Replace the entire function with this version (updates classList.add('active') to use showMenuPanel)
+    function showAbandonPrompt() {
+      showMenuPanel('abandon-prompt'); // ← Replaced classList.add('active')
+    }
+    function closeAllModals() {
+      // Your existing closeModal for each, but silent
+      closeModal('learn-modal', { silent: true });
+      closeModal('portfolio-modal', { silent: true });
+      closeModal('guide-modal', { silent: true });
+      closeModal('score-modal', { silent: true });
+    }
+
+    // Add these helper functions after closeAllModals() in <script> (before event listeners)
+    function showMenuPanel(id, options = {}) {
+      if (!options.silent) playSound('modalslide');
+      const panel = document.getElementById(id);
+      if (!panel) return;
+      panel.style.display = 'flex';
+      panel.offsetHeight; // Force reflow
+      panel.classList.add('active');
+    }
+
+    // Replace the entire hideMenuPanel function with this (adds clearTimeout for main-menu)
+    function hideMenuPanel(id, options = {}) {
+      if (!options.silent) playSound('modalslide');
+      const panel = document.getElementById(id);
+      if (!panel) return;
+      panel.classList.remove('active');
+      panel.classList.add('slide-out');
+      if (id === 'main-menu' && menuAdjustedTimeout) {
+        clearTimeout(menuAdjustedTimeout);
+        menuAdjustedTimeout = null;
+      }
+      setTimeout(() => {
+        panel.style.display = 'none';
+        panel.classList.remove('slide-out');
+      }, 800); // Matches transition duration
+    }
+
+    // Replace the entire startGame function with this (adds remove 'slide-out' before visibility visible, to reset position)
+function startGame() {
+  if (menuAdjustedTimeout) clearTimeout(menuAdjustedTimeout);
+  const headerBg = document.getElementById('header-bg');
+  const footerBg = document.getElementById('footer-bg');
+  // Remove adjusted first to animate to game position
+  headerBg.classList.remove('adjusted');
+  footerBg.classList.remove('adjusted');
+  console.log('startGame: removed adjusted, starting transition to game position');
+  // Force reflow to ensure removal is painted
+  void headerBg.offsetHeight;
+  void footerBg.offsetHeight;
+  // Hide all menus/sub-menus with animation BEFORE showing game
+  hideMenuPanel('main-menu');
+  hideMenuPanel('arcade-sub-menu');
+  hideMenuPanel('abandon-prompt');
+  hideMenuPanel('getting-started-sub-menu');
+  hideMenuPanel('mission-detail');
+  // Wait for transition + menu hide to complete before showing game
+  setTimeout(() => {
+    // Reset slide-out before visible (to start from off-screen correctly)
+    const header = document.getElementById('header');
+    const shuffleZone = document.getElementById('shuffle-zone');
+    const footer = document.getElementById('footer');
+    header.classList.remove('slide-out');
+    shuffleZone.classList.remove('slide-out');
+    footer.classList.remove('slide-out');
+    // Force reflow after reset
+    void header.offsetHeight;
+    void shuffleZone.offsetHeight;
+    void footer.offsetHeight;
+    // Make visible (now resets to off-screen via slide-in prep)
+    header.style.visibility = 'visible';
+    shuffleZone.style.visibility = 'visible';
+    footer.style.visibility = 'visible';
+
+    // Force reflow after visibility change (ensures offscreen transforms are painted/ready)
+    void document.body.offsetHeight;
+
+    // Function to trigger slide-in with proper timing (add transition, reflow, then active)
+    function triggerSlideIn(element, delay) {
+      setTimeout(() => {
+        element.classList.add('slide-in'); // Add transition
+        // Force reflow to lock in current (offscreen) transform with new transition
+        void element.offsetHeight;
+        // Next frame: add active to transition to translateY(0)
+        requestAnimationFrame(() => {
+          element.classList.add('active');
+        });
+      }, delay);
+    }
+
+    // Staggered slide-ins: header first, then shuffle-zone, then footer
+    triggerSlideIn(shuffleZone, 0);
+    triggerSlideIn(header, 0);
+    triggerSlideIn(footer, 0);
+
+    currentMode = 'game';
+    if (currentMission) {
+      Object.keys(deck).forEach(key => {
+        if (!getAllowedDoodles(currentMission).includes(key)) deck[key] = 0;
+      });
+    }
+    if (!hasGameInProgress) {
+      deck = { ...defaultDeck };
+    }
+
+    // Clean up classes after animation (extended to 1200ms to cover last stagger + duration)
+    setTimeout(() => {
+      header.classList.remove('slide-in', 'active', 'offscreen-top');
+      shuffleZone.classList.remove('slide-in', 'active', 'offscreen-bottom');
+      footer.classList.remove('slide-in', 'active', 'offscreen-bottom');
+      // Ensure adjusted is still removed (redundant check)
+      headerBg.classList.remove('adjusted');
+      footerBg.classList.remove('adjusted');
+      // NEW: Extra reflow before update (ensures cleanup is painted)
+      void document.body.offsetHeight;
+      // Update backgrounds AFTER cleanup (ensures heights calculated without shift)
+      updateAnimatedBackgrounds();
+      console.log('startGame cleanup complete: adjusted removed, backgrounds updated');
+    }, 1200); // Matches duration + stagger
+  }, 0); // Matches BG transition duration
+}
+    document.getElementById('arcade-play-btn').addEventListener('click', () => {
+      playSound('button');
+      currentMission = null; // Ensure arcade mode (full doodles, no mission filter)
+      startGame();
+      hideMenuPanel('arcade-sub-menu');
+    });
+
+   // Replace the entire 'prompt-no' event listener with this (clears pendingAction on cancel)
+document.getElementById('prompt-no').addEventListener('click', () => {
+  hideMenuPanel('abandon-prompt'); // ← Updated to use hideMenuPanel
+  pendingNewGameAction = null; // Clear on cancel
+  if (currentMode === 'arcade-sub') {
+    hideMenuPanel('arcade-sub-menu'); // ← Updated to use hideMenuPanel
+    showMainMenu();
+  }
+});
+
+    // Replace the entire 'prompt-yes' event listener with this (handles pendingAction to decide next step)
+document.getElementById('prompt-yes').addEventListener('click', () => {
+  playSound('button');
+  hasGameInProgress = false;
+  deck = { ...defaultDeck };
+  hideMenuPanel('abandon-prompt');
+  if (pendingNewGameAction === 'arcade') {
+    startGame();
+    hideMenuPanel('arcade-sub-menu');
+  } else if (pendingNewGameAction === 'getting-started') {
+    showGettingStartedSubMenu();
+  } else if (pendingNewGameAction === 'mission') {
+    startGame();
+    hideMenuPanel('mission-detail');
+  }
+  pendingNewGameAction = null; // Reset after handling
+});
+
+// Replace the entire 'mission-play-btn' listener with this (adds hasGameInProgress check + pendingAction)
+document.getElementById('mission-play-btn').addEventListener('click', () => {
+  playSound('button');
+  if (hasGameInProgress) {
+    pendingNewGameAction = 'mission';
+    showMenuPanel('abandon-prompt');
+  } else {
+    hasGameInProgress = false; // New mission starts fresh
+    deck = { ...defaultDeck }; // Reset deck
+    startGame(); // Launch game with currentMission set
+    hideMenuPanel('mission-detail'); // ← Replaced style.display = 'none'
+  }
+});
+
+    // Track game progress: Add to your learn/remove functions
+    // In learn (after deck[doodle]++)
+    hasGameInProgress = true;
+
+    // In remove (after deck[doodle]--)
+    hasGameInProgress = Object.entries(deck).some(([k, v]) => v !== defaultDeck[k]); // Check if differs from default
+
+    /* Replace the existing function preloadAudio() { ... } in <script> with this full version (adds pointbubble: 0.5 volume) */
+    function preloadAudio() {
+      if (Object.keys(audio).length > 0) return; // already preloaded
+      console.log('🎵 Preloading all sound effects...');
+      const volumes = {
+        shuffle: 0.6,
+        learn: 0.6,
+        remove: 0.6,
+        snap: 0.6,
+        score: 0.6,
+        win: 0.6,
+        modalslide: 0.3,
+        selectbutton: 0.3,
+        bgm: 0.3,
+        flap: 0.4,
+        pointbubble: 0.5  // Balanced volume for point bubbles (adjust as needed)
+      };
+      Object.entries(soundFiles).forEach(([name, files]) => {
+        const vol = volumes[name] || 0.6; // Fallback to 0.6 if not specified
+        if (Array.isArray(files)) {
+          soundsIndex[name] = 0;
+          files.forEach((src, i) => {
+            const soundKey = `${name}_${i}`;
+            audio[soundKey] = new Audio(src);
+            audio[soundKey].preload = 'auto';
+            audio[soundKey].volume = vol; // ← Use custom volume
+            if (name === 'bgm') audio.bgm.volume = musicVolume; else audio[soundKey].volume = sfxVolume;
+            // Log load errors
+            audio[soundKey].onerror = () => {
+              console.error(`❌ Failed to load ${src}: ${audio[soundKey].error.message}`);
+            };
+            audio[soundKey].onloadeddata = () => {
+              console.log(` Loaded: ${soundKey} (${src}) at volume ${vol}`);
+            };
+          });
+        } else {
+          audio[name] = new Audio(files);
+          audio[name].preload = 'auto';
+          audio[name].volume = vol; // ← Use custom volume
+          // Log load errors for single files too
+          audio[name].onerror = () => {
+            console.error(`❌ Failed to load ${files}: ${audio[name].error.message}`);
+          };
+          audio[name].onloadeddata = () => {
+            console.log(` Loaded: ${name} (${files}) at volume ${vol}`);
+            if (name === 'bgm') {
+              audio.bgm.loop = true; // ← Enable seamless looping
+            }
+          };
+        }
+      });
+      console.log('✅ All sounds preloaded! (Check for errors above)');
+    }
+
+    function updateSFXVolume(newVol) {
+      sfxVolume = newVol;
+      Object.keys(audio).forEach(key => {
+        if (key !== 'bgm') audio[key].volume = sfxVolume;
+      });
+    }
+
+    // NEW function: To update BGM volume
+    function updateMusicVolume(newVol) {
+      musicVolume = newVol;
+      if (audio.bgm) audio.bgm.volume = musicVolume;
+    }
 
     function playSound(name) {
       const files = soundFiles[name];
@@ -1933,11 +2917,20 @@ function preloadAudio() {
       currentGuideFilter = filterDoodle;
       const content = document.getElementById('guide-content');
       content.innerHTML = '';
+      // In renderGuide(): Replace const filteredMerges = ... with this (adds allowed filter)
+      const allowed = getAllowedDoodles(currentMission);
       const filteredMerges = doodleMerges.filter(merge => {
-        if (!filterDoodle) return true;
-        const lower = filterDoodle.toLowerCase();
-        return merge.inputs.some(i => i.toLowerCase() === lower) || merge.output.toLowerCase() === lower;
+        if (!filterDoodle) {
+          // Full guide: Also filter to allowed
+          return merge.inputs.every(i => allowed.includes(i)) && allowed.includes(merge.output);
+        } else {
+          // Filtered: Apply as before, but intersect with allowed
+          const lower = filterDoodle.toLowerCase();
+          const match = merge.inputs.some(i => i.toLowerCase() === lower) || merge.output.toLowerCase() === lower;
+          return match && merge.inputs.every(i => allowed.includes(i)) && allowed.includes(merge.output);
+        }
       });
+      // Then continue with if (filteredMerges.length === 0 && filterDoodle) { ... }
       if (filteredMerges.length === 0 && filterDoodle) {
         const empty = document.createElement('div');
         empty.style.padding = '20cqi';
@@ -2150,6 +3143,11 @@ function preloadAudio() {
       playSound('button');
       hideTooltip(); populatePortfolioGrid(); openModal('portfolio-modal');
     });
+    document.getElementById('audio-btn').addEventListener('click', () => {
+      playSound('button');
+      const controls = document.getElementById('audio-controls');
+      controls.classList.toggle('show');
+    });
     document.getElementById('close-portfolio').addEventListener('click', () => {
       playSound('selectbutton');  // ← NEW
       closeModal('portfolio-modal');
@@ -2158,72 +3156,153 @@ function preloadAudio() {
       playSound('button');
       hideTooltip(); openModal('score-modal'); initScoreScanner();
     });
+
+    // Replace the entire 'menu-btn' event listener in <script> with this (adds temp overflow: visible on #game-container during anim)
+document.getElementById('menu-btn').addEventListener('click', () => {
+  playSound('button');
+  const headerBg = document.getElementById('header-bg');
+  const footerBg = document.getElementById('footer-bg');
+  headerBg.classList.add('adjusted');
+  footerBg.classList.add('adjusted');
+  const gameContainer = document.getElementById('game-container');
+  gameContainer.style.zIndex = '60'; // Temp higher than menu (50) to keep game on top during anim
+  // NEW: Temp overflow visible to prevent clipping during slide-out
+  gameContainer.style.overflow = 'visible';
+  // Ensure visible before anim (reset if hidden from prior)
+  const footer = document.getElementById('footer');
+  const header = document.getElementById('header');
+  const shuffleZone = document.getElementById('shuffle-zone');
+  header.style.visibility = 'visible';
+  shuffleZone.style.visibility = 'visible';
+  footer.style.visibility = 'visible';
+  // Force reflow after visibility reset
+  void header.offsetHeight;
+  void shuffleZone.offsetHeight;
+  void footer.offsetHeight;
+  // NEW: Temp z-index higher than menu (50) to stay on top during slide-out
+  header.style.zIndex = '55';
+  shuffleZone.style.zIndex = '55';
+  footer.style.zIndex = '55';
+  // Staggered slide-outs: footer first, then header, then shuffle (reverse of user's in-order)
+  function triggerSlideOut(element, delay) {
+    setTimeout(() => {
+      element.classList.add('slide-out');
+    }, delay);
+  }
+  triggerSlideOut(footer, 0);
+  triggerSlideOut(header, 0);
+  triggerSlideOut(shuffleZone, 0);
+  // Start menu slide-in immediately for simultaneous animation
+  setTimeout(() => {
+    showMainMenu({ fromGame: true });
+  }, 0); // Changed to 0ms for no delay
+  // Separate timeout: Wait full duration to set visibility hidden and reset z-index/overflow (elements stay off-screen via persisted transform)
+  setTimeout(() => {
+    // Force reflow if needed
+    void header.offsetHeight;
+    void shuffleZone.offsetHeight;
+    void footer.offsetHeight;
+    // NEW: Reset z-index and overflow
+    header.style.zIndex = '';
+    shuffleZone.style.zIndex = '';
+    footer.style.zIndex = '';
+    gameContainer.style.overflow = 'hidden';
+    gameContainer.style.zIndex = '10'; // Reset to original
+    // Do NOT remove 'slide-out' – persists off-screen position
+  }, 1400); // Increased to 1400ms for safety (anim 0.8s + stagger 400ms + buffer)
+});
+
     document.getElementById('close-score').addEventListener('click', () => {
       playSound('selectbutton');  // ← NEW
       closeModal('score-modal');
       if (scoreStream) { scoreStream.getTracks().forEach(t => t.stop()); scoreStream = null; }
     });
 
+    // Sub-Menu Close Button Listeners (back to previous)
+    document.getElementById('arcade-close-btn').addEventListener('click', () => {
+      playSound('selectbutton');
+      hideMenuPanel('arcade-sub-menu');
+      showMainMenu(); // Back to main menu
+    });
+
+    document.getElementById('getting-started-close-btn').addEventListener('click', () => {
+      playSound('selectbutton');
+      hideMenuPanel('getting-started-sub-menu');
+      showMainMenu(); // Back to main menu
+    });
+
+    document.getElementById('mission-close-btn').addEventListener('click', () => {
+      playSound('selectbutton');
+      document.getElementById('mission-detail').style.display = 'none';
+      showGettingStartedSubMenu(); // Back to getting-started sub-menu
+    });
+
+    document.getElementById('abandon-close-btn').addEventListener('click', () => {
+      playSound('selectbutton');
+      hideMenuPanel('abandon-prompt'); // ← Updated to use hideMenuPanel
+      showMainMenu(); // Back to main menu (or adjust to arcade-sub if needed)
+    });
+
     // Find this existing event listener in your <script> (around line ~500ish) and replace it entirely:
     const shuffleContainer = document.getElementById('shuffle-container');
-    
+
     /* Replace the existing shuffleContainer.addEventListener('click', ...) in <script> with this full version (adds shifting class add/remove) */
-shuffleContainer.addEventListener('click', () => {
-  playSound('shuffle');
-  playSound('button');
-  // Add the spinning class to trigger both animations
-  shuffleContainer.classList.add('spinning');
-  // NEW: Add shifting to backgrounds
-  const headerBg = document.getElementById('header-bg');
-  const footerBg = document.getElementById('footer-bg');
-  headerBg.classList.add('shifting');
-  footerBg.classList.add('shifting');
-  // Remove classes after the animation finishes so they can animate again
-  setTimeout(() => {
-    shuffleContainer.classList.remove('spinning');
-    headerBg.classList.remove('shifting');
-    footerBg.classList.remove('shifting');
-  }, 1350);
-  // NEW: Unselect any selected doodle and hide tooltip before shuffling
-  mainDoodleContainers.forEach(div => div.classList.remove('selected'));
-  hideTooltip();
-  // Original shuffle logic (unchanged)
-  const drawn = drawSix();
-  if (!drawn) return;
-  const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
-  order.forEach((id, i) => {
-    const div = document.getElementById(id);
-    if (div && div.style.backgroundImage) {
+    shuffleContainer.addEventListener('click', () => {
+      playSound('shuffle');
+      playSound('button');
+      // Add the spinning class to trigger both animations
+      shuffleContainer.classList.add('spinning');
+      // NEW: Add shifting to backgrounds
+      const headerBg = document.getElementById('header-bg');
+      const footerBg = document.getElementById('footer-bg');
+      headerBg.classList.add('shifting');
+      footerBg.classList.add('shifting');
+      // Remove classes after the animation finishes so they can animate again
       setTimeout(() => {
-        // Outgoing doodles – add random horizontal spread as they fall
-        const spreadX = (Math.random() * 24 - 12).toFixed(2) + 'cqi'; // ±12cqi (tweak range for more/less spread)
-        div.style.transition = 'transform 0.33s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
-        div.style.transform = `translate(${spreadX}, 120dvh) rotate(-720deg)`;
-      }, i * 5);
-    }
-  });
-  setTimeout(() => {
-    order.forEach((id, i) => {
-      const div = document.getElementById(id);
-      if (!div) return;
-      div.style.transition = 'none';
-      // Incoming doodles – start with random horizontal spread below screen
-      const startSpreadX = (Math.random() * 36 - 18).toFixed(2) + 'cqi'; // ±12cqi (tweak range for more/less spread)
-      div.style.transform = `translate(${startSpreadX}, 100dvh) rotate(720deg)`;
-      div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
-      div.dataset.doodle = drawn[i];
-      void div.offsetWidth;
-      // === ORGANIC RANDOM SETTLE IN CQI ===
-      const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi'; // ±1.2 cqi left/right
-      const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi'; // ±0.8 cqi up/down
-      const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg'; // ±2° rotation
+        shuffleContainer.classList.remove('spinning');
+        headerBg.classList.remove('shifting');
+        footerBg.classList.remove('shifting');
+      }, 1350);
+      // NEW: Unselect any selected doodle and hide tooltip before shuffling
+      mainDoodleContainers.forEach(div => div.classList.remove('selected'));
+      hideTooltip();
+      // Original shuffle logic (unchanged)
+      const drawn = drawSix();
+      if (!drawn) return;
+      const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
+      order.forEach((id, i) => {
+        const div = document.getElementById(id);
+        if (div && div.style.backgroundImage) {
+          setTimeout(() => {
+            // Outgoing doodles – add random horizontal spread as they fall
+            const spreadX = (Math.random() * 24 - 12).toFixed(2) + 'cqi'; // ±12cqi (tweak range for more/less spread)
+            div.style.transition = 'transform 0.33s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
+            div.style.transform = `translate(${spreadX}, 120dvh) rotate(-720deg)`;
+          }, i * 5);
+        }
+      });
       setTimeout(() => {
-        div.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-        div.style.transform = `translate(${rx}, ${ry}) rotate(${rr})`;
-      }, i * 50);
+        order.forEach((id, i) => {
+          const div = document.getElementById(id);
+          if (!div) return;
+          div.style.transition = 'none';
+          // Incoming doodles – start with random horizontal spread below screen
+          const startSpreadX = (Math.random() * 36 - 18).toFixed(2) + 'cqi'; // ±12cqi (tweak range for more/less spread)
+          div.style.transform = `translate(${startSpreadX}, 100dvh) rotate(720deg)`;
+          div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
+          div.dataset.doodle = drawn[i];
+          void div.offsetWidth;
+          // === ORGANIC RANDOM SETTLE IN CQI ===
+          const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi'; // ±1.2 cqi left/right
+          const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi'; // ±0.8 cqi up/down
+          const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg'; // ±2° rotation
+          setTimeout(() => {
+            div.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            div.style.transform = `translate(${rx}, ${ry}) rotate(${rr})`;
+          }, i * 50);
+        });
+      }, 350);
     });
-  }, 350);
-});
 
     // Make main doodles selectable on click/tap (so tooltip works there too)
     const mainDoodleContainers = document.querySelectorAll('#shuffle-zone > div[id^="doodle-"]');
@@ -2247,13 +3326,14 @@ shuffleContainer.addEventListener('click', () => {
     function populateLearnGrid() {
       const grid = document.getElementById('learn-grid');
       grid.innerHTML = '';
-      allPossibleDoodles.forEach(doodle => {
+      const allowed = getAllowedDoodles(currentMission);
+      allowed.forEach(doodle => {
         const cell = document.createElement('div');
         cell.className = 'doodle-cell';
         cell.dataset.doodle = doodle;
         cell.innerHTML = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
         cell.addEventListener('click', () => {
-          playSound('selectbutton');  // ← NEW
+          playSound('selectbutton');
           toggleSelection(cell, grid, 'learn');
         });
         grid.appendChild(cell);
@@ -2364,6 +3444,7 @@ shuffleContainer.addEventListener('click', () => {
       if (selected) {
         const doodle = selected.dataset.doodle;
         deck[doodle] = (deck[doodle] || 0) + 1;
+        hasGameInProgress = true;
         selected.classList.add('animate-learn');
         setTimeout(() => {
           // NEW: Play modalslide manually once for the whole switch
@@ -2416,6 +3497,8 @@ shuffleContainer.addEventListener('click', () => {
         const doodle = selected.dataset.doodle;
         if (deck[doodle] > 0) {
           deck[doodle]--;
+          // In modal-remove-btn click handler: Add this line RIGHT AFTER deck[doodle]--;
+          hasGameInProgress = Object.entries(deck).some(([k, v]) => v !== defaultDeck[k]);
           selected.classList.add('animate-remove');
           setTimeout(() => {
             selected.style.opacity = '0';
@@ -2691,6 +3774,11 @@ shuffleContainer.addEventListener('click', () => {
           let maxIndex = scoresArray.indexOf(Math.max(...scoresArray));
           let predicted = scoreClassNames[maxIndex];
           let confidence = scoresArray[maxIndex];
+          const allowed = getAllowedDoodles(currentMission);
+          if (!allowed.includes(predicted)) {
+            predicted = 'unknown';
+            confidence = 0;
+          }
           if (predicted === 'unknown' && scoresArray.length > 1) {
             scoresArray[maxIndex] = -999;
             maxIndex = scoresArray.indexOf(Math.max(...scoresArray));
@@ -2762,36 +3850,36 @@ shuffleContainer.addEventListener('click', () => {
     }
 
     /* Replace the existing function scoreRenderDetectedGrid() { ... } in <script> with this full version (adds doodle-inner wrapper) */
-function scoreRenderDetectedGrid() {
-  const grid = document.getElementById('score-detected-grid');
-  grid.innerHTML = '';
-  grid.style.display = 'grid';
-  scoreGridCells = [];
-  let flat = 0;
-  for (let r = 0; r < 7; r++) {
-    for (let c = 0; c < 11; c++) {
-      const cell = document.createElement('div');
-      cell.className = 'grid-cell';
-      if (c !== 5) {
-        const d = scoreDetectedDoodles[flat];
-        const confidence = scoreConfidences[flat];
-        cell.dataset.index = flat;
-        cell.dataset.doodle = d;
-        // NEW: Wrap background in inner div
-        const inner = document.createElement('div');
-        inner.className = 'doodle-inner';
-        if (d !== 'unknown') {
-          inner.style.backgroundImage = `url('images/raw${d}.png')`;
+    function scoreRenderDetectedGrid() {
+      const grid = document.getElementById('score-detected-grid');
+      grid.innerHTML = '';
+      grid.style.display = 'grid';
+      scoreGridCells = [];
+      let flat = 0;
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 11; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'grid-cell';
+          if (c !== 5) {
+            const d = scoreDetectedDoodles[flat];
+            const confidence = scoreConfidences[flat];
+            cell.dataset.index = flat;
+            cell.dataset.doodle = d;
+            // NEW: Wrap background in inner div
+            const inner = document.createElement('div');
+            inner.className = 'doodle-inner';
+            if (d !== 'unknown') {
+              inner.style.backgroundImage = `url('images/raw${d}.png')`;
+            }
+            cell.appendChild(inner);
+            cell.addEventListener('click', () => scoreShowDoodlePopup(flat));
+            flat++;
+          }
+          grid.appendChild(cell);
+          scoreGridCells.push(cell);
         }
-        cell.appendChild(inner);
-        cell.addEventListener('click', () => scoreShowDoodlePopup(flat));
-        flat++;
       }
-      grid.appendChild(cell);
-      scoreGridCells.push(cell);
     }
-  }
-}
 
     let scoreCurrentCellIndex = -1;
     function scoreShowDoodlePopup(index) {
@@ -2902,45 +3990,39 @@ function scoreRenderDetectedGrid() {
       return { total, perCellList };
     }
 
-/* Replace the existing function calculate3DSet() in <script> with this (corrects to 10pts per {cube + pyramid + cylinder} set) */
-function calculate3DSet() {
-  let cubes = 0, pyramids = 0, cylinders = 0;
-  let cubePositions = [], pyramidPositions = [], cylinderPositions = [];
-  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-    let d = scoreBoard[r][c];
-    if (d === 'cube') { cubes++; cubePositions.push({ r, c }); }
-    else if (d === 'pyramid') { pyramids++; pyramidPositions.push({ r, c }); }
-    else if (d === 'cylinder') { cylinders++; cylinderPositions.push({ r, c }); }
-  }
-  let sets = Math.min(cubes, pyramids, cylinders);
-  let total = sets * 10;
-
-  // For animation: All positions to highlight
-  let allPositions = [...cubePositions, ...pyramidPositions, ...cylinderPositions];
-
-  // Determine limiting type for bubbles (fewest count; tie: cylinder > cube > pyramid)
-  let limitingType = 'cylinder';
-  let limitingCount = cylinders;
-  let limitingPositions = cylinderPositions;
-  if (pyramids < limitingCount || (pyramids === limitingCount && limitingType !== 'pyramid')) {
-    limitingType = 'pyramid';
-    limitingCount = pyramids;
-    limitingPositions = pyramidPositions;
-  }
-  if (cubes < limitingCount || (cubes === limitingCount && ['cylinder', 'pyramid'].includes(limitingType))) {
-    limitingType = 'cube';
-    limitingCount = cubes;
-    limitingPositions = cubePositions;
-  }
-
-  // Assign +10 pts bubbles only to limiting positions (up to sets)
-  let perCellList = limitingPositions.slice(0, sets).map(pos => ({ ...pos, pts: 10 }));
-
-  // Add to perCellScore for all (even non-bubble ones), but evenly distribute if needed (though since it's global, maybe not necessary—but for die/copy consistency)
-  allPositions.forEach(pos => { scorePerCellScore[pos.r][pos.c] += (total / allPositions.length) || 0; }); // Optional: average, but probably skip if not needed
-
-  return { total, perCellList, allPositions }; // Return allPositions for full highlight
-}
+    /* Replace the existing function calculate3DSet() in <script> with this (removes averaging to prevent decimals; 3D perCellScore remains 0) */
+    function calculate3DSet() {
+      let cubes = 0, pyramids = 0, cylinders = 0;
+      let cubePositions = [], pyramidPositions = [], cylinderPositions = [];
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+        let d = scoreBoard[r][c];
+        if (d === 'cube') { cubes++; cubePositions.push({ r, c }); }
+        else if (d === 'pyramid') { pyramids++; pyramidPositions.push({ r, c }); }
+        else if (d === 'cylinder') { cylinders++; cylinderPositions.push({ r, c }); }
+      }
+      let sets = Math.min(cubes, pyramids, cylinders);
+      let total = sets * 10;
+      // For animation: All positions to highlight
+      let allPositions = [...cubePositions, ...pyramidPositions, ...cylinderPositions];
+      // Determine limiting type for bubbles (fewest count; tie: cylinder > cube > pyramid)
+      let limitingType = 'cylinder';
+      let limitingCount = cylinders;
+      let limitingPositions = cylinderPositions;
+      if (pyramids < limitingCount || (pyramids === limitingCount && limitingType !== 'pyramid')) {
+        limitingType = 'pyramid';
+        limitingCount = pyramids;
+        limitingPositions = pyramidPositions;
+      }
+      if (cubes < limitingCount || (cubes === limitingCount && ['cylinder', 'pyramid'].includes(limitingType))) {
+        limitingType = 'cube';
+        limitingCount = cubes;
+        limitingPositions = cubePositions;
+      }
+      // Assign +10 pts bubbles only to limiting positions (up to sets)
+      let perCellList = limitingPositions.slice(0, sets).map(pos => ({ ...pos, pts: 10 }));
+      // NO AVERAGING: 3D doodles keep perCellScore=0 (die can't copy sets; no decimals)
+      return { total, perCellList, allPositions }; // Return allPositions for full highlight
+    }
 
     function calculateChest() {
       let total = 0, perCellList = [];
@@ -2984,50 +4066,50 @@ function calculate3DSet() {
       }
       return { total, perCellList };
     }
-    
+
     /* Replace the existing function calculateCloud() in <script> with this (counts drops below on same page, any column) */
-function calculateCloud() {
-  let total = 0, perCellList = [];
-  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-    if (scoreBoard[r][c] === 'cloud') {
-      let count = 0;
-      const pageCols = c < 5 ? [0,1,2,3,4] : [6,7,8,9,10];
-      for (let rr = r + 1; rr < 7; rr++) {
-        for (let pc of pageCols) {
-          if (scoreBoard[rr][pc] === 'drop') count++;
+    function calculateCloud() {
+      let total = 0, perCellList = [];
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+        if (scoreBoard[r][c] === 'cloud') {
+          let count = 0;
+          const pageCols = c < 5 ? [0, 1, 2, 3, 4] : [6, 7, 8, 9, 10];
+          for (let rr = r + 1; rr < 7; rr++) {
+            for (let pc of pageCols) {
+              if (scoreBoard[rr][pc] === 'drop') count++;
+            }
+          }
+          let pts = count * 1;
+          total += pts;
+          perCellList.push({ r, c, pts });
+          scorePerCellScore[r][c] += pts;
         }
       }
-      let pts = count * 1;
-      total += pts;
-      perCellList.push({ r, c, pts });
-      scorePerCellScore[r][c] += pts;
+      return { total, perCellList };
     }
-  }
-  return { total, perCellList };
-}
 
-/* Replace the existing function calculateUmbrella() in <script> with this (counts drops above on same page, any column) */
-function calculateUmbrella() {
-  let total = 0, perCellList = [];
-  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-    if (scoreBoard[r][c] === 'umbrella') {
-      let count = 0;
-      const pageCols = c < 5 ? [0,1,2,3,4] : [6,7,8,9,10];
-      for (let rr = 0; rr < r; rr++) {
-        for (let pc of pageCols) {
-          if (scoreBoard[rr][pc] === 'drop') count++;
+    /* Replace the existing function calculateUmbrella() in <script> with this (counts drops above on same page, any column) */
+    function calculateUmbrella() {
+      let total = 0, perCellList = [];
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+        if (scoreBoard[r][c] === 'umbrella') {
+          let count = 0;
+          const pageCols = c < 5 ? [0, 1, 2, 3, 4] : [6, 7, 8, 9, 10];
+          for (let rr = 0; rr < r; rr++) {
+            for (let pc of pageCols) {
+              if (scoreBoard[rr][pc] === 'drop') count++;
+            }
+          }
+          let pts = count * 1;
+          total += pts;
+          perCellList.push({ r, c, pts });
+          scorePerCellScore[r][c] += pts;
         }
       }
-      let pts = count * 1;
-      total += pts;
-      perCellList.push({ r, c, pts });
-      scorePerCellScore[r][c] += pts;
+      return { total, perCellList };
     }
-  }
-  return { total, perCellList };
-}
 
-function calculateMug() {
+    function calculateMug() {
       let total = 0, perCellList = [];
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'mug') {
@@ -3155,27 +4237,28 @@ function calculateMug() {
       return { total, perCellList };
     }
 
-/* Replace the existing function calculateBoat() in <script> with this (counts fish below on same page, any column) */
-function calculateBoat() {
-  let total = 0, perCellList = [];
-  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-    if (scoreBoard[r][c] === 'boat') {
-      let count = 0;
-      const pageCols = c < 5 ? [0,1,2,3,4] : [6,7,8,9,10];
-      for (let rr = r + 1; rr < 7; rr++) {
-        for (let pc of pageCols) {
-          if (scoreBoard[rr][pc] === 'fish') count++;
+    /* Replace the existing function calculateBoat() in <script> with this (counts fish below on same page, any column) */
+    function calculateBoat() {
+      let total = 0, perCellList = [];
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+        if (scoreBoard[r][c] === 'boat') {
+          let count = 0;
+          const pageCols = c < 5 ? [0, 1, 2, 3, 4] : [6, 7, 8, 9, 10];
+          for (let rr = r + 1; rr < 7; rr++) {
+            for (let pc of pageCols) {
+              if (scoreBoard[rr][pc] === 'fish') count++;
+            }
+          }
+          let pts = count * 2;
+          total += pts;
+          perCellList.push({ r, c, pts });
+          scorePerCellScore[r][c] += pts;
         }
       }
-      let pts = count * 2;
-      total += pts;
-      perCellList.push({ r, c, pts });
-      scorePerCellScore[r][c] += pts;
+      return { total, perCellList };
     }
-  }
-  return { total, perCellList };
-}
 
+    /* Replace the existing function calculateDie() in <script> with this (skips 3D neighbors) */
     function calculateDie() {
       let total = 0, perCellList = [];
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
@@ -3183,6 +4266,8 @@ function calculateBoat() {
           let neighbors = getSurrounding(r, c);
           let maxNeighbor = 0;
           for (let n of neighbors) {
+            // Skip 3D doodles (no individual value)
+            if (['cube', 'cylinder', 'pyramid'].includes(n.doodle)) continue;
             maxNeighbor = Math.max(maxNeighbor, scorePerCellScore[n.r][n.c]);
           }
           let pts = maxNeighbor;
@@ -3195,48 +4280,48 @@ function calculateBoat() {
     }
 
     /* Replace the existing async function animateCell(cell, pts) { ... } in <script> with this (adds playSound at bubble creation) */
-async function animateCell(cell, pts) {
-  cell.classList.add('scoring');
-  let animationPromise = Promise.resolve(); // Base promise to chain
-  if (pts !== null && pts !== 0) {
-    const bubble = document.createElement('div');
-    bubble.className = 'point-bubble';
-    bubble.style.backgroundImage = pts < 0 ? "url('images/blackpointbubble.png')" : "url('images/purplepointbubble.png')";
-    bubble.textContent = pts > 0 ? `${pts}` : pts;
-    cell.appendChild(bubble);
-    bubble.style.transition = 'none';
-    bubble.style.top = '50%';
-    bubble.style.left = '50%';
-    bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)';
-    bubble.offsetHeight;
-    // Chain phases with promises for full completion
-    animationPromise = new Promise(resolve => {
-      // Hop up
-      bubble.style.transition = 'transform 0.15s ease-out, top 0.15s ease-out';
-      bubble.style.transform = 'translate(-50%, -50%) scale(1.2) rotate(180deg)';
-      bubble.style.top = '-20%';
-      setTimeout(() => {
-        // Hop down
-        bubble.style.transition = 'transform 0.15s ease-in, top 0.15s ease-out';
-        bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(360deg)';
-        bubble.style.top = '15%';
-        setTimeout(() => {
-          // Slide to top-left
-          bubble.style.transition = 'transform 0.5s ease-out, top 0.5s ease-out, left 0.5s ease-out';
-          bubble.style.transform = 'translate(0%, 0%) scale(0.7) rotate(360deg)';
-          bubble.style.top = '-35%';
-          bubble.style.left = '-35%';
-          // Resolve after slide completes (500ms duration)
-          setTimeout(resolve, 500);
-        }, 750); // Pause after hop
-      }, 200); // Delay after up
-    });
-  }
-  // Wait for bubble animation (if any) + final pause
-  await animationPromise;
-  await new Promise(r => setTimeout(r, 700)); // Existing final pause (adjust if needed)
-  cell.classList.remove('scoring');
-}
+    async function animateCell(cell, pts) {
+      cell.classList.add('scoring');
+      let animationPromise = Promise.resolve(); // Base promise to chain
+      if (pts !== null && pts !== 0) {
+        const bubble = document.createElement('div');
+        bubble.className = 'point-bubble';
+        bubble.style.backgroundImage = pts < 0 ? "url('images/blackpointbubble.png')" : "url('images/purplepointbubble.png')";
+        bubble.textContent = pts > 0 ? `${pts}` : pts;
+        cell.appendChild(bubble);
+        bubble.style.transition = 'none';
+        bubble.style.top = '50%';
+        bubble.style.left = '50%';
+        bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)';
+        bubble.offsetHeight;
+        // Chain phases with promises for full completion
+        animationPromise = new Promise(resolve => {
+          // Hop up
+          bubble.style.transition = 'transform 0.15s ease-out, top 0.15s ease-out';
+          bubble.style.transform = 'translate(-50%, -50%) scale(1.2) rotate(180deg)';
+          bubble.style.top = '-45%';
+          setTimeout(() => {
+            // Hop down
+            bubble.style.transition = 'transform 0.15s ease-in, top 0.15s ease-out';
+            bubble.style.transform = 'translate(-50%, -50%) scale(1) rotate(360deg)';
+            bubble.style.top = '10%';
+            setTimeout(() => {
+              // Slide to top-left
+              bubble.style.transition = 'transform 0.5s ease-out, top 0.5s ease-out, left 0.5s ease-out';
+              bubble.style.transform = 'translate(0%, 0%) scale(0.7) rotate(360deg)';
+              bubble.style.top = '-35%';
+              bubble.style.left = '-35%';
+              // Resolve after slide completes (500ms duration)
+              setTimeout(resolve, 500);
+            }, 750); // Pause after hop
+          }, 200); // Delay after up
+        });
+      }
+      // Wait for bubble animation (if any) + final pause
+      await animationPromise;
+      await new Promise(r => setTimeout(r, 700)); // Existing final pause (adjust if needed)
+      cell.classList.remove('scoring');
+    }
 
     function addTallyRow(type, subtotal) {
       const tally = document.getElementById('score-tally');
@@ -3276,170 +4361,170 @@ async function animateCell(cell, pts) {
       tally.appendChild(row);
     }
 
-    
+
     async function runScoringAnimation() {
-  console.log("SCORE SHEET clicked – starting full animation");
-  scoreBuildBoard();
-  scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
+      console.log("SCORE SHEET clicked – starting full animation");
+      scoreBuildBoard();
+      scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
 
-  const tally = document.getElementById('score-tally');
-  tally.style.display = 'block';
-  tally.innerHTML = '';
+      const tally = document.getElementById('score-tally');
+      tally.style.display = 'block';
+      tally.innerHTML = '';
 
-  let total = 0;
+      let total = 0;
 
-  // Pre-compute all scoring results
-  const nonZeroResults = [];
-  for (let rule of scoringRules) {
-    let result = rule.base !== undefined 
-      ? calculateBase(rule.type, rule.base) 
-      : rule.calc();
-    let subtotal = result.total || 0;
-    if (subtotal !== 0) {
-      nonZeroResults.push({ rule, result, subtotal });
-    }
-    total += subtotal;
-  }
-
-  // Variety bonus
-  const unique = new Set(scoreDetectedDoodles.filter(d => d !== 'unknown')).size;
-  let bonus = unique <= 12 ? -10 : unique <= 14 ? 1 : unique === 15 ? 5 : unique === 16 ? 10 : unique === 17 ? 16 : unique === 18 ? 23 : unique === 19 ? 31 : 40;
-  total += bonus;
-
-  // === ANIMATE EACH DOODLE TYPE GROUP ===
-  for (let entry of nonZeroResults) {
-    const { rule, result, subtotal } = entry;
-
-    // For normal rules use perCellList / positions
-    // For 3D set use special allPositions for highlighting
-    const bubbleItems = result.perCellList || result.positions || [];
-    const highlightItems = (rule.type === '3dset' && result.allPositions) 
-      ? result.allPositions 
-      : bubbleItems;
-
-    if (highlightItems.length === 0) continue;
-
-    // Fade everything except the current group
-    scoreGridCells.forEach(gridCell => {
-      if (gridCell.dataset.doodle && gridCell.dataset.doodle !== 'unknown') {
-        gridCell.classList.add('low-opacity', 'non-scoring');
+      // Pre-compute all scoring results
+      const nonZeroResults = [];
+      for (let rule of scoringRules) {
+        let result = rule.base !== undefined
+          ? calculateBase(rule.type, rule.base)
+          : rule.calc();
+        let subtotal = result.total || 0;
+        if (subtotal !== 0) {
+          nonZeroResults.push({ rule, result, subtotal });
+        }
+        total += subtotal;
       }
-    });
-    highlightItems.forEach(item => {
-      const gridIdx = item.r * 11 + item.c;
-      const cell = scoreGridCells[gridIdx];
-      if (cell) cell.classList.remove('low-opacity', 'non-scoring');
-    });
-    void document.body.offsetHeight; // Force reflow
 
-    await new Promise(r => setTimeout(r, 400)); // Give fade time to be visible
+      // Variety bonus
+      const unique = new Set(scoreDetectedDoodles.filter(d => d !== 'unknown')).size;
+      let bonus = unique <= 12 ? -10 : unique <= 14 ? 1 : unique === 15 ? 5 : unique === 16 ? 10 : unique === 17 ? 16 : unique === 18 ? 23 : unique === 19 ? 31 : 40;
+      total += bonus;
 
-    // === POINT BUBBLE SOUNDS (max 4 per doodle type) ===
-    let soundCount = 0;
-    const maxSounds = 4;
+      // === ANIMATE EACH DOODLE TYPE GROUP ===
+      for (let entry of nonZeroResults) {
+        const { rule, result, subtotal } = entry;
 
-    const animationPromises = [];
-    for (let i = 0; i < bubbleItems.length; i++) {
-      const item = bubbleItems[i];
-      const gridIdx = item.r * 11 + item.c;
-      const cell = scoreGridCells[gridIdx];
+        // For normal rules use perCellList / positions
+        // For 3D set use special allPositions for highlighting
+        const bubbleItems = result.perCellList || result.positions || [];
+        const highlightItems = (rule.type === '3dset' && result.allPositions)
+          ? result.allPositions
+          : bubbleItems;
 
-      if (cell) {
-        setTimeout(() => {
-          if (soundCount < maxSounds && item.pts !== null && item.pts !== 0) {
-            playSound('pointbubble');
-            soundCount++;
+        if (highlightItems.length === 0) continue;
+
+        // Fade everything except the current group
+        scoreGridCells.forEach(gridCell => {
+          if (gridCell.dataset.doodle && gridCell.dataset.doodle !== 'unknown') {
+            gridCell.classList.add('low-opacity', 'non-scoring');
           }
-          animationPromises.push(animateCell(cell, item.pts !== undefined ? item.pts : null));
-        }, i * 12);
+        });
+        highlightItems.forEach(item => {
+          const gridIdx = item.r * 11 + item.c;
+          const cell = scoreGridCells[gridIdx];
+          if (cell) cell.classList.remove('low-opacity', 'non-scoring');
+        });
+        void document.body.offsetHeight; // Force reflow
+
+        await new Promise(r => setTimeout(r, 400)); // Give fade time to be visible
+
+        // === POINT BUBBLE SOUNDS (max 4 per doodle type) ===
+        let soundCount = 0;
+        const maxSounds = 4;
+
+        const animationPromises = [];
+        for (let i = 0; i < bubbleItems.length; i++) {
+          const item = bubbleItems[i];
+          const gridIdx = item.r * 11 + item.c;
+          const cell = scoreGridCells[gridIdx];
+
+          if (cell) {
+            setTimeout(() => {
+              if (soundCount < maxSounds && item.pts !== null && item.pts !== 0) {
+                playSound('pointbubble');
+                soundCount++;
+              }
+              animationPromises.push(animateCell(cell, item.pts !== undefined ? item.pts : null));
+            }, i * 12);
+          }
+        }
+
+        await Promise.all(animationPromises);
+
+        // === TALLY ROW (special 3-image row for 3D set) ===
+        if (rule.type === '3dset') {
+          const row = document.createElement('div');
+          row.className = 'tally-row';
+          // Three doodles in order: cylinder, cube, pyramid
+          ['cylinder', 'cube', 'pyramid'].forEach(doodle => {
+            const img = document.createElement('img');
+            img.src = `images/${doodle}.png`;
+            img.style.width = '10cqi';
+            img.style.height = '10cqi';
+            img.style.objectFit = 'contain';
+            row.appendChild(img);
+          });
+          const line = document.createElement('div'); line.className = 'tally-line';
+          const scoreBox = document.createElement('div');
+          scoreBox.className = 'score-box';
+          scoreBox.style.backgroundImage = "url('images/purplepointbubble.png')";
+          scoreBox.style.backgroundSize = 'contain';
+          scoreBox.style.backgroundRepeat = 'no-repeat';
+          scoreBox.style.backgroundPosition = 'center';
+          scoreBox.style.display = 'flex';
+          scoreBox.style.alignItems = 'center';
+          scoreBox.style.justifyContent = 'center';
+          scoreBox.style.color = '#fff';
+          scoreBox.style.textShadow = '0 1px 2px #000';
+          scoreBox.textContent = `${Math.abs(subtotal)}`;
+          row.append(line, scoreBox);
+          tally.appendChild(row);
+        } else {
+          addTallyRow(rule.type, subtotal);
+        }
+
+        // Pause before next doodle type
+        await new Promise(r => setTimeout(r, 2800)); // ← Change this number to adjust pause (ms)
       }
+
+      // Variety bonus row
+      if (bonus !== 0) {
+        addTallyRow('variety', bonus);
+        await new Promise(r => setTimeout(r, 600));
+      }
+
+      // === FINAL TOTAL (custom text + large bubble) ===
+      const totalContainer = document.createElement('div');
+      totalContainer.style.textAlign = 'center';
+      totalContainer.style.marginTop = '25px';
+
+      // Text: "Total Score:" in black, Covered By Your Grace
+      const totalText = document.createElement('div');
+      totalText.style.fontFamily = "'Covered By Your Grace', cursive";
+      totalText.style.fontSize = '7.5cqi';
+      totalText.style.fontWeight = '400'; // Normal weight for Grace font
+      totalText.style.color = '#000000'; // Black
+      totalText.textContent = 'Total Score:';
+      totalContainer.appendChild(totalText);
+
+      // Large purple bubble centered below, 3x size (30cqi w/h, font 9cqi)
+      const totalBubble = document.createElement('div');
+      totalBubble.className = 'score-box';
+      totalBubble.style.backgroundImage = "url('images/purplepointbubble.png')";
+      totalBubble.style.backgroundSize = 'contain';
+      totalBubble.style.backgroundRepeat = 'no-repeat';
+      totalBubble.style.backgroundPosition = 'center';
+      totalBubble.style.display = 'flex';
+      totalBubble.style.alignItems = 'center';
+      totalBubble.style.justifyContent = 'center';
+      totalBubble.style.color = '#fff';
+      totalBubble.style.textShadow = '0 3px 6px #000'; // Scaled shadow for larger size
+      totalBubble.style.fontFamily = "'Fira Sans', sans-serif";
+      totalBubble.style.fontSize = '9cqi'; // 3x original 3cqi
+      totalBubble.style.fontWeight = 'bold';
+      totalBubble.style.width = '30cqi'; // 3x original 10cqi
+      totalBubble.style.height = '30cqi'; // 3x original 10cqi
+      totalBubble.style.minWidth = 'auto';
+      totalBubble.style.padding = '0';
+      totalBubble.style.margin = '2cqi auto 0'; // Centered horizontally, small top margin from text
+      totalBubble.textContent = `${total}`;
+      totalContainer.appendChild(totalBubble);
+
+      tally.appendChild(totalContainer);
+
+      document.getElementById('score-new-scan-btn').style.display = 'block';
     }
-
-    await Promise.all(animationPromises);
-
-    // === TALLY ROW (special 3-image row for 3D set) ===
-    if (rule.type === '3dset') {
-      const row = document.createElement('div');
-      row.className = 'tally-row';
-      // Three doodles in order: cylinder, cube, pyramid
-      ['cylinder', 'cube', 'pyramid'].forEach(doodle => {
-        const img = document.createElement('img');
-        img.src = `images/${doodle}.png`;
-        img.style.width = '10cqi';
-        img.style.height = '10cqi';
-        img.style.objectFit = 'contain';
-        row.appendChild(img);
-      });
-      const line = document.createElement('div'); line.className = 'tally-line';
-      const scoreBox = document.createElement('div');
-      scoreBox.className = 'score-box';
-      scoreBox.style.backgroundImage = "url('images/purplepointbubble.png')";
-      scoreBox.style.backgroundSize = 'contain';
-      scoreBox.style.backgroundRepeat = 'no-repeat';
-      scoreBox.style.backgroundPosition = 'center';
-      scoreBox.style.display = 'flex';
-      scoreBox.style.alignItems = 'center';
-      scoreBox.style.justifyContent = 'center';
-      scoreBox.style.color = '#fff';
-      scoreBox.style.textShadow = '0 1px 2px #000';
-      scoreBox.textContent = `${Math.abs(subtotal)}`;
-      row.append(line, scoreBox);
-      tally.appendChild(row);
-    } else {
-      addTallyRow(rule.type, subtotal);
-    }
-
-    // Pause before next doodle type
-    await new Promise(r => setTimeout(r, 2800)); // ← Change this number to adjust pause (ms)
-  }
-
-  // Variety bonus row
-  if (bonus !== 0) {
-    addTallyRow('variety', bonus);
-    await new Promise(r => setTimeout(r, 600));
-  }
-
-  // === FINAL TOTAL (custom text + large bubble) ===
-  const totalContainer = document.createElement('div');
-  totalContainer.style.textAlign = 'center';
-  totalContainer.style.marginTop = '25px';
-
-  // Text: "Total Score:" in black, Covered By Your Grace
-  const totalText = document.createElement('div');
-  totalText.style.fontFamily = "'Covered By Your Grace', cursive";
-  totalText.style.fontSize = '7.5cqi';
-  totalText.style.fontWeight = '400'; // Normal weight for Grace font
-  totalText.style.color = '#000000'; // Black
-  totalText.textContent = 'Total Score:';
-  totalContainer.appendChild(totalText);
-
-  // Large purple bubble centered below, 3x size (30cqi w/h, font 9cqi)
-  const totalBubble = document.createElement('div');
-  totalBubble.className = 'score-box';
-  totalBubble.style.backgroundImage = "url('images/purplepointbubble.png')";
-  totalBubble.style.backgroundSize = 'contain';
-  totalBubble.style.backgroundRepeat = 'no-repeat';
-  totalBubble.style.backgroundPosition = 'center';
-  totalBubble.style.display = 'flex';
-  totalBubble.style.alignItems = 'center';
-  totalBubble.style.justifyContent = 'center';
-  totalBubble.style.color = '#fff';
-  totalBubble.style.textShadow = '0 3px 6px #000'; // Scaled shadow for larger size
-  totalBubble.style.fontFamily = "'Fira Sans', sans-serif";
-  totalBubble.style.fontSize = '9cqi'; // 3x original 3cqi
-  totalBubble.style.fontWeight = 'bold';
-  totalBubble.style.width = '30cqi'; // 3x original 10cqi
-  totalBubble.style.height = '30cqi'; // 3x original 10cqi
-  totalBubble.style.minWidth = 'auto';
-  totalBubble.style.padding = '0';
-  totalBubble.style.margin = '2cqi auto 0'; // Centered horizontally, small top margin from text
-  totalBubble.textContent = `${total}`;
-  totalContainer.appendChild(totalBubble);
-
-  tally.appendChild(totalContainer);
-
-  document.getElementById('score-new-scan-btn').style.display = 'block';
-}
 
     document.getElementById('score-score-btn').onclick = () => {
       // Hide review and camera snapshot/overlay
@@ -3598,10 +4683,8 @@ async function animateCell(cell, pts) {
     } else {
       headerImg.onload = footerImg.onload = updateAnimatedBackgrounds;
     }
-    // Initial + resize + orientation
-    window.addEventListener('load', updateAnimatedBackgrounds);
-    window.addEventListener('resize', updateAnimatedBackgrounds);
-    window.addEventListener('orientationchange', () => setTimeout(updateAnimatedBackgrounds, 120));
+
+
     // Add press animation to all nav buttons
     const navButtons = document.querySelectorAll('.nav-btn');
     navButtons.forEach(btn => {
@@ -3632,6 +4715,63 @@ async function animateCell(cell, pts) {
     // Trigger BGM on FIRST user gesture (click/tap anywhere)
     document.addEventListener('click', startBGM, { once: true });
     document.addEventListener('touchstart', startBGM, { once: true }); // For mobile
+
+    // Add this code right before the call to showMainMenu() at the end of <script> (e.g., after populateLearnGrid();)
+    const headerBg = document.getElementById('header-bg');
+    const footerBg = document.getElementById('footer-bg');
+    headerBg.classList.add('adjusted');
+    footerBg.classList.add('adjusted');
+
+    // Add these new event listeners instead (delayed with setTimeout 0 for queueing after stack, only for game mode)
+    window.addEventListener('resize', () => {
+      if (currentMode === 'game') setTimeout(updateAnimatedBackgrounds, 0);
+    });
+    window.addEventListener('orientationchange', () => {
+      if (currentMode === 'game') setTimeout(updateAnimatedBackgrounds, 120);
+    });
+
+    // Start with main menu
+    showMainMenu();
+    // After document ready/event listeners, add this to create sliders dynamically (or add to HTML if preferred)
+    const audioControls = document.getElementById('audio-controls');
+
+    // SFX Slider
+    const sfxLabel = document.createElement('div');
+    sfxLabel.className = 'audio-label';
+    sfxLabel.textContent = 'SFX Volume';
+    const sfxSlider = document.createElement('input');
+    sfxSlider.type = 'range';
+    sfxSlider.className = 'audio-slider';
+    sfxSlider.min = 0;
+    sfxSlider.max = 1;
+    sfxSlider.step = 0.1;
+    sfxSlider.value = sfxVolume;
+    sfxSlider.addEventListener('input', (e) => updateSFXVolume(parseFloat(e.target.value)));
+    audioControls.appendChild(sfxLabel);
+    audioControls.appendChild(sfxSlider);
+
+    // Music Slider
+    const musicLabel = document.createElement('div');
+    musicLabel.className = 'audio-label';
+    musicLabel.textContent = 'Music Volume';
+    const musicSlider = document.createElement('input');
+    musicSlider.type = 'range';
+    musicSlider.className = 'audio-slider';
+    musicSlider.min = 0;
+    musicSlider.max = 1;
+    musicSlider.step = 0.1;
+    musicSlider.value = musicVolume;
+    musicSlider.addEventListener('input', (e) => updateMusicVolume(parseFloat(e.target.value)));
+    audioControls.appendChild(musicLabel);
+    audioControls.appendChild(musicSlider);
+
+    // Optional: Close on outside click
+    document.addEventListener('click', (e) => {
+      const controls = document.getElementById('audio-controls');
+      if (controls.classList.contains('show') && !controls.contains(e.target) && e.target.id !== 'audio-btn') {
+        controls.classList.remove('show');
+      }
+    });
   </script>
 </body>
 
