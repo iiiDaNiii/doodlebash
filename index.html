@@ -1632,7 +1632,7 @@
       background: rgba(255, 255, 255, 0.7);
       backdrop-filter: blur(1cqi);
       border-radius: 1.5cqh;
-      display: flex;
+      display: none;
       flex-direction: column;
       justify-content: flex-start;
       /* ← Changed from flex-start to center for vertical centering */
@@ -1988,6 +1988,19 @@
       transform: translateY(-110%) rotate(-5deg);
       /* ← Slides out up on hide */
     }
+
+    .menu-panel.hiding {
+  animation: slideOutUp 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; /* Forwards persists off-screen */
+}
+
+@keyframes slideOutUp {
+  from {
+    transform: translateY(0) rotate(0deg);
+  }
+  to {
+    transform: translateY(-110%) rotate(-5deg);
+  }
+}
 
     /* Add this new style block anywhere in <style> (e.g., after existing nav-btn or shuffle-container styles) for game element slide-ins */
     #header.slide-in,
@@ -2609,42 +2622,49 @@ function showGettingStartedSubMenu() {
   currentMode = 'getting-started-sub';
 }
 
-    // Replace the existing selectMission(missionNum) function with this version (uses innerHTML with renderDescription for inline doodles)
-    function selectMission(missionNum) {
-      playSound('selectbutton');
-      currentMission = missionNum;
-      document.getElementById('getting-started-sub-menu').style.display = 'none';
-      const detail = document.getElementById('mission-detail');
-      // Check/add close button dynamically (in case of any future clears)
-      let closeBtn = document.getElementById('mission-close-btn');
-      if (!closeBtn) {
-        closeBtn = document.createElement('img');
-        closeBtn.id = 'mission-close-btn';
-        closeBtn.src = 'images/close.png';
-        closeBtn.className = 'sub-close-btn';
-        closeBtn.alt = 'Close';
-        detail.insertBefore(closeBtn, detail.firstChild); // Add as first child (top-left)
-        // Add listener
-        closeBtn.addEventListener('click', () => {
-          playSound('selectbutton');
-          hideMenuPanel('mission-detail'); // ← Replaced style.display = 'none'
-          showGettingStartedSubMenu(); // Back to getting-started sub-menu
-        });
-      }
-      document.getElementById('mission-title').textContent = [
-        'First Scribbles',
-        'Blasting Off',
-        'Buried Treasure',
-        'Oodles of Doodles',
-        'The Big Leagues'
-      ][missionNum - 1];
-      document.getElementById('mission-instructions').innerHTML = renderDescription(missionInstructions[missionNum]); // ← Changed to innerHTML with renderDescription
-      document.getElementById('mission-goal-text').innerHTML = renderDescription(missionGoals[missionNum]); // ← Changed to innerHTML with renderDescription
-      showMenuPanel('mission-detail'); // ← Replaced style.display = 'flex'
-      currentMode = 'mission-detail';
-    }
+// Replace the entire selectMission(missionNum) function with this (reduces setTimeout from 800ms to 500ms for tighter transition; adjust further if needed, e.g., 400ms for even snappier)
+function selectMission(missionNum) {
+  playSound('selectbutton');
+  currentMission = missionNum;
+  // Slide out the getting-started sub-menu (replaces instant display:none)
+  hideMenuPanel('getting-started-sub-menu');
+  const detail = document.getElementById('mission-detail');
+  // Check/add close button dynamically (in case of any future clears)
+  let closeBtn = document.getElementById('mission-close-btn');
+  if (!closeBtn) {
+    closeBtn = document.createElement('img');
+    closeBtn.id = 'mission-close-btn';
+    closeBtn.src = 'images/close.png';
+    closeBtn.className = 'sub-close-btn';
+    closeBtn.alt = 'Close';
+    detail.insertBefore(closeBtn, detail.firstChild);
+    
+closeBtn.addEventListener('click', () => {
+  playSound('selectbutton');
+  const detail = document.getElementById('mission-detail');
+  detail.classList.add('active'); // Force on-screen if needed (safeguard)
+  void detail.offsetHeight; // Reflow
+  hideMenuPanel('mission-detail');
+  showGettingStartedSubMenu(); // No delay needed—overlaps slide-out
+});
+  }
+  document.getElementById('mission-title').textContent = [
+    'First Scribbles',
+    'Blasting Off',
+    'Buried Treasure',
+    'Oodles of Doodles',
+    'The Big Leagues'
+  ][missionNum - 1];
+  document.getElementById('mission-instructions').innerHTML = renderDescription(missionInstructions[missionNum]); // ← Changed to innerHTML with renderDescription
+  document.getElementById('mission-goal-text').innerHTML = renderDescription(missionGoals[missionNum]); // ← Changed to innerHTML with renderDescription
+  // Delay show of mission-detail until after sub-menu slide-out (reduced to 500ms for tighter feel)
+  setTimeout(() => {
+    showMenuPanel('mission-detail'); // ← Replaced style.display = 'flex'
+  }, 0);
+  currentMode = 'mission-detail';
+}
 
-    // In showAbandonPrompt() function: Replace the entire function with this version (updates classList.add('active') to use showMenuPanel)
+// In showAbandonPrompt() function: Replace the entire function with this version (updates classList.add('active') to use showMenuPanel)
     function showAbandonPrompt() {
       showMenuPanel('abandon-prompt'); // ← Replaced classList.add('active')
     }
@@ -2656,34 +2676,34 @@ function showGettingStartedSubMenu() {
       closeModal('score-modal', { silent: true });
     }
 
-    // Add these helper functions after closeAllModals() in <script> (before event listeners)
-    function showMenuPanel(id, options = {}) {
-      if (!options.silent) playSound('modalslide');
-      const panel = document.getElementById(id);
-      if (!panel) return;
-      panel.style.display = 'flex';
-      panel.offsetHeight; // Force reflow
-      panel.classList.add('active');
-    }
+   // Replace the entire showMenuPanel function with this (removes explicit transform reset; relies on CSS base for off-screen start)
+function showMenuPanel(id, options = {}) {
+  if (!options.silent) playSound('modalslide');
+  const panel = document.getElementById(id);
+  if (!panel) return;
+  panel.style.display = 'flex';
+  panel.classList.remove('active'); // Ensure no active (resets if needed)
+  void panel.offsetHeight; // Reflow to lock current (off-screen from CSS)
+  panel.classList.add('active'); // Transition to 0
+}
 
-    // Replace the entire hideMenuPanel function with this (adds clearTimeout for main-menu)
-    function hideMenuPanel(id, options = {}) {
-      if (!options.silent) playSound('modalslide');
-      const panel = document.getElementById(id);
-      if (!panel) return;
-      panel.classList.remove('active');
-      panel.classList.add('slide-out');
-      if (id === 'main-menu' && menuAdjustedTimeout) {
-        clearTimeout(menuAdjustedTimeout);
-        menuAdjustedTimeout = null;
-      }
-      setTimeout(() => {
-        panel.style.display = 'none';
-        panel.classList.remove('slide-out');
-      }, 800); // Matches transition duration
-    }
+// Replace the entire hideMenuPanel function with this (switches to add 'hiding' class for keyframes anim from on-screen to off-screen, removes after duration; no 'active' removal needed since hiding handles transform)
+function hideMenuPanel(id, options = {}) {
+  if (!options.silent) playSound('modalslide');
+  const panel = document.getElementById(id);
+  if (!panel) return;
+  panel.classList.add('hiding'); // Triggers keyframes anim to off-screen
+  void panel.offsetHeight; // Reflow to ensure anim starts
+  if (id === 'main-menu' && menuAdjustedTimeout) {
+    clearTimeout(menuAdjustedTimeout);
+    menuAdjustedTimeout = null;
+  }
+  setTimeout(() => {
+    panel.style.display = 'none';
+    panel.classList.remove('hiding');
+  }, 800); // Matches anim duration
+}
 
-    // Replace the entire startGame function with this (adds remove 'slide-out' before visibility visible, to reset position)
 function startGame() {
   if (menuAdjustedTimeout) clearTimeout(menuAdjustedTimeout);
   const headerBg = document.getElementById('header-bg');
@@ -3157,8 +3177,7 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
       hideTooltip(); openModal('score-modal'); initScoreScanner();
     });
 
-    // Replace the entire 'menu-btn' event listener in <script> with this (adds temp overflow: visible on #game-container during anim)
-document.getElementById('menu-btn').addEventListener('click', () => {
+    document.getElementById('menu-btn').addEventListener('click', () => {
   playSound('button');
   const headerBg = document.getElementById('header-bg');
   const footerBg = document.getElementById('footer-bg');
@@ -3166,8 +3185,6 @@ document.getElementById('menu-btn').addEventListener('click', () => {
   footerBg.classList.add('adjusted');
   const gameContainer = document.getElementById('game-container');
   gameContainer.style.zIndex = '60'; // Temp higher than menu (50) to keep game on top during anim
-  // NEW: Temp overflow visible to prevent clipping during slide-out
-  gameContainer.style.overflow = 'visible';
   // Ensure visible before anim (reset if hidden from prior)
   const footer = document.getElementById('footer');
   const header = document.getElementById('header');
@@ -3206,12 +3223,10 @@ document.getElementById('menu-btn').addEventListener('click', () => {
     header.style.zIndex = '';
     shuffleZone.style.zIndex = '';
     footer.style.zIndex = '';
-    gameContainer.style.overflow = 'hidden';
     gameContainer.style.zIndex = '10'; // Reset to original
     // Do NOT remove 'slide-out' – persists off-screen position
   }, 1400); // Increased to 1400ms for safety (anim 0.8s + stagger 400ms + buffer)
 });
-
     document.getElementById('close-score').addEventListener('click', () => {
       playSound('selectbutton');  // ← NEW
       closeModal('score-modal');
@@ -3232,10 +3247,13 @@ document.getElementById('menu-btn').addEventListener('click', () => {
     });
 
     document.getElementById('mission-close-btn').addEventListener('click', () => {
-      playSound('selectbutton');
-      document.getElementById('mission-detail').style.display = 'none';
-      showGettingStartedSubMenu(); // Back to getting-started sub-menu
-    });
+  playSound('selectbutton');
+  const detail = document.getElementById('mission-detail');
+  detail.classList.add('active'); // Force on-screen (safeguard for anim start)
+  void detail.offsetHeight; // Reflow to lock current transform
+  hideMenuPanel('mission-detail');
+  showGettingStartedSubMenu(); // Immediate call—overlaps the slide-out for smooth transition
+});
 
     document.getElementById('abandon-close-btn').addEventListener('click', () => {
       playSound('selectbutton');
