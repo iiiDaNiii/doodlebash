@@ -555,6 +555,8 @@
       background: transparent;
     }
 
+
+
     .doodle-cell {
       min-height: 0;
       display: flex;
@@ -700,6 +702,17 @@
       animation: spinFadeScale 0.6s ease-in-out forwards;
     }
 
+    /* Add this anywhere in <style> (e.g., after the existing .doodle-img styles) */
+.doodle-img-wrapper {
+  position: relative;
+  display: flex; /* Matches doodle-cell flex for centering */
+  align-items: center;
+  justify-content: center;
+  width: 92%; /* Matches doodle-img width */
+  aspect-ratio: 1 / 1; /* Matches doodle-img aspect */
+}
+
+
     @keyframes spinFadeScale {
       0% {
         transform: scale(1) rotate(0deg);
@@ -767,8 +780,14 @@
       /* No intrinsic height needed; border handles the line */
       border-top: 1px solid #e0f0f8;
       /* Subtle light blue line */
-      margin: 2.2cqi 0;
+      margin: .2cqi 0;
       /* Existing spacing around it */
+    }
+
+    #variety-tooltip .group-divider {
+      border-top: 1px solid #000;
+      /* Black only in tooltip */
+      margin: 6cqi 0 6cqi 0;
     }
 
     .inputs {
@@ -817,6 +836,26 @@
       cursor: pointer;
     }
 
+    /* NEW: Wrapper for guide doodles to allow absolute badge positioning */
+.guide-doodle-wrapper {
+  position: relative;
+  display: inline-block; /* Keeps inline flow */
+  width: 8.7cqi; /* Matches guide-doodle width */
+  height: 8.7cqi; /* Square for aspect */
+}
+
+/* NEW: "New" badge overlay */
+.new-badge {
+  position: absolute;
+  top: -79%; /* Slight offset up for overlap; adjust if needed */
+  right: -79.5%; /* Slight offset right for overlap */
+  width: 100%; /* 75% of doodle width */
+  height: auto; /* Preserve aspect */
+  pointer-events: none; /* Allow clicks through to doodle */
+  transform: translate(-50%, 50%); /* Center on top-right corner */
+  z-index:1000;
+}
+
     .guide-tooltip {
       background: #ccecf8;
       border-radius: 3.2cqi;
@@ -840,6 +879,69 @@
       font-size: 5cqi;
       border-radius: 9999px;
       display: none;
+    }
+
+    /* Variety Bonus Button (matches #full-guide-btn) */
+    #variety-bonus-btn {
+      background: #4dbde5;
+      color: #ffffff;
+      padding: 1cqi 4cqi;
+      font-size: 5cqi;
+      border-radius: 9999px;
+      display: block;
+      /* Always visible */
+      font-family: 'Covered By Your Grace', cursive;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    #variety-bonus-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* Tweak unique-count-box for inline use in tooltip text (smaller, flows in sentence) */
+    .unique-count-box.inline {
+      display: inline-flex;
+      /* Inline for text flow */
+      min-width: auto;
+      /* Fit content */
+      padding: 0.8cqi 2cqi;
+      /* Smaller padding */
+      font-size: 4.5cqi;
+      /* Matches tooltip text */
+      margin: 0 0.5cqi;
+      /* Small horizontal spacing in sentence */
+      vertical-align: middle;
+      /* Align with text */
+    }
+
+    #variety-tooltip {
+      display: none;
+      position: absolute;
+      /* Overlay instead of flow */
+      top: 12%;
+      /* Offset from modal-top (tweak for your header height; ~9% + padding) */
+      left: 5%;
+      /* Center horizontally with width */
+      width: 90%;
+      /* Matches your 90% */
+      background: rgba(204, 236, 248, 0.95);
+      /* Semi-transparent like .guide-tooltip bg */
+      border-radius: 3.2cqi;
+      padding: 4.5cqi 5.5cqi;
+      box-shadow: 0 1.1cqi 4.2cqi rgba(0, 0, 0, 0.12);
+      z-index: 20;
+      /* Above doodles (grid cells z=10) */
+      pointer-events: auto;
+      /* Clickable */
+      overflow-y: auto;
+      /* Scroll if too tall */
+      max-height: 75%;
+      /* Prevent overflow beyond modal */
+      transition: opacity 0.25s ease;
+      /* Keep fade-in */
     }
 
     #tooltip {
@@ -896,8 +998,22 @@
       width: 1.3em;
       height: auto;
       vertical-align: middle;
-      margin: 0 0.15em -0.2em;
+      margin: 0 0.15em 0;
     }
+
+    .inline-doodle[data-doodle="guidebutton"] {
+ transform: scale(3.25);
+ margin-left: 1.5em; margin-right:1.5em;
+ margin-bottom: 0.5em;
+ cursor:pointer;
+}
+
+/* Add this anywhere in <style> (e.g., after existing .inline-doodle styles) */
+.inline-doodle.greyed-out {
+  opacity: 0.5;
+}
+
+
 
     #toast {
       position: absolute;
@@ -1168,27 +1284,22 @@
       border-radius: 1cqi;
     }
 
-    /* Find the existing .unique-count-box rule in <style> and replace it with this (adds margin-left for spacing) */
     .unique-count-box {
-      background: #f0f0f0;
-      /* Light grey */
+      background: #fbb065;
+      /* Yellow instead of #f0f0f0 */
       border-radius: 1.5cqi;
-      /* Fully rounded pill shape */
       padding: 1.5cqi 4cqi;
-      /* Vertical/horizontal padding for number centering */
       font-family: 'Fira Sans', sans-serif;
       font-size: 5cqi;
       font-weight: bold;
       color: #333333;
-      /* Dark text for contrast */
+      /* Keep dark text for contrast on yellow */
       min-width: 10cqi;
-      /* Matches img size for consistency; adjust if needed */
       text-align: center;
       display: flex;
       align-items: center;
       justify-content: center;
       margin-left: 2.5cqi;
-      /* ← NEW: Adds space between varietybonus.png and the count box (tweak value as needed, e.g., 3cqi for more) */
     }
 
     #score-modal .tally-row:has(.unique-count-box) img {
@@ -1686,6 +1797,15 @@
       cursor: not-allowed;
     }
 
+    /* Purple override for specific play buttons */
+    #arcade-play-btn,
+    #mission-play-btn {
+      background: #7f2a8f;
+      /* Purple */
+      color: #ffffff;
+      /* White text for contrast */
+    }
+
     /* Replace the existing #logo-container style block in <style> with this (ensures logo fits within game-container) */
     #logo-container {
       width: 60cqi;
@@ -1878,6 +1998,17 @@
       transform: scale(1.05);
     }
 
+    /* NEW: Description text for Getting Started sub-menu */
+#getting-started-desc {
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 5cqi; /* Matches arcade-text size for consistency */
+  text-align: left;
+  width: 80cqi; /* Matches arcade-text width */
+  color: #222; /* Dark text for visibility */
+  margin-bottom: 4cqi; /* Space below desc before buttons; adjust as needed */
+  line-height: 1.5; /* Better readability for multi-line */
+}
+
     /* Mission Detail Screen */
     #mission-detail {
       position: absolute;
@@ -1900,19 +2031,19 @@
       /* ← Added: Enables vertical scrolling if content overflows */
       overflow-x: hidden;
       /* ← Added: Hides horizontal overflow */
+      container-type:size;
     }
 
     #mission-title {
-      font-family: 'Covered By Your Grace', cursive;
-      font-size: 12cqi;
-      color: #4dbde5;
-      /* Blue accent */
-      text-align: center;
-    }
+  display: flex; /* Centers the img horizontally/vertically if needed */
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 4cqi; /* Optional: Add some space below the banner; adjust as needed */
+}
 
     .mission-text {
       font-family: 'Fira Sans', sans-serif;
-      font-size: 4.5cqi;
+      font-size: 9.5cqi;
       line-height: 1.5;
       text-align: center;
       color: #222;
@@ -1920,16 +2051,72 @@
 
     #mission-goal-box {
       background: #f9d5b4;
-      border-radius: 3.5cqi;
+      border-radius: 9.5cqi;
       padding: 4cqi;
     }
 
     .goal-heading {
       font-family: 'Covered By Your Grace', cursive;
-      font-size: 10cqi;
+      font-size: 12cqi;
+      text-align: center;
       color: #000;
       margin-bottom: 2cqi;
     }
+
+    #mission-notes-box {
+      background: #f9d5b4;
+      border-radius: 3.5cqi;
+      padding: 4cqi;
+      margin-top: 4cqi;
+      /* Space from goal box */
+    }
+
+    #mission-detail .group-divider {
+      border-top: 1px solid #000;
+      /* Black for mission detail dividers */
+    }
+
+    #mission-notes-text {
+      text-align: left;
+      /* Left justify notes */
+      font-size: 6cqi;
+    }
+
+    .notes-heading {
+      font-family: 'Covered By Your Grace', cursive;
+      font-size: 12cqi;
+      color: #000;
+      text-align: center;
+      margin-top: 5cqi;
+      margin-bottom: -12cqi;
+    }
+
+.note-heading {
+  display: block; /* Change from flex to block for text-indent to work */
+  font-family: 'Fira Sans', sans-serif;
+  text-align:left;
+  font-size: 7cqi;
+  font-weight: bold;
+  color: #222;
+  margin: 2cqi 0 1.5cqi 0; /* Existing space */
+}
+
+.note-heading .inline-doodle {
+  margin: 0 0.15em 0; /* Remove negative bottom margin to bump up */
+  vertical-align: middle; /* Keep centered; or try 'bottom' if still off */
+}
+
+.note-paragraph {
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 6cqi;
+  line-height: 1.5;
+  color: #222;
+  margin: 6cqi 0 4cqi 0; /* Bottom space between notes; top is from heading */
+}
+
+    #mission-notes-text p {
+  margin-bottom: 10.5cqi; /* Space between each note paragraph */
+}
 
     @keyframes fallIn {
       from {
@@ -1990,17 +2177,19 @@
     }
 
     .menu-panel.hiding {
-  animation: slideOutUp 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; /* Forwards persists off-screen */
-}
+      animation: slideOutUp 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+      /* Forwards persists off-screen */
+    }
 
-@keyframes slideOutUp {
-  from {
-    transform: translateY(0) rotate(0deg);
-  }
-  to {
-    transform: translateY(-110%) rotate(-5deg);
-  }
-}
+    @keyframes slideOutUp {
+      from {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      to {
+        transform: translateY(-110%) rotate(-5deg);
+      }
+    }
 
     /* Add this new style block anywhere in <style> (e.g., after existing nav-btn or shuffle-container styles) for game element slide-ins */
     #header.slide-in,
@@ -2033,15 +2222,17 @@
     }
 
     /* Add these new class rules anywhere in <style> (e.g., after existing .slide-in rules) for reverse slide-out */
-#header.slide-out {
-  transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Matches slide-in curve */
-  transform: translateY(-100%);
-}
-#shuffle-zone.slide-out,
-#footer.slide-out {
-  transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-  transform: translateY(150%);
-}
+    #header.slide-out {
+      transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      /* Matches slide-in curve */
+      transform: translateY(-100%);
+    }
+
+    #shuffle-zone.slide-out,
+    #footer.slide-out {
+      transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      transform: translateY(150%);
+    }
 
     /* Optional stagger via delay (add to JS, but CSS for base) */
 
@@ -2061,9 +2252,6 @@
     .slide-in.active {
       transform: translateY(0);
     }
-
-
-    
   </style>
 </head>
 
@@ -2137,9 +2325,13 @@
       <div id="mission-title"></div>
       <div id="mission-instructions"></div>
       <div id="mission-goal-box">
+        
         <div class="goal-heading">Goal:</div>
         <div id="mission-goal-text"></div>
       </div>
+      <div class="notes-heading">Notes:</div>
+      <div class="group-divider"></div>
+      <div id="mission-notes-text" class="mission-text"></div>
       <button class="menu-btn" id="mission-play-btn">Play</button>
     </div>
 
@@ -2161,18 +2353,21 @@
         <div class="title">Portfolio</div>
         <div class="buttons">
           <button class="action-btn remove" id="modal-remove-btn">Remove</button>
+          <button id="variety-bonus-btn">Variety Bonus</button> <!-- New button -->
           <button class="close-btn" id="close-portfolio"></button>
         </div>
       </div>
       <div id="portfolio-grid" class="modal-grid"></div>
       <div class="modal-bottom-spacer"></div>
+      <div id="variety-tooltip" class="guide-tooltip"></div>
+      <!-- New tooltip; relative for inline flow in modal -->
     </div>
     <!-- GUIDE MODAL -->
     <div id="guide-modal" class="modal guide">
       <div class="modal-top guide">
         <div class="title">Doodle Guide</div>
         <div class="buttons">
-          <button id="full-guide-btn">FULL GUIDE</button>
+          <button id="full-guide-btn">Full Guide</button>
           <button class="close-btn" id="close-guide"></button>
         </div>
       </div>
@@ -2261,7 +2456,11 @@
       "gettingstarted2ptgoal",
       "gettingstarted3ptgoal",
       "gettingstarted4ptgoal",
-      "gettingstarted5ptgoal"
+      "gettingstarted5ptgoal",
+      "note1", // NEW
+      "note2", // NEW
+      "note3",  // NEW
+      "guidebutton"
     ];
 
     const doodleDescriptions = {
@@ -2297,7 +2496,7 @@
       planet: "{planet} scores {1pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {rocket}.",
       present: "{present} scores {6pt}.",
       pyramid: "{pyramid} is an intermediate shape that can merge to create {diamond} or {icecream}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} per set of {cube}{cylinder}{pyramid}.",
-      rocket: "{rocket} scores {3pt} per {planet}/{star}.",
+      rocket: "{rocket} scores {3pt} per {planet}/{star} in the same column.",
       smiley: "{smiley} scores {1pt} (+{1pt} per <i><b>surrounding</b></i> {pizza}/{icecream}).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
       star: "{star} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {rocket}.",
       sword: "{sword} scores {5pt}.",
@@ -2348,25 +2547,29 @@
     function formatName(name) {
       return name.charAt(0).toUpperCase() + name.slice(1);
     }
-
-    // Replace the existing function renderDescription(text) { ... } with this updated version (adds customImages check)
-    function renderDescription(text) {
-      return text.replace(/\{(\w+)\}/gi, (match, key) => {
-        const lower = key.toLowerCase();
-        if (allPossibleDoodles.includes(lower) || customImages.includes(lower)) {
-          return `<img src="images/${lower}.png"
-               class="inline-doodle"
-               alt="${formatName(lower)}"
-               data-doodle="${lower}"
-               style="cursor:pointer;">`;
-        }
-        if (/^\d+pt$/.test(lower) || lower === 'minus2pt') {
-          const ptFile = lower === 'minus2pt' ? 'minus2pt' : lower;
-          return `<img src="images/${ptFile}.png" class="inline-doodle" alt="${key}">`;
-        }
-        return key;
-      });
+// Replace the existing function renderDescription(text) { ... } in <script> with this updated version (skips grey-out for non-doodles like point bubbles, notes, and guidebutton by checking allPossibleDoodles)
+function renderDescription(text) {
+  return text.replace(/\{(\w+)\}/gi, (match, key) => {
+    const lower = key.toLowerCase();
+    if (allPossibleDoodles.includes(lower) || customImages.includes(lower)) {
+      let className = 'inline-doodle';
+      // UPDATED: Grey out ONLY if in a mission (1-5), it's a real doodle (in allPossibleDoodles), and not yet allowed
+      if (currentMission && currentMission <= 5 && allPossibleDoodles.includes(lower) && !getAllowedDoodles(currentMission).includes(lower)) {
+        className += ' greyed-out';
+      }
+      return `<img src="images/${lower}.png"
+           class="${className}"
+           alt="${formatName(lower)}"
+           data-doodle="${lower}"
+           style="cursor:pointer;">`;
     }
+    if (/^\d+pt$/.test(lower) || lower === 'minus2pt') {
+      const ptFile = lower === 'minus2pt' ? 'minus2pt' : lower;
+      return `<img src="images/${ptFile}.png" class="inline-doodle" alt="${key}">`;
+    }
+    return key;
+  });
+}
     const audio = {};
     const soundsIndex = {}; // Tracks current index per sound type
     let sfxVolume = 0.6; // Default SFX volume (matches most in volumes{})
@@ -2405,22 +2608,34 @@
     // Add these constant arrays right after const missionDoodles = [...] (before getAllowedDoodles function)
     const missionInstructions = [
       '', // Placeholder for index 0
-      'For your first game, there are 12 doodles to discover, including two advanced doodles.<br><br>{cube}{cylinder}{pyramid}{drop}{letter}{house}{smiley}{coin}{music}{pizza}{heart}{mug}<br><br> Use the Doodle Guide as a reference and try to learn as many of them as you can in one game.', // Mission 1
+      'For your first game, there are 12 doodles to discover:<br><br>{cube}{cylinder}{pyramid}{drop}{letter}{house}{smiley}{coin}{music}{pizza}{heart}{mug}<br><br> Use the {guidebutton} as a reference and try to learn as many of them as you can in one game.', // Mission 1
       'You’re doing great! Time to learn a few more doodles! We’ll add these ones to the mix:<br><br>{lens}{teeth}{rocket}{planet}{star}{piano}<br><br>Try to draw as many of the new doodles as you can!', // Mission 2
-      'New doodles bring new scoring opportunities. Let’s see if you can handle six more!<br><br>{halfcircle}{die}{umbrella}{crown}{diamond}{chest}<br>', // Mission 3
-      'New doodles unlocked! The cloud {cloud} is yet another way to score {drop} and there are several new advanced doodles!<br><br>{cloud}{sword}{butterfly}{flower}{fish}{boat}<br>', // Mission 4
-      'From this point on, you\'ll be playing with the complete Doodle Guide.<br><br> You’ve now unlocked a final set of doodles to complete your repertoire. Five advanced doodles offer even more clever scoring opportunities, and the Wireless {wireless} symbol comes with a powerful, in-game ability!<br><br>{cat}{icecream}{toiletpaper}{turd}{present}{wireless}<br>' // Mission 5
+      'New doodles bring new scoring opportunities. Let’s see if you can handle six more!<br><br>{halfcircle}{die}{umbrella}{crown}{diamond}{chest}<br><br>', // Mission 3
+      'New doodles unlocked! The cloud {cloud} is yet another way to score {drop} and there are several new advanced doodles!<br><br>{cloud}{sword}{butterfly}{flower}{fish}{boat}<br><br>', // Mission 4
+      'From this point on, you\'ll be playing with the complete Doodle Guide.<br><br> You’ve now unlocked a final set of doodles to complete your repertoire. Five advanced doodles offer even more clever scoring opportunities, and the Wireless {wireless} symbol comes with a powerful, in-game ability!<br><br>{cat}{icecream}{toiletpaper}{turd}{present}{wireless}<br><br>You now also earn a <i>Variety Bonus</i> based on how many uniqe doodles are in your notebook!<br><br>' // Mission 5
     ];
 
     const missionGoals = [
       '', // Placeholder for index 0
-      'Finish the game with <b><i>at least 8 unique doodles</i></b> in your Notebook (not basic shapes) and score at least {gettingstarted1ptgoal}.', // Mission 1
-      'Finish the game with <b><i>at least one of each <u>NEW</u> doodle</i></b> and score at least {gettingstarted2ptgoal}.', // Mission 2
-      'Finish the game with <b><i>at least one of each <u>NEW</u> doodle</i></b> and score at least {gettingstarted3ptgoal}', // Mission 3
+      'Finish with <b><i>at least 8 unique doodles</i></b> in your Notebook (not counting {cylinder}{square}{triangle}{line}{dot}) and score {gettingstarted1ptgoal} or more.', // Mission 1
+      'Finish the game with <b><i>at least one of each <u>NEW</u> doodle</i></b> and score a minimum of {gettingstarted2ptgoal}.', // Mission 2
+      'Finish the game with <b><i>at least one of each <u>NEW</u> doodle</i></b> in your notebook and score at least {gettingstarted3ptgoal}.', // Mission 3
       'Finish the game with <b><i>at least four of the <u>NEW</u> advanced doodles</i></b> (orange tiles) and score at least {gettingstarted4ptgoal}.', // Mission 4
-      'Finish the game with <b><i>at least five <u>unique</u>, <u>new</u> doodles</i></b> and score at least {gettingstarted5ptgoal}.' // Mission 5
+      'Finish the game with <b><i>at least three <u>unique</u>, <u>new</u> doodles</i></b>, use the special ability of a {wireless}, and score at least {gettingstarted5ptgoal}.' // Mission 5
     ];
 
+    const missionNotes = [
+  '', // Placeholder for index 0
+  '<div class="note-heading">{note1} Balance the 3d shapes {cylinder}{cube}{pyramid}.</div><p class="note-paragraph">The <i>Cylinder</i>, <i>Cube</i>, and <i>Pyramid</i> score in complete sets, so you’ll only score as well as the one you have the least of. Do your best to keep them balanced!</p></p><div class="note-heading">{note2} Pay attention to positioning bonuses.</div><p class="note-paragraph">{house}{smiley}{pizza}{letter}{heart}{mug} and {drop} all earn more points when positioned properly in relation to one another. Select any doodle you see in-game to review its scoring criteria. Have fun!</p>', // Mission 1
+
+  '<div class="note-heading">{note1} {lens} and {teeth} are intermediate doodles.</div><p class="note-paragraph">They don\'t score points, but are necessary stepping stones for learning more advanced doodles.</p><div class="note-heading">{note2} Take advantage of point multipliers. {piano}{rocket}</div><p class="note-paragraph">The new <i>Piano</i> and <i>Rocket</i> doodles are massive point multipliers. Try going <i><b>BIG</b></i> on one of these doodles.</p>', // Mission 2
+
+  '<div class="note-heading">{note1} Fill a {chest} with any type of treasure!</div><p class="note-paragraph">It scores for surrounding {coin}{diamond} and {crown}.</p><div class="note-heading">{note2} The {die} doodle has unique scoring.</div><p class="note-paragraph">The <i>die</i> doodle copies the point value of a surrounding doodle.<br><br>Multiple {die} can copy the same doodle and {die} can copy the value of another {die}.<br><br>A {die} cannot copy {cylinder}/{cube}/{pyramid} for their group value.</p>', // Mission 3
+
+  '<div class="note-heading">{note1} {butterfly} scores your largest <i>group</i> of adjacent {flower}</div><p class="note-paragraph">To be considered a “group” of {flower} for {butterfly}scoring, the {flower} must be orthogonally adjacent (diagonal doesn’t count).</p><div class="note-heading">{note2} {cloud} and {umbrella} can both score the same {drop}</div><p class="note-paragraph">Do with that information what you will.</p>', // Mission 4
+  
+  '<div class="note-heading">{note1} The {wireless} doodle allows you to merge doodles that are not adjacent.</div><p class="note-paragraph">When you are ready to <i>Merge</i>, simply circle the {wireless} symbol, and then individually circle any doodles in your Notebook that you would like to Merge.</p><div class="note-heading">{note2} Old doodles have new scoring opportunities.</div><p class="note-paragraph">Some familiar doodles now have new ways to score. Review the scoring criteria for these doodles: {house}{smiley}{cat}</p><div class="note-heading">{note3} {turd} is worth negative points. However...</div><p class="note-paragraph">You can earn your points back quickly with well placed <toiletpaper> and <cat>.</p>' // Mission 5
+];
 
     const baseDoodles = ['circle', 'square', 'triangle', 'dot', 'line'];
     let menuAdjustedTimeout = null;
@@ -2438,59 +2653,59 @@
     }
 
     // Replace the entire showMainMenu function with this (adds optional { fromGame: false } param to skip offscreen/hide when called from game)
-function showMainMenu(options = { fromGame: false }) {
-  showMenuPanel('main-menu'); // ← Replaced style.display = 'flex'
-  hideMenuPanel('arcade-sub-menu'); // ← Replaced classList.remove('active')
-  hideMenuPanel('abandon-prompt'); // ← Replaced classList.remove('active')
-  // Hide modals if open
-  closeAllModals();
-  currentMode = 'menu';
-  renderMenuButtons();
-  if (!options.fromGame) {
-    // NEW: Skip when fromGame (listener handles anim + hide)
-    // NEW: Re-apply offscreen classes to game elements FIRST (while still visible, to apply transforms)
-    const header = document.getElementById('header');
-    const shuffleZone = document.getElementById('shuffle-zone');
-    const footer = document.getElementById('footer');
-    header.classList.add('offscreen-top');
-    shuffleZone.classList.add('offscreen-bottom');
-    footer.classList.add('offscreen-bottom');
-    // Force reflow to ensure offscreen transforms are computed
-    void header.offsetHeight;
-    void shuffleZone.offsetHeight;
-    void footer.offsetHeight;
-    // Then hide visibility (elements now hidden but with offscreen transforms applied)
-    
-  }
-  // Staggered fall-in for menu buttons (unchanged)
-  const menu = document.getElementById('main-menu');
-  const buttons = menu.querySelectorAll('.menu-btn');
-  buttons.forEach((btn, i) => {
-    btn.style.transition = 'none';
-    btn.style.opacity = '0';
-    btn.style.transform = 'translateY(-100vh)';
-    void btn.offsetHeight;
-    setTimeout(() => {
-      btn.style.transition = 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease-out';
-      btn.style.transform = 'translateY(0)';
-      btn.style.opacity = '1';
-    }, (buttons.length - 1 - i) * 100);
-  });
-  // Delay 'adjusted' + update until after menu animations (increased to 800ms for full settle + reflow)
-  if (menuAdjustedTimeout) clearTimeout(menuAdjustedTimeout); // Clear any pending
-  menuAdjustedTimeout = setTimeout(() => {
-    const headerBg = document.getElementById('header-bg');
-    const footerBg = document.getElementById('footer-bg');
-    headerBg.classList.add('adjusted');
-    footerBg.classList.add('adjusted');
-    // Force reflow after add
-    void headerBg.offsetHeight;
-    void footerBg.offsetHeight;
-    // Update backgrounds after adjusted (ensures proper heights for menu state)
-    updateAnimatedBackgrounds();
-    menuAdjustedTimeout = null; // Reset after run
-  }, 800); // Longer delay to ensure DOM fully painted after menu fall-in
-}
+    function showMainMenu(options = { fromGame: false }) {
+      showMenuPanel('main-menu'); // ← Replaced style.display = 'flex'
+      hideMenuPanel('arcade-sub-menu'); // ← Replaced classList.remove('active')
+      hideMenuPanel('abandon-prompt'); // ← Replaced classList.remove('active')
+      // Hide modals if open
+      closeAllModals();
+      currentMode = 'menu';
+      renderMenuButtons();
+      if (!options.fromGame) {
+        // NEW: Skip when fromGame (listener handles anim + hide)
+        // NEW: Re-apply offscreen classes to game elements FIRST (while still visible, to apply transforms)
+        const header = document.getElementById('header');
+        const shuffleZone = document.getElementById('shuffle-zone');
+        const footer = document.getElementById('footer');
+        header.classList.add('offscreen-top');
+        shuffleZone.classList.add('offscreen-bottom');
+        footer.classList.add('offscreen-bottom');
+        // Force reflow to ensure offscreen transforms are computed
+        void header.offsetHeight;
+        void shuffleZone.offsetHeight;
+        void footer.offsetHeight;
+        // Then hide visibility (elements now hidden but with offscreen transforms applied)
+
+      }
+      // Staggered fall-in for menu buttons (unchanged)
+      const menu = document.getElementById('main-menu');
+      const buttons = menu.querySelectorAll('.menu-btn');
+      buttons.forEach((btn, i) => {
+        btn.style.transition = 'none';
+        btn.style.opacity = '0';
+        btn.style.transform = 'translateY(-100vh)';
+        void btn.offsetHeight;
+        setTimeout(() => {
+          btn.style.transition = 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease-out';
+          btn.style.transform = 'translateY(0)';
+          btn.style.opacity = '1';
+        }, (buttons.length - 1 - i) * 100);
+      });
+      // Delay 'adjusted' + update until after menu animations (increased to 800ms for full settle + reflow)
+      if (menuAdjustedTimeout) clearTimeout(menuAdjustedTimeout); // Clear any pending
+      menuAdjustedTimeout = setTimeout(() => {
+        const headerBg = document.getElementById('header-bg');
+        const footerBg = document.getElementById('footer-bg');
+        headerBg.classList.add('adjusted');
+        footerBg.classList.add('adjusted');
+        // Force reflow after add
+        void headerBg.offsetHeight;
+        void footerBg.offsetHeight;
+        // Update backgrounds after adjusted (ensures proper heights for menu state)
+        updateAnimatedBackgrounds();
+        menuAdjustedTimeout = null; // Reset after run
+      }, 800); // Longer delay to ensure DOM fully painted after menu fall-in
+    }
 
     function renderMenuButtons() {
       const menu = document.getElementById('main-menu');
@@ -2528,16 +2743,16 @@ function showMainMenu(options = { fromGame: false }) {
     }
 
     // Replace the entire showArcadeSubMenu function with this (sets pendingAction before prompt)
-function showArcadeSubMenu() {
-  if (hasGameInProgress) {
-    pendingNewGameAction = 'arcade';
-    showMenuPanel('abandon-prompt');
-  } else {
-    hideMenuPanel('main-menu'); // ← Added: Slide out main-menu
-    showMenuPanel('arcade-sub-menu', { silent: true }); // ← Silent to play sound only once (from hide)
-    currentMode = 'arcade-sub';
-  }
-}
+    function showArcadeSubMenu() {
+      if (hasGameInProgress) {
+        pendingNewGameAction = 'arcade';
+        showMenuPanel('abandon-prompt');
+      } else {
+        hideMenuPanel('main-menu'); // ← Added: Slide out main-menu
+        showMenuPanel('arcade-sub-menu', { silent: true }); // ← Silent to play sound only once (from hide)
+        currentMode = 'arcade-sub';
+      }
+    }
 
     // Replace the existing showMainMenu() function with this version (moves offscreen add BEFORE visibility hidden + adds reflow for reliable transform application)
     function showMainMenu() {
@@ -2562,7 +2777,7 @@ function showArcadeSubMenu() {
       void footer.offsetHeight;
 
       // Then hide visibility (elements now hidden but with offscreen transforms applied)
-      
+
 
       // Staggered fall-in for menu buttons (unchanged)
       const menu = document.getElementById('main-menu');
@@ -2579,9 +2794,8 @@ function showArcadeSubMenu() {
         }, (buttons.length - 1 - i) * 100);
       });
     }
-    
-// Replace the entire showGettingStartedSubMenu function with this (adds hasGameInProgress check + pendingAction)
-function showGettingStartedSubMenu() {
+
+    function showGettingStartedSubMenu() {
   playSound('button');
   if (hasGameInProgress) {
     pendingNewGameAction = 'getting-started';
@@ -2604,6 +2818,11 @@ function showGettingStartedSubMenu() {
     hideMenuPanel('getting-started-sub-menu'); // ← Updated to use hideMenuPanel
     showMainMenu(); // Back to main menu
   });
+  // NEW: Add description text above buttons
+  const desc = document.createElement('div');
+  desc.id = 'getting-started-desc';
+ desc.innerHTML = "These 5 missions are designed to slowly acquaint you with the many doodles in <i>Doodle Bash</i>. Start from the top, and get ready to learn how to draw!";
+  subMenu.appendChild(desc);
   const missions = [
     '1) First Scribbles',
     '2) Blasting Off',
@@ -2622,7 +2841,6 @@ function showGettingStartedSubMenu() {
   currentMode = 'getting-started-sub';
 }
 
-// Replace the entire selectMission(missionNum) function with this (reduces setTimeout from 800ms to 500ms for tighter transition; adjust further if needed, e.g., 400ms for even snappier)
 function selectMission(missionNum) {
   playSound('selectbutton');
   currentMission = missionNum;
@@ -2638,33 +2856,38 @@ function selectMission(missionNum) {
     closeBtn.className = 'sub-close-btn';
     closeBtn.alt = 'Close';
     detail.insertBefore(closeBtn, detail.firstChild);
-    
-closeBtn.addEventListener('click', () => {
-  playSound('selectbutton');
-  const detail = document.getElementById('mission-detail');
-  detail.classList.add('active'); // Force on-screen if needed (safeguard)
-  void detail.offsetHeight; // Reflow
-  hideMenuPanel('mission-detail');
-  showGettingStartedSubMenu(); // No delay needed—overlaps slide-out
-});
+    closeBtn.addEventListener('click', () => {
+      playSound('selectbutton');
+      const detail = document.getElementById('mission-detail');
+      detail.classList.add('active'); // Force on-screen if needed (safeguard)
+      void detail.offsetHeight; // Reflow
+      hideMenuPanel('mission-detail');
+      showGettingStartedSubMenu(); // No delay needed—overlaps slide-out
+    });
   }
-  document.getElementById('mission-title').textContent = [
-    'First Scribbles',
-    'Blasting Off',
-    'Buried Treasure',
-    'Oodles of Doodles',
-    'The Big Leagues'
-  ][missionNum - 1];
-  document.getElementById('mission-instructions').innerHTML = renderDescription(missionInstructions[missionNum]); // ← Changed to innerHTML with renderDescription
-  document.getElementById('mission-goal-text').innerHTML = renderDescription(missionGoals[missionNum]); // ← Changed to innerHTML with renderDescription
+  // NEW: Set banner image instead of text
+  document.getElementById('mission-title').innerHTML = `<img src="images/mission${missionNum}header.png" alt="Mission ${missionNum} Header" style="width: 90cqi; height: auto;">`;
+  document.getElementById('mission-instructions').innerHTML = renderDescription(missionInstructions[missionNum]);
+  document.getElementById('mission-goal-text').innerHTML = renderDescription(missionGoals[missionNum]);
   // Delay show of mission-detail until after sub-menu slide-out (reduced to 500ms for tighter feel)
+  document.getElementById('mission-notes-text').innerHTML = renderDescription(missionNotes[missionNum]);
+  // Enable tooltips on inline doodles in mission detail
+  const inlineDoodles = document.querySelectorAll('#mission-detail .inline-doodle');
+  inlineDoodles.forEach(img => {
+    img.addEventListener('click', (e) => {
+      playSound('selectbutton');
+      e.stopPropagation(); // Prevent bubbling to global hide
+      const doodle = img.dataset.doodle;
+      showTooltipForDoodle(doodle, img);
+    });
+  });
   setTimeout(() => {
     showMenuPanel('mission-detail'); // ← Replaced style.display = 'flex'
   }, 0);
   currentMode = 'mission-detail';
 }
 
-// In showAbandonPrompt() function: Replace the entire function with this version (updates classList.add('active') to use showMenuPanel)
+    // In showAbandonPrompt() function: Replace the entire function with this version (updates classList.add('active') to use showMenuPanel)
     function showAbandonPrompt() {
       showMenuPanel('abandon-prompt'); // ← Replaced classList.add('active')
     }
@@ -2676,116 +2899,116 @@ closeBtn.addEventListener('click', () => {
       closeModal('score-modal', { silent: true });
     }
 
-   // Replace the entire showMenuPanel function with this (removes explicit transform reset; relies on CSS base for off-screen start)
-function showMenuPanel(id, options = {}) {
-  if (!options.silent) playSound('modalslide');
-  const panel = document.getElementById(id);
-  if (!panel) return;
-  panel.style.display = 'flex';
-  panel.classList.remove('active'); // Ensure no active (resets if needed)
-  void panel.offsetHeight; // Reflow to lock current (off-screen from CSS)
-  panel.classList.add('active'); // Transition to 0
-}
+    // Replace the entire showMenuPanel function with this (removes explicit transform reset; relies on CSS base for off-screen start)
+    function showMenuPanel(id, options = {}) {
+      if (!options.silent) playSound('modalslide');
+      const panel = document.getElementById(id);
+      if (!panel) return;
+      panel.style.display = 'flex';
+      panel.classList.remove('active'); // Ensure no active (resets if needed)
+      void panel.offsetHeight; // Reflow to lock current (off-screen from CSS)
+      panel.classList.add('active'); // Transition to 0
+    }
 
-// Replace the entire hideMenuPanel function with this (switches to add 'hiding' class for keyframes anim from on-screen to off-screen, removes after duration; no 'active' removal needed since hiding handles transform)
-function hideMenuPanel(id, options = {}) {
-  if (!options.silent) playSound('modalslide');
-  const panel = document.getElementById(id);
-  if (!panel) return;
-  panel.classList.add('hiding'); // Triggers keyframes anim to off-screen
-  void panel.offsetHeight; // Reflow to ensure anim starts
-  if (id === 'main-menu' && menuAdjustedTimeout) {
-    clearTimeout(menuAdjustedTimeout);
-    menuAdjustedTimeout = null;
-  }
-  setTimeout(() => {
-    panel.style.display = 'none';
-    panel.classList.remove('hiding');
-  }, 800); // Matches anim duration
-}
-
-function startGame() {
-  if (menuAdjustedTimeout) clearTimeout(menuAdjustedTimeout);
-  const headerBg = document.getElementById('header-bg');
-  const footerBg = document.getElementById('footer-bg');
-  // Remove adjusted first to animate to game position
-  headerBg.classList.remove('adjusted');
-  footerBg.classList.remove('adjusted');
-  console.log('startGame: removed adjusted, starting transition to game position');
-  // Force reflow to ensure removal is painted
-  void headerBg.offsetHeight;
-  void footerBg.offsetHeight;
-  // Hide all menus/sub-menus with animation BEFORE showing game
-  hideMenuPanel('main-menu');
-  hideMenuPanel('arcade-sub-menu');
-  hideMenuPanel('abandon-prompt');
-  hideMenuPanel('getting-started-sub-menu');
-  hideMenuPanel('mission-detail');
-  // Wait for transition + menu hide to complete before showing game
-  setTimeout(() => {
-    // Reset slide-out before visible (to start from off-screen correctly)
-    const header = document.getElementById('header');
-    const shuffleZone = document.getElementById('shuffle-zone');
-    const footer = document.getElementById('footer');
-    header.classList.remove('slide-out');
-    shuffleZone.classList.remove('slide-out');
-    footer.classList.remove('slide-out');
-    // Force reflow after reset
-    void header.offsetHeight;
-    void shuffleZone.offsetHeight;
-    void footer.offsetHeight;
-    // Make visible (now resets to off-screen via slide-in prep)
-    header.style.visibility = 'visible';
-    shuffleZone.style.visibility = 'visible';
-    footer.style.visibility = 'visible';
-
-    // Force reflow after visibility change (ensures offscreen transforms are painted/ready)
-    void document.body.offsetHeight;
-
-    // Function to trigger slide-in with proper timing (add transition, reflow, then active)
-    function triggerSlideIn(element, delay) {
+    // Replace the entire hideMenuPanel function with this (switches to add 'hiding' class for keyframes anim from on-screen to off-screen, removes after duration; no 'active' removal needed since hiding handles transform)
+    function hideMenuPanel(id, options = {}) {
+      if (!options.silent) playSound('modalslide');
+      const panel = document.getElementById(id);
+      if (!panel) return;
+      panel.classList.add('hiding'); // Triggers keyframes anim to off-screen
+      void panel.offsetHeight; // Reflow to ensure anim starts
+      if (id === 'main-menu' && menuAdjustedTimeout) {
+        clearTimeout(menuAdjustedTimeout);
+        menuAdjustedTimeout = null;
+      }
       setTimeout(() => {
-        element.classList.add('slide-in'); // Add transition
-        // Force reflow to lock in current (offscreen) transform with new transition
-        void element.offsetHeight;
-        // Next frame: add active to transition to translateY(0)
-        requestAnimationFrame(() => {
-          element.classList.add('active');
-        });
-      }, delay);
+        panel.style.display = 'none';
+        panel.classList.remove('hiding');
+      }, 800); // Matches anim duration
     }
 
-    // Staggered slide-ins: header first, then shuffle-zone, then footer
-    triggerSlideIn(shuffleZone, 0);
-    triggerSlideIn(header, 0);
-    triggerSlideIn(footer, 0);
-
-    currentMode = 'game';
-    if (currentMission) {
-      Object.keys(deck).forEach(key => {
-        if (!getAllowedDoodles(currentMission).includes(key)) deck[key] = 0;
-      });
-    }
-    if (!hasGameInProgress) {
-      deck = { ...defaultDeck };
-    }
-
-    // Clean up classes after animation (extended to 1200ms to cover last stagger + duration)
-    setTimeout(() => {
-      header.classList.remove('slide-in', 'active', 'offscreen-top');
-      shuffleZone.classList.remove('slide-in', 'active', 'offscreen-bottom');
-      footer.classList.remove('slide-in', 'active', 'offscreen-bottom');
-      // Ensure adjusted is still removed (redundant check)
+    function startGame() {
+      if (menuAdjustedTimeout) clearTimeout(menuAdjustedTimeout);
+      const headerBg = document.getElementById('header-bg');
+      const footerBg = document.getElementById('footer-bg');
+      // Remove adjusted first to animate to game position
       headerBg.classList.remove('adjusted');
       footerBg.classList.remove('adjusted');
-      // NEW: Extra reflow before update (ensures cleanup is painted)
-      void document.body.offsetHeight;
-      // Update backgrounds AFTER cleanup (ensures heights calculated without shift)
-      updateAnimatedBackgrounds();
-      console.log('startGame cleanup complete: adjusted removed, backgrounds updated');
-    }, 1200); // Matches duration + stagger
-  }, 0); // Matches BG transition duration
-}
+      console.log('startGame: removed adjusted, starting transition to game position');
+      // Force reflow to ensure removal is painted
+      void headerBg.offsetHeight;
+      void footerBg.offsetHeight;
+      // Hide all menus/sub-menus with animation BEFORE showing game
+      hideMenuPanel('main-menu');
+      hideMenuPanel('arcade-sub-menu');
+      hideMenuPanel('abandon-prompt');
+      hideMenuPanel('getting-started-sub-menu');
+      hideMenuPanel('mission-detail');
+      // Wait for transition + menu hide to complete before showing game
+      setTimeout(() => {
+        // Reset slide-out before visible (to start from off-screen correctly)
+        const header = document.getElementById('header');
+        const shuffleZone = document.getElementById('shuffle-zone');
+        const footer = document.getElementById('footer');
+        header.classList.remove('slide-out');
+        shuffleZone.classList.remove('slide-out');
+        footer.classList.remove('slide-out');
+        // Force reflow after reset
+        void header.offsetHeight;
+        void shuffleZone.offsetHeight;
+        void footer.offsetHeight;
+        // Make visible (now resets to off-screen via slide-in prep)
+        header.style.visibility = 'visible';
+        shuffleZone.style.visibility = 'visible';
+        footer.style.visibility = 'visible';
+
+        // Force reflow after visibility change (ensures offscreen transforms are painted/ready)
+        void document.body.offsetHeight;
+
+        // Function to trigger slide-in with proper timing (add transition, reflow, then active)
+        function triggerSlideIn(element, delay) {
+          setTimeout(() => {
+            element.classList.add('slide-in'); // Add transition
+            // Force reflow to lock in current (offscreen) transform with new transition
+            void element.offsetHeight;
+            // Next frame: add active to transition to translateY(0)
+            requestAnimationFrame(() => {
+              element.classList.add('active');
+            });
+          }, delay);
+        }
+
+        // Staggered slide-ins: header first, then shuffle-zone, then footer
+        triggerSlideIn(shuffleZone, 0);
+        triggerSlideIn(header, 0);
+        triggerSlideIn(footer, 0);
+
+        currentMode = 'game';
+        if (currentMission) {
+          Object.keys(deck).forEach(key => {
+            if (!getAllowedDoodles(currentMission).includes(key)) deck[key] = 0;
+          });
+        }
+        if (!hasGameInProgress) {
+          deck = { ...defaultDeck };
+        }
+
+        // Clean up classes after animation (extended to 1200ms to cover last stagger + duration)
+        setTimeout(() => {
+          header.classList.remove('slide-in', 'active', 'offscreen-top');
+          shuffleZone.classList.remove('slide-in', 'active', 'offscreen-bottom');
+          footer.classList.remove('slide-in', 'active', 'offscreen-bottom');
+          // Ensure adjusted is still removed (redundant check)
+          headerBg.classList.remove('adjusted');
+          footerBg.classList.remove('adjusted');
+          // NEW: Extra reflow before update (ensures cleanup is painted)
+          void document.body.offsetHeight;
+          // Update backgrounds AFTER cleanup (ensures heights calculated without shift)
+          updateAnimatedBackgrounds();
+          console.log('startGame cleanup complete: adjusted removed, backgrounds updated');
+        }, 1200); // Matches duration + stagger
+      }, 0); // Matches BG transition duration
+    }
     document.getElementById('arcade-play-btn').addEventListener('click', () => {
       playSound('button');
       currentMission = null; // Ensure arcade mode (full doodles, no mission filter)
@@ -2793,47 +3016,47 @@ function startGame() {
       hideMenuPanel('arcade-sub-menu');
     });
 
-   // Replace the entire 'prompt-no' event listener with this (clears pendingAction on cancel)
-document.getElementById('prompt-no').addEventListener('click', () => {
-  hideMenuPanel('abandon-prompt'); // ← Updated to use hideMenuPanel
-  pendingNewGameAction = null; // Clear on cancel
-  if (currentMode === 'arcade-sub') {
-    hideMenuPanel('arcade-sub-menu'); // ← Updated to use hideMenuPanel
-    showMainMenu();
-  }
-});
+    // Replace the entire 'prompt-no' event listener with this (clears pendingAction on cancel)
+    document.getElementById('prompt-no').addEventListener('click', () => {
+      hideMenuPanel('abandon-prompt'); // ← Updated to use hideMenuPanel
+      pendingNewGameAction = null; // Clear on cancel
+      if (currentMode === 'arcade-sub') {
+        hideMenuPanel('arcade-sub-menu'); // ← Updated to use hideMenuPanel
+        showMainMenu();
+      }
+    });
 
     // Replace the entire 'prompt-yes' event listener with this (handles pendingAction to decide next step)
-document.getElementById('prompt-yes').addEventListener('click', () => {
-  playSound('button');
-  hasGameInProgress = false;
-  deck = { ...defaultDeck };
-  hideMenuPanel('abandon-prompt');
-  if (pendingNewGameAction === 'arcade') {
-    startGame();
-    hideMenuPanel('arcade-sub-menu');
-  } else if (pendingNewGameAction === 'getting-started') {
-    showGettingStartedSubMenu();
-  } else if (pendingNewGameAction === 'mission') {
-    startGame();
-    hideMenuPanel('mission-detail');
-  }
-  pendingNewGameAction = null; // Reset after handling
-});
+    document.getElementById('prompt-yes').addEventListener('click', () => {
+      playSound('button');
+      hasGameInProgress = false;
+      deck = { ...defaultDeck };
+      hideMenuPanel('abandon-prompt');
+      if (pendingNewGameAction === 'arcade') {
+        startGame();
+        hideMenuPanel('arcade-sub-menu');
+      } else if (pendingNewGameAction === 'getting-started') {
+        showGettingStartedSubMenu();
+      } else if (pendingNewGameAction === 'mission') {
+        startGame();
+        hideMenuPanel('mission-detail');
+      }
+      pendingNewGameAction = null; // Reset after handling
+    });
 
-// Replace the entire 'mission-play-btn' listener with this (adds hasGameInProgress check + pendingAction)
-document.getElementById('mission-play-btn').addEventListener('click', () => {
-  playSound('button');
-  if (hasGameInProgress) {
-    pendingNewGameAction = 'mission';
-    showMenuPanel('abandon-prompt');
-  } else {
-    hasGameInProgress = false; // New mission starts fresh
-    deck = { ...defaultDeck }; // Reset deck
-    startGame(); // Launch game with currentMission set
-    hideMenuPanel('mission-detail'); // ← Replaced style.display = 'none'
-  }
-});
+    // Replace the entire 'mission-play-btn' listener with this (adds hasGameInProgress check + pendingAction)
+    document.getElementById('mission-play-btn').addEventListener('click', () => {
+      playSound('button');
+      if (hasGameInProgress) {
+        pendingNewGameAction = 'mission';
+        showMenuPanel('abandon-prompt');
+      } else {
+        hasGameInProgress = false; // New mission starts fresh
+        deck = { ...defaultDeck }; // Reset deck
+        startGame(); // Launch game with currentMission set
+        hideMenuPanel('mission-detail'); // ← Replaced style.display = 'none'
+      }
+    });
 
     // Track game progress: Add to your learn/remove functions
     // In learn (after deck[doodle]++)
@@ -2853,7 +3076,7 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
         snap: 0.6,
         score: 0.6,
         win: 0.6,
-        modalslide: 0.3,
+        modalslide: 0.2,
         selectbutton: 0.3,
         bgm: 0.3,
         flap: 0.4,
@@ -2868,7 +3091,8 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
             audio[soundKey] = new Audio(src);
             audio[soundKey].preload = 'auto';
             audio[soundKey].volume = vol; // ← Use custom volume
-            if (name === 'bgm') audio.bgm.volume = musicVolume; else audio[soundKey].volume = sfxVolume;
+            audio[soundKey].baseVolume = vol;
+
             // Log load errors
             audio[soundKey].onerror = () => {
               console.error(`❌ Failed to load ${src}: ${audio[soundKey].error.message}`);
@@ -2882,6 +3106,7 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
           audio[name].preload = 'auto';
           audio[name].volume = vol; // ← Use custom volume
           // Log load errors for single files too
+          audio[name].baseVolume = vol;
           audio[name].onerror = () => {
             console.error(`❌ Failed to load ${files}: ${audio[name].error.message}`);
           };
@@ -2899,7 +3124,9 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
     function updateSFXVolume(newVol) {
       sfxVolume = newVol;
       Object.keys(audio).forEach(key => {
-        if (key !== 'bgm') audio[key].volume = sfxVolume;
+        if (key !== 'bgm' && audio[key].baseVolume !== undefined) {
+          audio[key].volume = audio[key].baseVolume * newVol;
+        }
       });
     }
 
@@ -2933,156 +3160,170 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
     }
 
     let currentGuideFilter = null;
-    function renderGuide(filterDoodle = null) {
-      currentGuideFilter = filterDoodle;
-      const content = document.getElementById('guide-content');
-      content.innerHTML = '';
-      // In renderGuide(): Replace const filteredMerges = ... with this (adds allowed filter)
-      const allowed = getAllowedDoodles(currentMission);
-      const filteredMerges = doodleMerges.filter(merge => {
-        if (!filterDoodle) {
-          // Full guide: Also filter to allowed
-          return merge.inputs.every(i => allowed.includes(i)) && allowed.includes(merge.output);
-        } else {
-          // Filtered: Apply as before, but intersect with allowed
-          const lower = filterDoodle.toLowerCase();
-          const match = merge.inputs.some(i => i.toLowerCase() === lower) || merge.output.toLowerCase() === lower;
-          return match && merge.inputs.every(i => allowed.includes(i)) && allowed.includes(merge.output);
-        }
-      });
-      // Then continue with if (filteredMerges.length === 0 && filterDoodle) { ... }
-      if (filteredMerges.length === 0 && filterDoodle) {
-        const empty = document.createElement('div');
-        empty.style.padding = '20cqi';
-        empty.style.textAlign = 'center';
-        empty.style.color = '#666';
-        empty.style.fontSize = '5cqi';
-        empty.textContent = `No recipes found for "${filterDoodle}"`;
-        content.appendChild(empty);
-      } else {
-        if (!filterDoodle) {
-          // Full guide: Custom order by first input
-          const guideOrder = ["circle", "square", "triangle", "line", "dot", "lens", "halfcircle", "drop", "teeth", "cylinder", "cube", "pyramid"];
-          filteredMerges.sort((a, b) => guideOrder.indexOf(a.inputs[0]) - guideOrder.indexOf(b.inputs[0]));
-          let currentGroup = null;
-          filteredMerges.forEach(merge => {
-            const firstInput = merge.inputs[0];
-            if (firstInput !== currentGroup) {
-              if (currentGroup !== null) {
-                const divider = document.createElement('div');
-                divider.className = 'group-divider';
-                content.appendChild(divider);
-              }
-              currentGroup = firstInput;
-            }
-            appendMergeRow(content, merge.inputs, merge.output);
-          });
-        } else {
-          const lowerFilter = filterDoodle.toLowerCase();
-          // Filtered: Separate outputs and inputs
-          const outputMerges = filteredMerges.filter(merge => merge.output.toLowerCase() === lowerFilter);
-          const inputMerges = filteredMerges.filter(merge => merge.inputs.some(i => i.toLowerCase() === lowerFilter) && merge.output.toLowerCase() !== lowerFilter);
-          // Render outputs first (if any)
-          outputMerges.forEach(merge => {
-            appendMergeRow(content, merge.inputs, merge.output);
-          });
-          // Add divider if there are both outputs and inputs
-          if (outputMerges.length > 0 && inputMerges.length > 0) {
+    // Replace the existing function renderGuide(filterDoodle = null) { ... } in <script> with this updated version (adds delay based on whether guide-modal is already active/open)
+function renderGuide(filterDoodle = null) {
+  currentGuideFilter = filterDoodle;
+  const content = document.getElementById('guide-content');
+  content.innerHTML = '';
+  // In renderGuide(): Replace const filteredMerges = ... with this (adds allowed filter)
+  const allowed = getAllowedDoodles(currentMission);
+  const filteredMerges = doodleMerges.filter(merge => {
+    if (!filterDoodle) {
+      // Full guide: Also filter to allowed
+      return merge.inputs.every(i => allowed.includes(i)) && allowed.includes(merge.output);
+    } else {
+      // Filtered: Apply as before, but intersect with allowed
+      const lower = filterDoodle.toLowerCase();
+      const match = merge.inputs.some(i => i.toLowerCase() === lower) || merge.output.toLowerCase() === lower;
+      return match && merge.inputs.every(i => allowed.includes(i)) && allowed.includes(merge.output);
+    }
+  });
+  // Then continue with if (filteredMerges.length === 0 && filterDoodle) { ... }
+  if (filteredMerges.length === 0 && filterDoodle) {
+    const empty = document.createElement('div');
+    empty.style.padding = '20cqi';
+    empty.style.textAlign = 'center';
+    empty.style.color = '#666';
+    empty.style.fontSize = '5cqi';
+    empty.textContent = `No recipes found for "${filterDoodle}"`;
+    content.appendChild(empty);
+  } else {
+    if (!filterDoodle) {
+      // Full guide: Custom order by first input
+      const guideOrder = ["circle", "square", "triangle", "line", "dot", "lens", "halfcircle", "drop", "teeth", "cylinder", "cube", "pyramid"];
+      filteredMerges.sort((a, b) => guideOrder.indexOf(a.inputs[0]) - guideOrder.indexOf(b.inputs[0]));
+      let currentGroup = null;
+      filteredMerges.forEach(merge => {
+        const firstInput = merge.inputs[0];
+        if (firstInput !== currentGroup) {
+          if (currentGroup !== null) {
             const divider = document.createElement('div');
             divider.className = 'group-divider';
             content.appendChild(divider);
           }
-          // Reorder and sort inputs
-          const reorderedInputs = inputMerges.map(merge => {
-            const selected = merge.inputs.filter(i => i.toLowerCase() === lowerFilter);
-            const others = merge.inputs.filter(i => i.toLowerCase() !== lowerFilter);
-            return { ...merge, inputs: [...selected, ...others] }; // Selected first, then others
-          });
-          reorderedInputs.sort((a, b) => a.inputs.length - b.inputs.length); // Sort by length ascending
-          // Render reordered inputs as one group
-          reorderedInputs.forEach(merge => {
-            appendMergeRow(content, merge.inputs, merge.output);
-          });
+          currentGroup = firstInput;
         }
-        // Highlight all instances of the filtered doodle with scale and rock animation
-        if (filterDoodle) {
-          const lowerFilter = filterDoodle.toLowerCase();
-          const allGuideDoodles = content.querySelectorAll('.guide-doodle');
-          allGuideDoodles.forEach(img => {
-            const imgDoodle = img.src.split('/').pop().replace('.png', '').toLowerCase();
-            if (imgDoodle === lowerFilter) {
-              img.classList.add('highlighted');
-            }
-          });
-        }
-        // === NEW: Add the tooltip at the bottom when a doodle is selected ===
-        const existingTip = content.querySelector('.guide-tooltip');
-        if (existingTip) existingTip.remove();
-        let tip = null; // ← NEW: Declare tip variable for animation
-        if (filterDoodle) {
-          tip = createGuideTooltip(filterDoodle);
-          content.appendChild(tip);
-        }
-        // NEW: Animate rows sliding in (only when filtering)
-        if (filterDoodle) {
-          const rows = content.querySelectorAll('.merge-row');
-          rows.forEach((row, index) => {
-            row.style.opacity = '0'; // Start hidden
-            row.style.transform = 'translateY(4cqi)'; // Start lower
-            setTimeout(() => {
-              row.classList.add('animate-in');
-              playSound('flap');  // Random flap sound per row for card riffle effect
-            }, index * 60); // Stagger by 60ms per row for smooth sequence
-          });
-          // NEW: Animate tooltip sliding in (after rows, for sequencing)
-          if (tip) {
-            tip.style.opacity = '0';
-            tip.style.transform = 'translateY(4cqi)';
-            setTimeout(() => {
-              tip.classList.add('animate-in');
-            }, rows.length * 30 + 150); // ← Delay after last row + buffer
-          }
-        }
+        appendMergeRow(content, merge.inputs, merge.output);
+      });
+    } else {
+      const lowerFilter = filterDoodle.toLowerCase();
+      // Filtered: Separate outputs and inputs
+      const outputMerges = filteredMerges.filter(merge => merge.output.toLowerCase() === lowerFilter);
+      const inputMerges = filteredMerges.filter(merge => merge.inputs.some(i => i.toLowerCase() === lowerFilter) && merge.output.toLowerCase() !== lowerFilter);
+      // Render outputs first (if any)
+      outputMerges.forEach(merge => {
+        appendMergeRow(content, merge.inputs, merge.output);
+      });
+      // Add divider if there are both outputs and inputs
+      if (outputMerges.length > 0 && inputMerges.length > 0) {
+        const divider = document.createElement('div');
+        divider.className = 'group-divider';
+        content.appendChild(divider);
       }
-      document.getElementById('full-guide-btn').style.display = filterDoodle ? 'block' : 'none';
+      // Reorder and sort inputs
+      const reorderedInputs = inputMerges.map(merge => {
+        const selected = merge.inputs.filter(i => i.toLowerCase() === lowerFilter);
+        const others = merge.inputs.filter(i => i.toLowerCase() !== lowerFilter);
+        return { ...merge, inputs: [...selected, ...others] }; // Selected first, then others
+      });
+      reorderedInputs.sort((a, b) => a.inputs.length - b.inputs.length); // Sort by length ascending
+      // Render reordered inputs as one group
+      reorderedInputs.forEach(merge => {
+        appendMergeRow(content, merge.inputs, merge.output);
+      });
     }
-    // NEW: Helper function to append a merge row (extracted for reuse)
-    // 
-
+    // Highlight all instances of the filtered doodle with scale and rock animation
+    if (filterDoodle) {
+      const lowerFilter = filterDoodle.toLowerCase();
+      const allGuideDoodles = content.querySelectorAll('.guide-doodle');
+      allGuideDoodles.forEach(img => {
+        const imgDoodle = img.src.split('/').pop().replace('.png', '').toLowerCase();
+        if (imgDoodle === lowerFilter) {
+          img.classList.add('highlighted');
+        }
+      });
+    }
+    // === NEW: Add the tooltip at the bottom when a doodle is selected ===
+    const existingTip = content.querySelector('.guide-tooltip');
+    if (existingTip) existingTip.remove();
+    let tip = null; // ← NEW: Declare tip variable for animation
+    if (filterDoodle) {
+      tip = createGuideTooltip(filterDoodle);
+      content.appendChild(tip);
+    }
+    // NEW: Animate rows sliding in (only when filtering)
+    if (filterDoodle) {
+      const rows = content.querySelectorAll('.merge-row');
+      // NEW: Determine delay based on if modal is already open/active
+      const modal = document.getElementById('guide-modal');
+      const initialDelay = modal.classList.contains('active') ? 0 : 800; // 0 if open; 800ms if opening
+      rows.forEach((row, index) => {
+        row.style.opacity = '0'; // Start hidden
+        row.style.transform = 'translateY(4cqi)'; // Start lower
+        setTimeout(() => {
+          row.classList.add('animate-in');
+          playSound('flap'); // Random flap sound per row for card riffle effect
+        }, initialDelay + index * 60); // Stagger by 60ms per row, plus initial delay
+      });
+      // NEW: Animate tooltip sliding in (after rows, for sequencing)
+      if (tip) {
+        tip.style.opacity = '0';
+        tip.style.transform = 'translateY(4cqi)';
+        setTimeout(() => {
+          tip.classList.add('animate-in');
+        }, initialDelay + rows.length * 30 + 150); // ← Delay after last row + buffer, plus initial
+      }
+    }
+  }
+  document.getElementById('full-guide-btn').style.display = filterDoodle ? 'block' : 'none';
+}
     function appendMergeRow(content, inputs, output) {
-      const row = document.createElement('div');
-      row.className = 'merge-row';
-      const inputsDiv = document.createElement('div');
-      inputsDiv.className = 'inputs';
-      inputs.forEach(d => {
-        const img = document.createElement('img');
-        img.src = `images/${d}.png`;
-        img.className = 'guide-doodle';
-        img.addEventListener('click', () => {
-          playSound('selectbutton');  // ← NEW
-          renderGuide(d);
-        });
-        inputsDiv.appendChild(img);
-      });
-      row.appendChild(inputsDiv);
-      const arrowContainer = document.createElement('div');
-      arrowContainer.className = 'arrow-container';
-      arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
-      row.appendChild(arrowContainer);
-      const resultDiv = document.createElement('div');
-      resultDiv.className = 'result';
-      const resultImg = document.createElement('img');
-      resultImg.src = `images/${output}.png`;
-      resultImg.className = 'guide-doodle';
-      resultImg.addEventListener('click', () => {
-        playSound('selectbutton');  // ← NEW
-        renderGuide(output);
-      });
-      resultDiv.appendChild(resultImg);
-      row.appendChild(resultDiv);
-      content.appendChild(row);
+  const row = document.createElement('div');
+  row.className = 'merge-row';
+  const inputsDiv = document.createElement('div');
+  inputsDiv.className = 'inputs';
+  // NEW: Get new doodles for current mission (if 2-5)
+  let newDoodles = [];
+  if (currentMission >= 2 && currentMission <= 5) {
+    newDoodles = missionDoodles[currentMission];
+  }
+  // Helper to create doodle img (with optional new badge)
+  function createGuideDoodle(d) {
+    const img = document.createElement('img');
+    img.src = `images/${d}.png`;
+    img.className = 'guide-doodle';
+    img.addEventListener('click', () => {
+      playSound('selectbutton');
+      renderGuide(d);
+    });
+    // NEW: If this doodle is new for the mission, wrap with badge
+    if (newDoodles.includes(d)) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'guide-doodle-wrapper';
+      wrapper.appendChild(img);
+      const badge = document.createElement('img');
+      badge.src = 'images/new.png';
+      badge.className = 'new-badge';
+      badge.alt = 'New';
+      wrapper.appendChild(badge);
+      return wrapper;
     }
-
+    return img;
+  }
+  inputs.forEach(d => {
+    inputsDiv.appendChild(createGuideDoodle(d));
+  });
+  row.appendChild(inputsDiv);
+  const arrowContainer = document.createElement('div');
+  arrowContainer.className = 'arrow-container';
+  arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
+  row.appendChild(arrowContainer);
+  const resultDiv = document.createElement('div');
+  resultDiv.className = 'result';
+  resultDiv.appendChild(createGuideDoodle(output));
+  row.appendChild(resultDiv);
+  content.appendChild(row);
+}
 
     function createGuideTooltip(doodle) {
       const tip = document.createElement('div');
@@ -3159,9 +3400,17 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
       playSound('selectbutton');  // ← NEW
       closeModal('learn-modal');
     });
+    // In document.getElementById('portfolio-btn').addEventListener('click', () => { ... });
     document.getElementById('portfolio-btn').addEventListener('click', () => {
       playSound('button');
-      hideTooltip(); populatePortfolioGrid(); openModal('portfolio-modal');
+      hideTooltip();
+      populatePortfolioGrid();
+      openModal('portfolio-modal');
+      // NEW: Conditionally show/hide variety button based on mission
+      const varietyBtn = document.getElementById('variety-bonus-btn');
+      if (varietyBtn) {
+        varietyBtn.style.display = (currentMission === null || currentMission >= 5) ? 'block' : 'none';
+      }
     });
     document.getElementById('audio-btn').addEventListener('click', () => {
       playSound('button');
@@ -3172,61 +3421,109 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
       playSound('selectbutton');  // ← NEW
       closeModal('portfolio-modal');
     });
+
+    // Variety Bonus Button Listener
+    document.getElementById('variety-bonus-btn').addEventListener('click', () => {
+      playSound('button'); // Optional: Sound on click (matches other buttons)
+      const tooltip = document.getElementById('variety-tooltip');
+      if (tooltip.style.display === 'block') {
+        tooltip.style.display = 'none'; // Hide on re-click
+        return;
+      }
+
+      // Calculate unique non-basic doodles (excludes basics explicitly)
+      const baseDoodles = ['circle', 'square', 'triangle', 'dot', 'line'];
+      const uniqueNonBasic = Object.keys(deck).filter(k => deck[k] > 0 && !baseDoodles.includes(k)).length;
+
+      // Populate tooltip content
+      tooltip.innerHTML = `
+    <img src="images/varietybonusgrid.png" style="width:100%; height:auto; margin-bottom:2.2cqi; border-radius:1.5cqi;">
+    <p>Your <b><i>Variety Bonus</i></b> is determined by the number of unique doodles you've created in your Notebook. Basic shapes ${renderDescription('{circle}{square}{triangle}{line}{dot}')} don't count.</p>
+    <div class="group-divider"></div>
+    <p>You currently have <span class="unique-count-box inline">${uniqueNonBasic}</span> unique doodles in your portfolio, though you may have more in your notebook if you merged without learning.</p>
+  `;
+
+      // Show with optional fade-in (for polish)
+      tooltip.style.opacity = '0';
+      tooltip.style.display = 'block';
+      void tooltip.offsetHeight;
+      tooltip.style.transition = 'opacity 0.25s ease';
+      tooltip.style.opacity = '1';
+
+      // NEW: Click tooltip to close (simple dismiss)
+      tooltip.addEventListener('click', hideVarietyTooltip, { once: true }); // Once to auto-remove after click
+
+      // Optional: Add a close button (like modals) at top-right
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'close-btn'; // Reuse style (square, close.png bg)
+      closeBtn.style.position = 'absolute';
+      closeBtn.style.top = '2cqi';
+      closeBtn.style.right = '2cqi';
+      closeBtn.onclick = hideVarietyTooltip;
+      tooltip.appendChild(closeBtn); // Add to tooltip
+
+      function hideVarietyTooltip() {
+        const tooltip = document.getElementById('variety-tooltip');
+        tooltip.style.opacity = '0';
+        setTimeout(() => { tooltip.style.display = 'none'; }, 250); // After fade
+      }
+    });
+
     document.getElementById('score-btn').addEventListener('click', () => {
       playSound('button');
       hideTooltip(); openModal('score-modal'); initScoreScanner();
     });
 
     document.getElementById('menu-btn').addEventListener('click', () => {
-  playSound('button');
-  const headerBg = document.getElementById('header-bg');
-  const footerBg = document.getElementById('footer-bg');
-  headerBg.classList.add('adjusted');
-  footerBg.classList.add('adjusted');
-  const gameContainer = document.getElementById('game-container');
-  gameContainer.style.zIndex = '60'; // Temp higher than menu (50) to keep game on top during anim
-  // Ensure visible before anim (reset if hidden from prior)
-  const footer = document.getElementById('footer');
-  const header = document.getElementById('header');
-  const shuffleZone = document.getElementById('shuffle-zone');
-  header.style.visibility = 'visible';
-  shuffleZone.style.visibility = 'visible';
-  footer.style.visibility = 'visible';
-  // Force reflow after visibility reset
-  void header.offsetHeight;
-  void shuffleZone.offsetHeight;
-  void footer.offsetHeight;
-  // NEW: Temp z-index higher than menu (50) to stay on top during slide-out
-  header.style.zIndex = '55';
-  shuffleZone.style.zIndex = '55';
-  footer.style.zIndex = '55';
-  // Staggered slide-outs: footer first, then header, then shuffle (reverse of user's in-order)
-  function triggerSlideOut(element, delay) {
-    setTimeout(() => {
-      element.classList.add('slide-out');
-    }, delay);
-  }
-  triggerSlideOut(footer, 0);
-  triggerSlideOut(header, 0);
-  triggerSlideOut(shuffleZone, 0);
-  // Start menu slide-in immediately for simultaneous animation
-  setTimeout(() => {
-    showMainMenu({ fromGame: true });
-  }, 0); // Changed to 0ms for no delay
-  // Separate timeout: Wait full duration to set visibility hidden and reset z-index/overflow (elements stay off-screen via persisted transform)
-  setTimeout(() => {
-    // Force reflow if needed
-    void header.offsetHeight;
-    void shuffleZone.offsetHeight;
-    void footer.offsetHeight;
-    // NEW: Reset z-index and overflow
-    header.style.zIndex = '';
-    shuffleZone.style.zIndex = '';
-    footer.style.zIndex = '';
-    gameContainer.style.zIndex = '10'; // Reset to original
-    // Do NOT remove 'slide-out' – persists off-screen position
-  }, 1400); // Increased to 1400ms for safety (anim 0.8s + stagger 400ms + buffer)
-});
+      playSound('button');
+      const headerBg = document.getElementById('header-bg');
+      const footerBg = document.getElementById('footer-bg');
+      headerBg.classList.add('adjusted');
+      footerBg.classList.add('adjusted');
+      const gameContainer = document.getElementById('game-container');
+      gameContainer.style.zIndex = '60'; // Temp higher than menu (50) to keep game on top during anim
+      // Ensure visible before anim (reset if hidden from prior)
+      const footer = document.getElementById('footer');
+      const header = document.getElementById('header');
+      const shuffleZone = document.getElementById('shuffle-zone');
+      header.style.visibility = 'visible';
+      shuffleZone.style.visibility = 'visible';
+      footer.style.visibility = 'visible';
+      // Force reflow after visibility reset
+      void header.offsetHeight;
+      void shuffleZone.offsetHeight;
+      void footer.offsetHeight;
+      // NEW: Temp z-index higher than menu (50) to stay on top during slide-out
+      header.style.zIndex = '55';
+      shuffleZone.style.zIndex = '55';
+      footer.style.zIndex = '55';
+      // Staggered slide-outs: footer first, then header, then shuffle (reverse of user's in-order)
+      function triggerSlideOut(element, delay) {
+        setTimeout(() => {
+          element.classList.add('slide-out');
+        }, delay);
+      }
+      triggerSlideOut(footer, 0);
+      triggerSlideOut(header, 0);
+      triggerSlideOut(shuffleZone, 0);
+      // Start menu slide-in immediately for simultaneous animation
+      setTimeout(() => {
+        showMainMenu({ fromGame: true });
+      }, 0); // Changed to 0ms for no delay
+      // Separate timeout: Wait full duration to set visibility hidden and reset z-index/overflow (elements stay off-screen via persisted transform)
+      setTimeout(() => {
+        // Force reflow if needed
+        void header.offsetHeight;
+        void shuffleZone.offsetHeight;
+        void footer.offsetHeight;
+        // NEW: Reset z-index and overflow
+        header.style.zIndex = '';
+        shuffleZone.style.zIndex = '';
+        footer.style.zIndex = '';
+        gameContainer.style.zIndex = '10'; // Reset to original
+        // Do NOT remove 'slide-out' – persists off-screen position
+      }, 1400); // Increased to 1400ms for safety (anim 0.8s + stagger 400ms + buffer)
+    });
     document.getElementById('close-score').addEventListener('click', () => {
       playSound('selectbutton');  // ← NEW
       closeModal('score-modal');
@@ -3247,13 +3544,13 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
     });
 
     document.getElementById('mission-close-btn').addEventListener('click', () => {
-  playSound('selectbutton');
-  const detail = document.getElementById('mission-detail');
-  detail.classList.add('active'); // Force on-screen (safeguard for anim start)
-  void detail.offsetHeight; // Reflow to lock current transform
-  hideMenuPanel('mission-detail');
-  showGettingStartedSubMenu(); // Immediate call—overlaps the slide-out for smooth transition
-});
+      playSound('selectbutton');
+      const detail = document.getElementById('mission-detail');
+      detail.classList.add('active'); // Force on-screen (safeguard for anim start)
+      void detail.offsetHeight; // Reflow to lock current transform
+      hideMenuPanel('mission-detail');
+      showGettingStartedSubMenu(); // Immediate call—overlaps the slide-out for smooth transition
+    });
 
     document.getElementById('abandon-close-btn').addEventListener('click', () => {
       playSound('selectbutton');
@@ -3341,22 +3638,37 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
         }
       });
     });
-    function populateLearnGrid() {
-      const grid = document.getElementById('learn-grid');
-      grid.innerHTML = '';
-      const allowed = getAllowedDoodles(currentMission);
-      allowed.forEach(doodle => {
-        const cell = document.createElement('div');
-        cell.className = 'doodle-cell';
-        cell.dataset.doodle = doodle;
-        cell.innerHTML = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
-        cell.addEventListener('click', () => {
-          playSound('selectbutton');
-          toggleSelection(cell, grid, 'learn');
-        });
-        grid.appendChild(cell);
-      });
+    
+// Replace the existing function populateLearnGrid() { ... } in <script> with this updated version (adds new badge for mission 2-5 new doodles)
+function populateLearnGrid() {
+  const grid = document.getElementById('learn-grid');
+  grid.innerHTML = '';
+  const allowed = getAllowedDoodles(currentMission);
+  // NEW: Get new doodles for current mission (if 2-5)
+  let newDoodles = [];
+  if (currentMission >= 2 && currentMission <= 5) {
+    newDoodles = missionDoodles[currentMission];
+  }
+  allowed.forEach(doodle => {
+    const cell = document.createElement('div');
+    cell.className = 'doodle-cell';
+    cell.dataset.doodle = doodle;
+    // NEW: Helper to create doodle img (with optional new badge wrapper)
+    let imgHtml = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
+    if (newDoodles.includes(doodle)) {
+      imgHtml = `<div class="doodle-img-wrapper">
+        ${imgHtml}
+        <img src="images/new.png" class="new-badge" alt="New">
+      </div>`;
     }
+    cell.innerHTML = imgHtml;
+    cell.addEventListener('click', () => {
+      playSound('selectbutton');
+      toggleSelection(cell, grid, 'learn');
+    });
+    grid.appendChild(cell);
+  });
+}
 
     function populatePortfolioGrid() {
       const grid = document.getElementById('portfolio-grid');
@@ -4362,10 +4674,10 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
       scoreBox.style.justifyContent = 'center';
       scoreBox.style.color = '#fff';
       scoreBox.style.textShadow = '0 1px 2px #000';
-
       scoreBox.textContent = subtotal < 0 ? `${subtotal}` : `${Math.abs(subtotal)}`; // - for negative, plain for positive/zero
       if (type === 'variety') {
-        const unique = new Set(scoreDetectedDoodles.filter(d => d !== 'unknown')).size; // Calculate unique doodles (exclude 'unknown')
+        const baseDoodles = ['circle', 'square', 'triangle', 'dot', 'line'];
+        const unique = new Set(scoreDetectedDoodles.filter(d => d !== 'unknown' && !baseDoodles.includes(d))).size; // NEW: Exclude basics
         const countBox = document.createElement('div');
         countBox.className = 'unique-count-box';
         countBox.textContent = unique;
@@ -4379,18 +4691,14 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
       tally.appendChild(row);
     }
 
-
     async function runScoringAnimation() {
       console.log("SCORE SHEET clicked – starting full animation");
       scoreBuildBoard();
       scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
-
       const tally = document.getElementById('score-tally');
       tally.style.display = 'block';
       tally.innerHTML = '';
-
       let total = 0;
-
       // Pre-compute all scoring results
       const nonZeroResults = [];
       for (let rule of scoringRules) {
@@ -4403,25 +4711,24 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
         }
         total += subtotal;
       }
-
       // Variety bonus
-      const unique = new Set(scoreDetectedDoodles.filter(d => d !== 'unknown')).size;
-      let bonus = unique <= 12 ? -10 : unique <= 14 ? 1 : unique === 15 ? 5 : unique === 16 ? 10 : unique === 17 ? 16 : unique === 18 ? 23 : unique === 19 ? 31 : 40;
-      total += bonus;
-
+      const baseDoodles = ['circle', 'square', 'triangle', 'dot', 'line'];
+      const unique = new Set(scoreDetectedDoodles.filter(d => d !== 'unknown' && !baseDoodles.includes(d))).size;
+      let bonus = (unique >= 1 && unique <= 5) ? -10 : unique === 6 ? 1 : unique === 7 ? 5 : unique === 8 ? 10 : unique === 9 ? 16 : unique === 10 ? 23 : unique === 11 ? 31 : unique >= 12 ? 40 : 0;
+      // NEW: Only if allowed (arcade or mission 5+)
+      if (currentMission === null || currentMission >= 5) {
+        total += bonus;
+      }
       // === ANIMATE EACH DOODLE TYPE GROUP ===
       for (let entry of nonZeroResults) {
         const { rule, result, subtotal } = entry;
-
         // For normal rules use perCellList / positions
         // For 3D set use special allPositions for highlighting
         const bubbleItems = result.perCellList || result.positions || [];
         const highlightItems = (rule.type === '3dset' && result.allPositions)
           ? result.allPositions
           : bubbleItems;
-
         if (highlightItems.length === 0) continue;
-
         // Fade everything except the current group
         scoreGridCells.forEach(gridCell => {
           if (gridCell.dataset.doodle && gridCell.dataset.doodle !== 'unknown') {
@@ -4434,19 +4741,15 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
           if (cell) cell.classList.remove('low-opacity', 'non-scoring');
         });
         void document.body.offsetHeight; // Force reflow
-
         await new Promise(r => setTimeout(r, 400)); // Give fade time to be visible
-
         // === POINT BUBBLE SOUNDS (max 4 per doodle type) ===
         let soundCount = 0;
         const maxSounds = 4;
-
         const animationPromises = [];
         for (let i = 0; i < bubbleItems.length; i++) {
           const item = bubbleItems[i];
           const gridIdx = item.r * 11 + item.c;
           const cell = scoreGridCells[gridIdx];
-
           if (cell) {
             setTimeout(() => {
               if (soundCount < maxSounds && item.pts !== null && item.pts !== 0) {
@@ -4457,9 +4760,7 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
             }, i * 12);
           }
         }
-
         await Promise.all(animationPromises);
-
         // === TALLY ROW (special 3-image row for 3D set) ===
         if (rule.type === '3dset') {
           const row = document.createElement('div');
@@ -4491,22 +4792,24 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
         } else {
           addTallyRow(rule.type, subtotal);
         }
-
         // Pause before next doodle type
         await new Promise(r => setTimeout(r, 2800)); // ← Change this number to adjust pause (ms)
       }
-
-      // Variety bonus row
-      if (bonus !== 0) {
+      // NEW: Animate variety bonus last (if allowed and non-zero)
+      if ((currentMission === null || currentMission >= 5) && bonus !== 0) {
         addTallyRow('variety', bonus);
         await new Promise(r => setTimeout(r, 600));
       }
-
+      // NEW: Restore all doodles to normal view (remove opacity/scale classes)
+      scoreGridCells.forEach(gridCell => {
+        gridCell.classList.remove('low-opacity', 'non-scoring');
+      });
+      void document.body.offsetHeight; // Reflow for smooth transition back
+      await new Promise(r => setTimeout(r, 400)); // Short pause for fade-back visibility
       // === FINAL TOTAL (custom text + large bubble) ===
       const totalContainer = document.createElement('div');
       totalContainer.style.textAlign = 'center';
       totalContainer.style.marginTop = '25px';
-
       // Text: "Total Score:" in black, Covered By Your Grace
       const totalText = document.createElement('div');
       totalText.style.fontFamily = "'Covered By Your Grace', cursive";
@@ -4515,7 +4818,6 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
       totalText.style.color = '#000000'; // Black
       totalText.textContent = 'Total Score:';
       totalContainer.appendChild(totalText);
-
       // Large purple bubble centered below, 3x size (30cqi w/h, font 9cqi)
       const totalBubble = document.createElement('div');
       totalBubble.className = 'score-box';
@@ -4538,9 +4840,7 @@ document.getElementById('mission-play-btn').addEventListener('click', () => {
       totalBubble.style.margin = '2cqi auto 0'; // Centered horizontally, small top margin from text
       totalBubble.textContent = `${total}`;
       totalContainer.appendChild(totalBubble);
-
       tally.appendChild(totalContainer);
-
       document.getElementById('score-new-scan-btn').style.display = 'block';
     }
 
