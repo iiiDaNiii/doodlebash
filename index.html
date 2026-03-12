@@ -703,14 +703,17 @@
     }
 
     /* Add this anywhere in <style> (e.g., after the existing .doodle-img styles) */
-.doodle-img-wrapper {
-  position: relative;
-  display: flex; /* Matches doodle-cell flex for centering */
-  align-items: center;
-  justify-content: center;
-  width: 92%; /* Matches doodle-img width */
-  aspect-ratio: 1 / 1; /* Matches doodle-img aspect */
-}
+    .doodle-img-wrapper {
+      position: relative;
+      display: flex;
+      /* Matches doodle-cell flex for centering */
+      align-items: center;
+      justify-content: center;
+      width: 92%;
+      /* Matches doodle-img width */
+      aspect-ratio: 1 / 1;
+      /* Matches doodle-img aspect */
+    }
 
 
     @keyframes spinFadeScale {
@@ -837,24 +840,33 @@
     }
 
     /* NEW: Wrapper for guide doodles to allow absolute badge positioning */
-.guide-doodle-wrapper {
-  position: relative;
-  display: inline-block; /* Keeps inline flow */
-  width: 8.7cqi; /* Matches guide-doodle width */
-  height: 8.7cqi; /* Square for aspect */
-}
+    .guide-doodle-wrapper {
+      position: relative;
+      display: inline-block;
+      /* Keeps inline flow */
+      width: 8.7cqi;
+      /* Matches guide-doodle width */
+      height: 8.7cqi;
+      /* Square for aspect */
+    }
 
-/* NEW: "New" badge overlay */
-.new-badge {
-  position: absolute;
-  top: -79%; /* Slight offset up for overlap; adjust if needed */
-  right: -79.5%; /* Slight offset right for overlap */
-  width: 100%; /* 75% of doodle width */
-  height: auto; /* Preserve aspect */
-  pointer-events: none; /* Allow clicks through to doodle */
-  transform: translate(-50%, 50%); /* Center on top-right corner */
-  z-index:1000;
-}
+    /* NEW: "New" badge overlay */
+    .new-badge {
+      position: absolute;
+      top: -79%;
+      /* Slight offset up for overlap; adjust if needed */
+      right: -79.5%;
+      /* Slight offset right for overlap */
+      width: 100%;
+      /* 75% of doodle width */
+      height: auto;
+      /* Preserve aspect */
+      pointer-events: none;
+      /* Allow clicks through to doodle */
+      transform: translate(-50%, 50%);
+      /* Center on top-right corner */
+      z-index: 1000;
+    }
 
     .guide-tooltip {
       background: #ccecf8;
@@ -1002,16 +1014,17 @@
     }
 
     .inline-doodle[data-doodle="guidebutton"] {
- transform: scale(3.25);
- margin-left: 1.5em; margin-right:1.5em;
- margin-bottom: 0.5em;
- cursor:pointer;
-}
+      transform: scale(3.25);
+      margin-left: 1.5em;
+      margin-right: 1.5em;
+      margin-bottom: 0.5em;
+      cursor: pointer;
+    }
 
-/* Add this anywhere in <style> (e.g., after existing .inline-doodle styles) */
-.inline-doodle.greyed-out {
-  opacity: 0.5;
-}
+    /* Add this anywhere in <style> (e.g., after existing .inline-doodle styles) */
+    .inline-doodle.greyed-out {
+      opacity: 0.5;
+    }
 
 
 
@@ -1599,16 +1612,38 @@
       animation: spin-reverse 2s linear infinite;
     }
 
+    /* Replace the existing #loading-container style block in <style> with this (adds width/margin for centered block + align-items: flex-start for left children) */
     #loading-container {
       display: none;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0cqi;
+      width: 90cqi !important;
+      padding-top:7cqi;
+    }
+
+    /* Replace the existing #loading-message style block in <style> with this (removes center, adds width 100% + text-align left) */
+    #loading-message {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 4.3cqi;
+      color: #222;
+      text-align: left;
+      margin-bottom: 2cqi;
+      white-space: nowrap;
+      width: 100%;
+    }
+
+    /* Replace the existing .loading-icons style block in <style> with this (adds align-self: center to center icons below left message) */
+    .loading-icons {
+      display: flex;
       flex-direction: row;
       flex-wrap: nowrap;
       justify-content: center;
       align-items: center;
       gap: 0cqi;
-      padding: 10cqi;
-      width: fit-content !important;
+      align-self: center;
     }
+
 
     #score-modal .scanner-content #loading-container {
       width: fit-content !important;
@@ -1618,6 +1653,18 @@
     #loading-icon2 {
       margin-left: -2.5cqi;
       padding: 0;
+    }
+
+
+    /* Add this new style block anywhere in <style> (e.g., after #loading-message styles) for inline image sizing/alignment */
+    .inline-loading-img {
+      display: inline;
+      height: 1.2em;
+      /* Slightly taller than text for visibility; adjust as needed */
+      vertical-align: middle;
+      /* Aligns baseline with text */
+      margin-left: 0.5cqi;
+      /* Small space from text */
     }
 
 
@@ -1999,15 +2046,20 @@
     }
 
     /* NEW: Description text for Getting Started sub-menu */
-#getting-started-desc {
-  font-family: 'Fira Sans', sans-serif;
-  font-size: 5cqi; /* Matches arcade-text size for consistency */
-  text-align: left;
-  width: 80cqi; /* Matches arcade-text width */
-  color: #222; /* Dark text for visibility */
-  margin-bottom: 4cqi; /* Space below desc before buttons; adjust as needed */
-  line-height: 1.5; /* Better readability for multi-line */
-}
+    #getting-started-desc {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 5cqi;
+      /* Matches arcade-text size for consistency */
+      text-align: left;
+      width: 80cqi;
+      /* Matches arcade-text width */
+      color: #222;
+      /* Dark text for visibility */
+      margin-bottom: 4cqi;
+      /* Space below desc before buttons; adjust as needed */
+      line-height: 1.5;
+      /* Better readability for multi-line */
+    }
 
     /* Mission Detail Screen */
     #mission-detail {
@@ -2031,15 +2083,22 @@
       /* ← Added: Enables vertical scrolling if content overflows */
       overflow-x: hidden;
       /* ← Added: Hides horizontal overflow */
-      container-type:size;
+      container-type: size;
     }
 
     #mission-title {
-  display: flex; /* Centers the img horizontally/vertically if needed */
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 4cqi; /* Optional: Add some space below the banner; adjust as needed */
-}
+      display: flex;
+      /* Centers the img horizontally/vertically if needed */
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 2cqi;
+      /* Optional: Add some space below the banner; adjust as needed */
+    }
+
+    #mission-instructions {
+      margin-bottom: 2cqi;
+    }
+
 
     .mission-text {
       font-family: 'Fira Sans', sans-serif;
@@ -2091,32 +2150,38 @@
       margin-bottom: -12cqi;
     }
 
-.note-heading {
-  display: block; /* Change from flex to block for text-indent to work */
-  font-family: 'Fira Sans', sans-serif;
-  text-align:left;
-  font-size: 7cqi;
-  font-weight: bold;
-  color: #222;
-  margin: 2cqi 0 1.5cqi 0; /* Existing space */
-}
+    .note-heading {
+      display: block;
+      /* Change from flex to block for text-indent to work */
+      font-family: 'Fira Sans', sans-serif;
+      text-align: left;
+      font-size: 7cqi;
+      font-weight: bold;
+      color: #222;
+      margin: 2cqi 0 1.5cqi 0;
+      /* Existing space */
+    }
 
-.note-heading .inline-doodle {
-  margin: 0 0.15em 0; /* Remove negative bottom margin to bump up */
-  vertical-align: middle; /* Keep centered; or try 'bottom' if still off */
-}
+    .note-heading .inline-doodle {
+      margin: 0 0.15em 0;
+      /* Remove negative bottom margin to bump up */
+      vertical-align: middle;
+      /* Keep centered; or try 'bottom' if still off */
+    }
 
-.note-paragraph {
-  font-family: 'Fira Sans', sans-serif;
-  font-size: 6cqi;
-  line-height: 1.5;
-  color: #222;
-  margin: 6cqi 0 4cqi 0; /* Bottom space between notes; top is from heading */
-}
+    .note-paragraph {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 6cqi;
+      line-height: 1.5;
+      color: #222;
+      margin: 6cqi 0 4cqi 0;
+      /* Bottom space between notes; top is from heading */
+    }
 
     #mission-notes-text p {
-  margin-bottom: 10.5cqi; /* Space between each note paragraph */
-}
+      margin-bottom: 10.5cqi;
+      /* Space between each note paragraph */
+    }
 
     @keyframes fallIn {
       from {
@@ -2325,7 +2390,7 @@
       <div id="mission-title"></div>
       <div id="mission-instructions"></div>
       <div id="mission-goal-box">
-        
+
         <div class="goal-heading">Goal:</div>
         <div id="mission-goal-text"></div>
       </div>
@@ -2398,8 +2463,12 @@
           </div>
         </div>
         <div id="loading-container">
-          <div id="loading-icon"></div>
-          <div id="loading-icon2"></div>
+          <div id="loading-message">Please wait while we admire your doodles! <img src="images/rawcat.png"
+              class="inline-loading-img" alt="Cat"></div>
+          <div class="loading-icons">
+            <div id="loading-icon"></div>
+            <div id="loading-icon2"></div>
+          </div>
         </div>
         <div id="score-status" class="status">Waiting for photo...</div>
         <div class="debug" id="score-debug-info">8.0 • Clean scoring mode</div>
@@ -2488,7 +2557,7 @@
       heart: "{heart} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {letter}.",
       house: "{house} scores {1pt} (+{1pt} per <i><b>surrounding</b></i> {smiley}/{wireless}).",
       icecream: "{icecream} scores {4pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {smiley}.",
-      letter: "{letter} scores {1pt} (+{5pt} if {heart} is <i><b>directly-above</b></i>).",
+      letter: "{letter} scores {1pt} (+{3pt} if {heart} is <i><b>directly-above</b></i>).",
       mug: "{mug} scores {2pt} (+{2pt} if {drop} is <i><b>directly-above</b></i>).",
       music: "{music} scores {1pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {piano}.",
       piano: "{piano} scores {1pt} per <i><b>column</b></i> with {music} on <i><b>any page</b></i>.",
@@ -2547,29 +2616,50 @@
     function formatName(name) {
       return name.charAt(0).toUpperCase() + name.slice(1);
     }
-// Replace the existing function renderDescription(text) { ... } in <script> with this updated version (skips grey-out for non-doodles like point bubbles, notes, and guidebutton by checking allPossibleDoodles)
-function renderDescription(text) {
-  return text.replace(/\{(\w+)\}/gi, (match, key) => {
-    const lower = key.toLowerCase();
-    if (allPossibleDoodles.includes(lower) || customImages.includes(lower)) {
-      let className = 'inline-doodle';
-      // UPDATED: Grey out ONLY if in a mission (1-5), it's a real doodle (in allPossibleDoodles), and not yet allowed
-      if (currentMission && currentMission <= 5 && allPossibleDoodles.includes(lower) && !getAllowedDoodles(currentMission).includes(lower)) {
-        className += ' greyed-out';
+
+    // NEW: Global model preload + warm-up on app init
+    async function preloadScoreModel() {
+      console.log("Preloading ML model...");
+      try {
+        scoreModel = await tf.loadLayersModel('models/doodle/model.json');
+        const metadata = await fetch('models/doodle/metadata.json');
+        const meta = await metadata.json();
+        scoreClassNames = meta.labels || meta.classNames || [];
+        console.log(`Model preloaded! ${scoreClassNames.length} classes`);
+        // Warm-up with dummy input
+        if (scoreModel) {
+          const dummyTensor = tf.zeros([1, 224, 224, 3]); // Matches input shape
+          await scoreModel.predict(dummyTensor).data(); // Dummy predict
+          tf.dispose(dummyTensor); // Clean up
+          console.log('TF.js model warmed up!');
+        }
+      } catch (e) {
+        console.error("ERROR preloading model: " + e.message);
       }
-      return `<img src="images/${lower}.png"
+    }
+    // Replace the existing function renderDescription(text) { ... } in <script> with this updated version (skips grey-out for non-doodles like point bubbles, notes, and guidebutton by checking allPossibleDoodles)
+    function renderDescription(text) {
+      return text.replace(/\{(\w+)\}/gi, (match, key) => {
+        const lower = key.toLowerCase();
+        if (allPossibleDoodles.includes(lower) || customImages.includes(lower)) {
+          let className = 'inline-doodle';
+          // UPDATED: Grey out ONLY if in a mission (1-5), it's a real doodle (in allPossibleDoodles), and not yet allowed
+          if (currentMission && currentMission <= 5 && allPossibleDoodles.includes(lower) && !getAllowedDoodles(currentMission).includes(lower)) {
+            className += ' greyed-out';
+          }
+          return `<img src="images/${lower}.png"
            class="${className}"
            alt="${formatName(lower)}"
            data-doodle="${lower}"
            style="cursor:pointer;">`;
+        }
+        if (/^\d+pt$/.test(lower) || lower === 'minus2pt') {
+          const ptFile = lower === 'minus2pt' ? 'minus2pt' : lower;
+          return `<img src="images/${ptFile}.png" class="inline-doodle" alt="${key}">`;
+        }
+        return key;
+      });
     }
-    if (/^\d+pt$/.test(lower) || lower === 'minus2pt') {
-      const ptFile = lower === 'minus2pt' ? 'minus2pt' : lower;
-      return `<img src="images/${ptFile}.png" class="inline-doodle" alt="${key}">`;
-    }
-    return key;
-  });
-}
     const audio = {};
     const soundsIndex = {}; // Tracks current index per sound type
     let sfxVolume = 0.6; // Default SFX volume (matches most in volumes{})
@@ -2585,7 +2675,7 @@ function renderDescription(text) {
       modalslide: ['sounds/modalslide1.mp3', 'sounds/modalslide2.mp3', 'sounds/modalslide3.mp3', 'sounds/modalslide4.mp3'],
       button: ['sounds/button1.mp3', 'sounds/button2.mp3', 'sounds/button3.mp3'],
       selectbutton: ['sounds/button9.mp3', 'sounds/button10.mp3', 'sounds/button11.mp3'],
-      bgm: 'sounds/lofi1.mp3',
+      bgm: 'sounds/lofidisabled.mp3',
       flap: ['sounds/flap1.mp3', 'sounds/flap2.mp3', 'sounds/flap3.mp3', 'sounds/flap4.mp3', 'sounds/flap5.mp3', 'sounds/flap6.mp3'],
       pointbubble: ['sounds/pointbubble1.mp3', 'sounds/pointbubble2.mp3', 'sounds/pointbubble3.mp3', 'sounds/pointbubble4.mp3']
     };
@@ -2609,7 +2699,7 @@ function renderDescription(text) {
     const missionInstructions = [
       '', // Placeholder for index 0
       'For your first game, there are 12 doodles to discover:<br><br>{cube}{cylinder}{pyramid}{drop}{letter}{house}{smiley}{coin}{music}{pizza}{heart}{mug}<br><br> Use the {guidebutton} as a reference and try to learn as many of them as you can in one game.', // Mission 1
-      'You’re doing great! Time to learn a few more doodles! We’ll add these ones to the mix:<br><br>{lens}{teeth}{rocket}{planet}{star}{piano}<br><br>Try to draw as many of the new doodles as you can!', // Mission 2
+      '<p>You’re doing great! Time to learn a few more doodles! We’ll add these ones to the mix:</p><br><p>{lens}{teeth}{rocket}{planet}{star}{piano}</p><br><p>Try to draw as many of the new doodles as you can!</p>', // Mission 2
       'New doodles bring new scoring opportunities. Let’s see if you can handle six more!<br><br>{halfcircle}{die}{umbrella}{crown}{diamond}{chest}<br><br>', // Mission 3
       'New doodles unlocked! The cloud {cloud} is yet another way to score {drop} and there are several new advanced doodles!<br><br>{cloud}{sword}{butterfly}{flower}{fish}{boat}<br><br>', // Mission 4
       'From this point on, you\'ll be playing with the complete Doodle Guide.<br><br> You’ve now unlocked a final set of doodles to complete your repertoire. Five advanced doodles offer even more clever scoring opportunities, and the Wireless {wireless} symbol comes with a powerful, in-game ability!<br><br>{cat}{icecream}{toiletpaper}{turd}{present}{wireless}<br><br>You now also earn a <i>Variety Bonus</i> based on how many uniqe doodles are in your notebook!<br><br>' // Mission 5
@@ -2625,17 +2715,17 @@ function renderDescription(text) {
     ];
 
     const missionNotes = [
-  '', // Placeholder for index 0
-  '<div class="note-heading">{note1} Balance the 3d shapes {cylinder}{cube}{pyramid}.</div><p class="note-paragraph">The <i>Cylinder</i>, <i>Cube</i>, and <i>Pyramid</i> score in complete sets, so you’ll only score as well as the one you have the least of. Do your best to keep them balanced!</p></p><div class="note-heading">{note2} Pay attention to positioning bonuses.</div><p class="note-paragraph">{house}{smiley}{pizza}{letter}{heart}{mug} and {drop} all earn more points when positioned properly in relation to one another. Select any doodle you see in-game to review its scoring criteria. Have fun!</p>', // Mission 1
+      '', // Placeholder for index 0
+      '<div class="note-heading">{note1} Balance the 3d shapes {cylinder}{cube}{pyramid}.</div><p class="note-paragraph">The <i>Cylinder</i>, <i>Cube</i>, and <i>Pyramid</i> score in complete sets, so you’ll only score as well as the one you have the least of. Do your best to keep them balanced!</p></p><div class="note-heading">{note2} Pay attention to positioning bonuses.</div><p class="note-paragraph">{house}{smiley}{pizza}{letter}{heart}{mug} and {drop} all earn more points when positioned properly in relation to one another. Select any doodle you see in-game to review its scoring criteria. Have fun!</p>', // Mission 1
 
-  '<div class="note-heading">{note1} {lens} and {teeth} are intermediate doodles.</div><p class="note-paragraph">They don\'t score points, but are necessary stepping stones for learning more advanced doodles.</p><div class="note-heading">{note2} Take advantage of point multipliers. {piano}{rocket}</div><p class="note-paragraph">The new <i>Piano</i> and <i>Rocket</i> doodles are massive point multipliers. Try going <i><b>BIG</b></i> on one of these doodles.</p>', // Mission 2
+      '<div class="note-heading">{note1} {lens} and {teeth} are intermediate doodles.</div><p class="note-paragraph">They don\'t score points, but are necessary stepping stones for learning more advanced doodles.</p><div class="note-heading">{note2} Take advantage of point multipliers. {piano}{rocket}</div><p class="note-paragraph">The new <i>Piano</i> and <i>Rocket</i> doodles are massive point multipliers. Try going <i><b>BIG</b></i> on one of these doodles.</p>', // Mission 2
 
-  '<div class="note-heading">{note1} Fill a {chest} with any type of treasure!</div><p class="note-paragraph">It scores for surrounding {coin}{diamond} and {crown}.</p><div class="note-heading">{note2} The {die} doodle has unique scoring.</div><p class="note-paragraph">The <i>die</i> doodle copies the point value of a surrounding doodle.<br><br>Multiple {die} can copy the same doodle and {die} can copy the value of another {die}.<br><br>A {die} cannot copy {cylinder}/{cube}/{pyramid} for their group value.</p>', // Mission 3
+      '<div class="note-heading">{note1} Fill a {chest} with any type of treasure!</div><p class="note-paragraph">It scores for surrounding {coin}{diamond} and {crown}.</p><div class="note-heading">{note2} The {die} doodle has unique scoring.</div><p class="note-paragraph">The <i>die</i> doodle copies the point value of a surrounding doodle.<br><br>Multiple {die} can copy the same doodle and {die} can copy the value of another {die}.<br><br>A {die} cannot copy {cylinder}/{cube}/{pyramid} for their group value.</p>', // Mission 3
 
-  '<div class="note-heading">{note1} {butterfly} scores your largest <i>group</i> of adjacent {flower}</div><p class="note-paragraph">To be considered a “group” of {flower} for {butterfly}scoring, the {flower} must be orthogonally adjacent (diagonal doesn’t count).</p><div class="note-heading">{note2} {cloud} and {umbrella} can both score the same {drop}</div><p class="note-paragraph">Do with that information what you will.</p>', // Mission 4
-  
-  '<div class="note-heading">{note1} The {wireless} doodle allows you to merge doodles that are not adjacent.</div><p class="note-paragraph">When you are ready to <i>Merge</i>, simply circle the {wireless} symbol, and then individually circle any doodles in your Notebook that you would like to Merge.</p><div class="note-heading">{note2} Old doodles have new scoring opportunities.</div><p class="note-paragraph">Some familiar doodles now have new ways to score. Review the scoring criteria for these doodles: {house}{smiley}{cat}</p><div class="note-heading">{note3} {turd} is worth negative points. However...</div><p class="note-paragraph">You can earn your points back quickly with well placed <toiletpaper> and <cat>.</p>' // Mission 5
-];
+      '<div class="note-heading">{note1} {butterfly} scores your largest <i>group</i> of adjacent {flower}</div><p class="note-paragraph">To be considered a “group” of {flower} for {butterfly}scoring, the {flower} must be orthogonally adjacent (diagonal doesn’t count).</p><div class="note-heading">{note2} {cloud} and {umbrella} can both score the same {drop}</div><p class="note-paragraph">Do with that information what you will.</p>', // Mission 4
+
+      '<div class="note-heading">{note1} The {wireless} doodle allows you to merge doodles that are not adjacent.</div><p class="note-paragraph">When you are ready to <i>Merge</i>, simply circle the {wireless} symbol, and then individually circle any doodles in your Notebook that you would like to Merge.</p><div class="note-heading">{note2} Old doodles have new scoring opportunities.</div><p class="note-paragraph">Some familiar doodles now have new ways to score. Review the scoring criteria for these doodles: {house}{smiley}{cat}</p><div class="note-heading">{note3} {turd} is worth negative points. However...</div><p class="note-paragraph">You can earn your points back quickly with well placed <toiletpaper> and <cat>.</p>' // Mission 5
+    ];
 
     const baseDoodles = ['circle', 'square', 'triangle', 'dot', 'line'];
     let menuAdjustedTimeout = null;
@@ -2652,11 +2742,11 @@ function renderDescription(text) {
       return allowed;
     }
 
-    // Replace the entire showMainMenu function with this (adds optional { fromGame: false } param to skip offscreen/hide when called from game)
+    // Replace the entire showMainMenu function with this updated version (adds delayed preload after button animations)
     function showMainMenu(options = { fromGame: false }) {
-      showMenuPanel('main-menu'); // ← Replaced style.display = 'flex'
-      hideMenuPanel('arcade-sub-menu'); // ← Replaced classList.remove('active')
-      hideMenuPanel('abandon-prompt'); // ← Replaced classList.remove('active')
+      showMenuPanel('main-menu');
+      hideMenuPanel('arcade-sub-menu');
+      hideMenuPanel('abandon-prompt');
       // Hide modals if open
       closeAllModals();
       currentMode = 'menu';
@@ -2675,7 +2765,6 @@ function renderDescription(text) {
         void shuffleZone.offsetHeight;
         void footer.offsetHeight;
         // Then hide visibility (elements now hidden but with offscreen transforms applied)
-
       }
       // Staggered fall-in for menu buttons (unchanged)
       const menu = document.getElementById('main-menu');
@@ -2705,8 +2794,10 @@ function renderDescription(text) {
         updateAnimatedBackgrounds();
         menuAdjustedTimeout = null; // Reset after run
       }, 800); // Longer delay to ensure DOM fully painted after menu fall-in
-    }
 
+      // NEW: Delay model preload until after animations complete (avoids main-thread hitch during stagger)
+      setTimeout(preloadScoreModel, 1000); // 1000ms > animation duration (0.6s) + max stagger (~500ms) + buffer
+    }
     function renderMenuButtons() {
       const menu = document.getElementById('main-menu');
       menu.innerHTML = ''; // Reset fully (no static logo)
@@ -2796,96 +2887,96 @@ function renderDescription(text) {
     }
 
     function showGettingStartedSubMenu() {
-  playSound('button');
-  if (hasGameInProgress) {
-    pendingNewGameAction = 'getting-started';
-    showMenuPanel('abandon-prompt');
-    return; // Don't show sub-menu yet
-  }
-  hideMenuPanel('main-menu'); // ← Added: Slide out main-menu
-  const subMenu = document.getElementById('getting-started-sub-menu');
-  subMenu.innerHTML = ''; // Clear if needed
-  // Dynamically add close button (top-left)
-  const closeBtn = document.createElement('img');
-  closeBtn.id = 'getting-started-close-btn';
-  closeBtn.src = 'images/close.png';
-  closeBtn.className = 'sub-close-btn';
-  closeBtn.alt = 'Close';
-  subMenu.appendChild(closeBtn); // Add first (absolute positioning keeps it top-left)
-  // Re-add listener (since recreated)
-  closeBtn.addEventListener('click', () => {
-    playSound('selectbutton');
-    hideMenuPanel('getting-started-sub-menu'); // ← Updated to use hideMenuPanel
-    showMainMenu(); // Back to main menu
-  });
-  // NEW: Add description text above buttons
-  const desc = document.createElement('div');
-  desc.id = 'getting-started-desc';
- desc.innerHTML = "These 5 missions are designed to slowly acquaint you with the many doodles in <i>Doodle Bash</i>. Start from the top, and get ready to learn how to draw!";
-  subMenu.appendChild(desc);
-  const missions = [
-    '1) First Scribbles',
-    '2) Blasting Off',
-    '3) Buried Treasure',
-    '4) Oodles of Doodles',
-    '5) The Big Leagues'
-  ];
-  missions.forEach((title, idx) => {
-    const btn = document.createElement('button');
-    btn.className = 'mission-btn';
-    btn.textContent = title;
-    btn.addEventListener('click', () => selectMission(idx + 1));
-    subMenu.appendChild(btn);
-  });
-  showMenuPanel('getting-started-sub-menu', { silent: true }); // ← Silent to play sound only once (from hide)
-  currentMode = 'getting-started-sub';
-}
+      playSound('button');
+      if (hasGameInProgress) {
+        pendingNewGameAction = 'getting-started';
+        showMenuPanel('abandon-prompt');
+        return; // Don't show sub-menu yet
+      }
+      hideMenuPanel('main-menu'); // ← Added: Slide out main-menu
+      const subMenu = document.getElementById('getting-started-sub-menu');
+      subMenu.innerHTML = ''; // Clear if needed
+      // Dynamically add close button (top-left)
+      const closeBtn = document.createElement('img');
+      closeBtn.id = 'getting-started-close-btn';
+      closeBtn.src = 'images/close.png';
+      closeBtn.className = 'sub-close-btn';
+      closeBtn.alt = 'Close';
+      subMenu.appendChild(closeBtn); // Add first (absolute positioning keeps it top-left)
+      // Re-add listener (since recreated)
+      closeBtn.addEventListener('click', () => {
+        playSound('selectbutton');
+        hideMenuPanel('getting-started-sub-menu'); // ← Updated to use hideMenuPanel
+        showMainMenu(); // Back to main menu
+      });
+      // NEW: Add description text above buttons
+      const desc = document.createElement('div');
+      desc.id = 'getting-started-desc';
+      desc.innerHTML = "These 5 missions are designed to slowly acquaint you with the many doodles in <i>Doodle Bash</i>. Start from the top, and get ready to learn how to draw!";
+      subMenu.appendChild(desc);
+      const missions = [
+        '1) First Scribbles',
+        '2) Blasting Off',
+        '3) Buried Treasure',
+        '4) Oodles of Doodles',
+        '5) The Big Leagues'
+      ];
+      missions.forEach((title, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'mission-btn';
+        btn.textContent = title;
+        btn.addEventListener('click', () => selectMission(idx + 1));
+        subMenu.appendChild(btn);
+      });
+      showMenuPanel('getting-started-sub-menu', { silent: true }); // ← Silent to play sound only once (from hide)
+      currentMode = 'getting-started-sub';
+    }
 
-function selectMission(missionNum) {
-  playSound('selectbutton');
-  currentMission = missionNum;
-  // Slide out the getting-started sub-menu (replaces instant display:none)
-  hideMenuPanel('getting-started-sub-menu');
-  const detail = document.getElementById('mission-detail');
-  // Check/add close button dynamically (in case of any future clears)
-  let closeBtn = document.getElementById('mission-close-btn');
-  if (!closeBtn) {
-    closeBtn = document.createElement('img');
-    closeBtn.id = 'mission-close-btn';
-    closeBtn.src = 'images/close.png';
-    closeBtn.className = 'sub-close-btn';
-    closeBtn.alt = 'Close';
-    detail.insertBefore(closeBtn, detail.firstChild);
-    closeBtn.addEventListener('click', () => {
+    function selectMission(missionNum) {
       playSound('selectbutton');
+      currentMission = missionNum;
+      // Slide out the getting-started sub-menu (replaces instant display:none)
+      hideMenuPanel('getting-started-sub-menu');
       const detail = document.getElementById('mission-detail');
-      detail.classList.add('active'); // Force on-screen if needed (safeguard)
-      void detail.offsetHeight; // Reflow
-      hideMenuPanel('mission-detail');
-      showGettingStartedSubMenu(); // No delay needed—overlaps slide-out
-    });
-  }
-  // NEW: Set banner image instead of text
-  document.getElementById('mission-title').innerHTML = `<img src="images/mission${missionNum}header.png" alt="Mission ${missionNum} Header" style="width: 90cqi; height: auto;">`;
-  document.getElementById('mission-instructions').innerHTML = renderDescription(missionInstructions[missionNum]);
-  document.getElementById('mission-goal-text').innerHTML = renderDescription(missionGoals[missionNum]);
-  // Delay show of mission-detail until after sub-menu slide-out (reduced to 500ms for tighter feel)
-  document.getElementById('mission-notes-text').innerHTML = renderDescription(missionNotes[missionNum]);
-  // Enable tooltips on inline doodles in mission detail
-  const inlineDoodles = document.querySelectorAll('#mission-detail .inline-doodle');
-  inlineDoodles.forEach(img => {
-    img.addEventListener('click', (e) => {
-      playSound('selectbutton');
-      e.stopPropagation(); // Prevent bubbling to global hide
-      const doodle = img.dataset.doodle;
-      showTooltipForDoodle(doodle, img);
-    });
-  });
-  setTimeout(() => {
-    showMenuPanel('mission-detail'); // ← Replaced style.display = 'flex'
-  }, 0);
-  currentMode = 'mission-detail';
-}
+      // Check/add close button dynamically (in case of any future clears)
+      let closeBtn = document.getElementById('mission-close-btn');
+      if (!closeBtn) {
+        closeBtn = document.createElement('img');
+        closeBtn.id = 'mission-close-btn';
+        closeBtn.src = 'images/close.png';
+        closeBtn.className = 'sub-close-btn';
+        closeBtn.alt = 'Close';
+        detail.insertBefore(closeBtn, detail.firstChild);
+        closeBtn.addEventListener('click', () => {
+          playSound('selectbutton');
+          const detail = document.getElementById('mission-detail');
+          detail.classList.add('active'); // Force on-screen if needed (safeguard)
+          void detail.offsetHeight; // Reflow
+          hideMenuPanel('mission-detail');
+          showGettingStartedSubMenu(); // No delay needed—overlaps slide-out
+        });
+      }
+      // NEW: Set banner image instead of text
+      document.getElementById('mission-title').innerHTML = `<img src="images/mission${missionNum}header.png" alt="Mission ${missionNum} Header" style="width: 90cqi; height: auto;">`;
+      document.getElementById('mission-instructions').innerHTML = renderDescription(missionInstructions[missionNum]);
+      document.getElementById('mission-goal-text').innerHTML = renderDescription(missionGoals[missionNum]);
+      // Delay show of mission-detail until after sub-menu slide-out (reduced to 500ms for tighter feel)
+      document.getElementById('mission-notes-text').innerHTML = renderDescription(missionNotes[missionNum]);
+      // Enable tooltips on inline doodles in mission detail
+      const inlineDoodles = document.querySelectorAll('#mission-detail .inline-doodle');
+      inlineDoodles.forEach(img => {
+        img.addEventListener('click', (e) => {
+          playSound('selectbutton');
+          e.stopPropagation(); // Prevent bubbling to global hide
+          const doodle = img.dataset.doodle;
+          showTooltipForDoodle(doodle, img);
+        });
+      });
+      setTimeout(() => {
+        showMenuPanel('mission-detail'); // ← Replaced style.display = 'flex'
+      }, 0);
+      currentMode = 'mission-detail';
+    }
 
     // In showAbandonPrompt() function: Replace the entire function with this version (updates classList.add('active') to use showMenuPanel)
     function showAbandonPrompt() {
@@ -2939,11 +3030,11 @@ function selectMission(missionNum) {
       void headerBg.offsetHeight;
       void footerBg.offsetHeight;
       // Hide all menus/sub-menus with animation BEFORE showing game
-      hideMenuPanel('main-menu');
-      hideMenuPanel('arcade-sub-menu');
-      hideMenuPanel('abandon-prompt');
-      hideMenuPanel('getting-started-sub-menu');
-      hideMenuPanel('mission-detail');
+      hideMenuPanel('main-menu', { silent: true });
+      hideMenuPanel('arcade-sub-menu', { silent: true });
+      hideMenuPanel('abandon-prompt', { silent: true });
+      hideMenuPanel('getting-started-sub-menu', { silent: true });
+      hideMenuPanel('mission-detail', { silent: true });
       // Wait for transition + menu hide to complete before showing game
       setTimeout(() => {
         // Reset slide-out before visible (to start from off-screen correctly)
@@ -2961,10 +3052,8 @@ function selectMission(missionNum) {
         header.style.visibility = 'visible';
         shuffleZone.style.visibility = 'visible';
         footer.style.visibility = 'visible';
-
         // Force reflow after visibility change (ensures offscreen transforms are painted/ready)
         void document.body.offsetHeight;
-
         // Function to trigger slide-in with proper timing (add transition, reflow, then active)
         function triggerSlideIn(element, delay) {
           setTimeout(() => {
@@ -2977,12 +3066,10 @@ function selectMission(missionNum) {
             });
           }, delay);
         }
-
         // Staggered slide-ins: header first, then shuffle-zone, then footer
         triggerSlideIn(shuffleZone, 0);
         triggerSlideIn(header, 0);
         triggerSlideIn(footer, 0);
-
         currentMode = 'game';
         if (currentMission) {
           Object.keys(deck).forEach(key => {
@@ -2992,7 +3079,6 @@ function selectMission(missionNum) {
         if (!hasGameInProgress) {
           deck = { ...defaultDeck };
         }
-
         // Clean up classes after animation (extended to 1200ms to cover last stagger + duration)
         setTimeout(() => {
           header.classList.remove('slide-in', 'active', 'offscreen-top');
@@ -3009,6 +3095,7 @@ function selectMission(missionNum) {
         }, 1200); // Matches duration + stagger
       }, 0); // Matches BG transition duration
     }
+
     document.getElementById('arcade-play-btn').addEventListener('click', () => {
       playSound('button');
       currentMission = null; // Ensure arcade mode (full doodles, no mission filter)
@@ -3161,169 +3248,169 @@ function selectMission(missionNum) {
 
     let currentGuideFilter = null;
     // Replace the existing function renderGuide(filterDoodle = null) { ... } in <script> with this updated version (adds delay based on whether guide-modal is already active/open)
-function renderGuide(filterDoodle = null) {
-  currentGuideFilter = filterDoodle;
-  const content = document.getElementById('guide-content');
-  content.innerHTML = '';
-  // In renderGuide(): Replace const filteredMerges = ... with this (adds allowed filter)
-  const allowed = getAllowedDoodles(currentMission);
-  const filteredMerges = doodleMerges.filter(merge => {
-    if (!filterDoodle) {
-      // Full guide: Also filter to allowed
-      return merge.inputs.every(i => allowed.includes(i)) && allowed.includes(merge.output);
-    } else {
-      // Filtered: Apply as before, but intersect with allowed
-      const lower = filterDoodle.toLowerCase();
-      const match = merge.inputs.some(i => i.toLowerCase() === lower) || merge.output.toLowerCase() === lower;
-      return match && merge.inputs.every(i => allowed.includes(i)) && allowed.includes(merge.output);
-    }
-  });
-  // Then continue with if (filteredMerges.length === 0 && filterDoodle) { ... }
-  if (filteredMerges.length === 0 && filterDoodle) {
-    const empty = document.createElement('div');
-    empty.style.padding = '20cqi';
-    empty.style.textAlign = 'center';
-    empty.style.color = '#666';
-    empty.style.fontSize = '5cqi';
-    empty.textContent = `No recipes found for "${filterDoodle}"`;
-    content.appendChild(empty);
-  } else {
-    if (!filterDoodle) {
-      // Full guide: Custom order by first input
-      const guideOrder = ["circle", "square", "triangle", "line", "dot", "lens", "halfcircle", "drop", "teeth", "cylinder", "cube", "pyramid"];
-      filteredMerges.sort((a, b) => guideOrder.indexOf(a.inputs[0]) - guideOrder.indexOf(b.inputs[0]));
-      let currentGroup = null;
-      filteredMerges.forEach(merge => {
-        const firstInput = merge.inputs[0];
-        if (firstInput !== currentGroup) {
-          if (currentGroup !== null) {
+    function renderGuide(filterDoodle = null) {
+      currentGuideFilter = filterDoodle;
+      const content = document.getElementById('guide-content');
+      content.innerHTML = '';
+      // In renderGuide(): Replace const filteredMerges = ... with this (adds allowed filter)
+      const allowed = getAllowedDoodles(currentMission);
+      const filteredMerges = doodleMerges.filter(merge => {
+        if (!filterDoodle) {
+          // Full guide: Also filter to allowed
+          return merge.inputs.every(i => allowed.includes(i)) && allowed.includes(merge.output);
+        } else {
+          // Filtered: Apply as before, but intersect with allowed
+          const lower = filterDoodle.toLowerCase();
+          const match = merge.inputs.some(i => i.toLowerCase() === lower) || merge.output.toLowerCase() === lower;
+          return match && merge.inputs.every(i => allowed.includes(i)) && allowed.includes(merge.output);
+        }
+      });
+      // Then continue with if (filteredMerges.length === 0 && filterDoodle) { ... }
+      if (filteredMerges.length === 0 && filterDoodle) {
+        const empty = document.createElement('div');
+        empty.style.padding = '20cqi';
+        empty.style.textAlign = 'center';
+        empty.style.color = '#666';
+        empty.style.fontSize = '5cqi';
+        empty.textContent = `No recipes found for "${filterDoodle}"`;
+        content.appendChild(empty);
+      } else {
+        if (!filterDoodle) {
+          // Full guide: Custom order by first input
+          const guideOrder = ["circle", "square", "triangle", "line", "dot", "lens", "halfcircle", "drop", "teeth", "cylinder", "cube", "pyramid"];
+          filteredMerges.sort((a, b) => guideOrder.indexOf(a.inputs[0]) - guideOrder.indexOf(b.inputs[0]));
+          let currentGroup = null;
+          filteredMerges.forEach(merge => {
+            const firstInput = merge.inputs[0];
+            if (firstInput !== currentGroup) {
+              if (currentGroup !== null) {
+                const divider = document.createElement('div');
+                divider.className = 'group-divider';
+                content.appendChild(divider);
+              }
+              currentGroup = firstInput;
+            }
+            appendMergeRow(content, merge.inputs, merge.output);
+          });
+        } else {
+          const lowerFilter = filterDoodle.toLowerCase();
+          // Filtered: Separate outputs and inputs
+          const outputMerges = filteredMerges.filter(merge => merge.output.toLowerCase() === lowerFilter);
+          const inputMerges = filteredMerges.filter(merge => merge.inputs.some(i => i.toLowerCase() === lowerFilter) && merge.output.toLowerCase() !== lowerFilter);
+          // Render outputs first (if any)
+          outputMerges.forEach(merge => {
+            appendMergeRow(content, merge.inputs, merge.output);
+          });
+          // Add divider if there are both outputs and inputs
+          if (outputMerges.length > 0 && inputMerges.length > 0) {
             const divider = document.createElement('div');
             divider.className = 'group-divider';
             content.appendChild(divider);
           }
-          currentGroup = firstInput;
+          // Reorder and sort inputs
+          const reorderedInputs = inputMerges.map(merge => {
+            const selected = merge.inputs.filter(i => i.toLowerCase() === lowerFilter);
+            const others = merge.inputs.filter(i => i.toLowerCase() !== lowerFilter);
+            return { ...merge, inputs: [...selected, ...others] }; // Selected first, then others
+          });
+          reorderedInputs.sort((a, b) => a.inputs.length - b.inputs.length); // Sort by length ascending
+          // Render reordered inputs as one group
+          reorderedInputs.forEach(merge => {
+            appendMergeRow(content, merge.inputs, merge.output);
+          });
         }
-        appendMergeRow(content, merge.inputs, merge.output);
-      });
-    } else {
-      const lowerFilter = filterDoodle.toLowerCase();
-      // Filtered: Separate outputs and inputs
-      const outputMerges = filteredMerges.filter(merge => merge.output.toLowerCase() === lowerFilter);
-      const inputMerges = filteredMerges.filter(merge => merge.inputs.some(i => i.toLowerCase() === lowerFilter) && merge.output.toLowerCase() !== lowerFilter);
-      // Render outputs first (if any)
-      outputMerges.forEach(merge => {
-        appendMergeRow(content, merge.inputs, merge.output);
-      });
-      // Add divider if there are both outputs and inputs
-      if (outputMerges.length > 0 && inputMerges.length > 0) {
-        const divider = document.createElement('div');
-        divider.className = 'group-divider';
-        content.appendChild(divider);
-      }
-      // Reorder and sort inputs
-      const reorderedInputs = inputMerges.map(merge => {
-        const selected = merge.inputs.filter(i => i.toLowerCase() === lowerFilter);
-        const others = merge.inputs.filter(i => i.toLowerCase() !== lowerFilter);
-        return { ...merge, inputs: [...selected, ...others] }; // Selected first, then others
-      });
-      reorderedInputs.sort((a, b) => a.inputs.length - b.inputs.length); // Sort by length ascending
-      // Render reordered inputs as one group
-      reorderedInputs.forEach(merge => {
-        appendMergeRow(content, merge.inputs, merge.output);
-      });
-    }
-    // Highlight all instances of the filtered doodle with scale and rock animation
-    if (filterDoodle) {
-      const lowerFilter = filterDoodle.toLowerCase();
-      const allGuideDoodles = content.querySelectorAll('.guide-doodle');
-      allGuideDoodles.forEach(img => {
-        const imgDoodle = img.src.split('/').pop().replace('.png', '').toLowerCase();
-        if (imgDoodle === lowerFilter) {
-          img.classList.add('highlighted');
+        // Highlight all instances of the filtered doodle with scale and rock animation
+        if (filterDoodle) {
+          const lowerFilter = filterDoodle.toLowerCase();
+          const allGuideDoodles = content.querySelectorAll('.guide-doodle');
+          allGuideDoodles.forEach(img => {
+            const imgDoodle = img.src.split('/').pop().replace('.png', '').toLowerCase();
+            if (imgDoodle === lowerFilter) {
+              img.classList.add('highlighted');
+            }
+          });
         }
-      });
-    }
-    // === NEW: Add the tooltip at the bottom when a doodle is selected ===
-    const existingTip = content.querySelector('.guide-tooltip');
-    if (existingTip) existingTip.remove();
-    let tip = null; // ← NEW: Declare tip variable for animation
-    if (filterDoodle) {
-      tip = createGuideTooltip(filterDoodle);
-      content.appendChild(tip);
-    }
-    // NEW: Animate rows sliding in (only when filtering)
-    if (filterDoodle) {
-      const rows = content.querySelectorAll('.merge-row');
-      // NEW: Determine delay based on if modal is already open/active
-      const modal = document.getElementById('guide-modal');
-      const initialDelay = modal.classList.contains('active') ? 0 : 800; // 0 if open; 800ms if opening
-      rows.forEach((row, index) => {
-        row.style.opacity = '0'; // Start hidden
-        row.style.transform = 'translateY(4cqi)'; // Start lower
-        setTimeout(() => {
-          row.classList.add('animate-in');
-          playSound('flap'); // Random flap sound per row for card riffle effect
-        }, initialDelay + index * 60); // Stagger by 60ms per row, plus initial delay
-      });
-      // NEW: Animate tooltip sliding in (after rows, for sequencing)
-      if (tip) {
-        tip.style.opacity = '0';
-        tip.style.transform = 'translateY(4cqi)';
-        setTimeout(() => {
-          tip.classList.add('animate-in');
-        }, initialDelay + rows.length * 30 + 150); // ← Delay after last row + buffer, plus initial
+        // === NEW: Add the tooltip at the bottom when a doodle is selected ===
+        const existingTip = content.querySelector('.guide-tooltip');
+        if (existingTip) existingTip.remove();
+        let tip = null; // ← NEW: Declare tip variable for animation
+        if (filterDoodle) {
+          tip = createGuideTooltip(filterDoodle);
+          content.appendChild(tip);
+        }
+        // NEW: Animate rows sliding in (only when filtering)
+        if (filterDoodle) {
+          const rows = content.querySelectorAll('.merge-row');
+          // NEW: Determine delay based on if modal is already open/active
+          const modal = document.getElementById('guide-modal');
+          const initialDelay = modal.classList.contains('active') ? 0 : 800; // 0 if open; 800ms if opening
+          rows.forEach((row, index) => {
+            row.style.opacity = '0'; // Start hidden
+            row.style.transform = 'translateY(4cqi)'; // Start lower
+            setTimeout(() => {
+              row.classList.add('animate-in');
+              playSound('flap'); // Random flap sound per row for card riffle effect
+            }, initialDelay + index * 60); // Stagger by 60ms per row, plus initial delay
+          });
+          // NEW: Animate tooltip sliding in (after rows, for sequencing)
+          if (tip) {
+            tip.style.opacity = '0';
+            tip.style.transform = 'translateY(4cqi)';
+            setTimeout(() => {
+              tip.classList.add('animate-in');
+            }, initialDelay + rows.length * 30 + 150); // ← Delay after last row + buffer, plus initial
+          }
+        }
       }
+      document.getElementById('full-guide-btn').style.display = filterDoodle ? 'block' : 'none';
     }
-  }
-  document.getElementById('full-guide-btn').style.display = filterDoodle ? 'block' : 'none';
-}
     function appendMergeRow(content, inputs, output) {
-  const row = document.createElement('div');
-  row.className = 'merge-row';
-  const inputsDiv = document.createElement('div');
-  inputsDiv.className = 'inputs';
-  // NEW: Get new doodles for current mission (if 2-5)
-  let newDoodles = [];
-  if (currentMission >= 2 && currentMission <= 5) {
-    newDoodles = missionDoodles[currentMission];
-  }
-  // Helper to create doodle img (with optional new badge)
-  function createGuideDoodle(d) {
-    const img = document.createElement('img');
-    img.src = `images/${d}.png`;
-    img.className = 'guide-doodle';
-    img.addEventListener('click', () => {
-      playSound('selectbutton');
-      renderGuide(d);
-    });
-    // NEW: If this doodle is new for the mission, wrap with badge
-    if (newDoodles.includes(d)) {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'guide-doodle-wrapper';
-      wrapper.appendChild(img);
-      const badge = document.createElement('img');
-      badge.src = 'images/new.png';
-      badge.className = 'new-badge';
-      badge.alt = 'New';
-      wrapper.appendChild(badge);
-      return wrapper;
+      const row = document.createElement('div');
+      row.className = 'merge-row';
+      const inputsDiv = document.createElement('div');
+      inputsDiv.className = 'inputs';
+      // NEW: Get new doodles for current mission (if 2-5)
+      let newDoodles = [];
+      if (currentMission >= 2 && currentMission <= 5) {
+        newDoodles = missionDoodles[currentMission];
+      }
+      // Helper to create doodle img (with optional new badge)
+      function createGuideDoodle(d) {
+        const img = document.createElement('img');
+        img.src = `images/${d}.png`;
+        img.className = 'guide-doodle';
+        img.addEventListener('click', () => {
+          playSound('selectbutton');
+          renderGuide(d);
+        });
+        // NEW: If this doodle is new for the mission, wrap with badge
+        if (newDoodles.includes(d)) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'guide-doodle-wrapper';
+          wrapper.appendChild(img);
+          const badge = document.createElement('img');
+          badge.src = 'images/new.png';
+          badge.className = 'new-badge';
+          badge.alt = 'New';
+          wrapper.appendChild(badge);
+          return wrapper;
+        }
+        return img;
+      }
+      inputs.forEach(d => {
+        inputsDiv.appendChild(createGuideDoodle(d));
+      });
+      row.appendChild(inputsDiv);
+      const arrowContainer = document.createElement('div');
+      arrowContainer.className = 'arrow-container';
+      arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
+      row.appendChild(arrowContainer);
+      const resultDiv = document.createElement('div');
+      resultDiv.className = 'result';
+      resultDiv.appendChild(createGuideDoodle(output));
+      row.appendChild(resultDiv);
+      content.appendChild(row);
     }
-    return img;
-  }
-  inputs.forEach(d => {
-    inputsDiv.appendChild(createGuideDoodle(d));
-  });
-  row.appendChild(inputsDiv);
-  const arrowContainer = document.createElement('div');
-  arrowContainer.className = 'arrow-container';
-  arrowContainer.innerHTML = `<div class="arrow-line"></div>`;
-  row.appendChild(arrowContainer);
-  const resultDiv = document.createElement('div');
-  resultDiv.className = 'result';
-  resultDiv.appendChild(createGuideDoodle(output));
-  row.appendChild(resultDiv);
-  content.appendChild(row);
-}
 
     function createGuideTooltip(doodle) {
       const tip = document.createElement('div');
@@ -3418,11 +3505,15 @@ function renderGuide(filterDoodle = null) {
       controls.classList.toggle('show');
     });
     document.getElementById('close-portfolio').addEventListener('click', () => {
-      playSound('selectbutton');  // ← NEW
+      playSound('selectbutton'); // ← NEW
       closeModal('portfolio-modal');
+      // NEW: Close variety tooltip if open (with fade-out)
+      const tooltip = document.getElementById('variety-tooltip');
+      if (tooltip.style.display === 'block') {
+        tooltip.style.opacity = '0';
+        setTimeout(() => { tooltip.style.display = 'none'; }, 250); // After fade
+      }
     });
-
-    // Variety Bonus Button Listener
     document.getElementById('variety-bonus-btn').addEventListener('click', () => {
       playSound('button'); // Optional: Sound on click (matches other buttons)
       const tooltip = document.getElementById('variety-tooltip');
@@ -3430,29 +3521,27 @@ function renderGuide(filterDoodle = null) {
         tooltip.style.display = 'none'; // Hide on re-click
         return;
       }
-
       // Calculate unique non-basic doodles (excludes basics explicitly)
       const baseDoodles = ['circle', 'square', 'triangle', 'dot', 'line'];
       const uniqueNonBasic = Object.keys(deck).filter(k => deck[k] > 0 && !baseDoodles.includes(k)).length;
-
+      const uniqueDoodles = Object.keys(deck).filter(k => deck[k] > 0 && !baseDoodles.includes(k)).sort(); // Sort alphabetically for consistency
       // Populate tooltip content
       tooltip.innerHTML = `
-    <img src="images/varietybonusgrid.png" style="width:100%; height:auto; margin-bottom:2.2cqi; border-radius:1.5cqi;">
-    <p>Your <b><i>Variety Bonus</i></b> is determined by the number of unique doodles you've created in your Notebook. Basic shapes ${renderDescription('{circle}{square}{triangle}{line}{dot}')} don't count.</p>
-    <div class="group-divider"></div>
-    <p>You currently have <span class="unique-count-box inline">${uniqueNonBasic}</span> unique doodles in your portfolio, though you may have more in your notebook if you merged without learning.</p>
-  `;
-
+<img src="images/varietybonusgrid.png" style="width:100%; height:auto; margin-bottom:2.2cqi; border-radius:1.5cqi;">
+<p>Your <b><i>Variety Bonus</i></b> is determined by the number of unique doodles you've created in your Notebook. Basic shapes (${renderDescription('{circle}{square}{triangle}{line}{dot}')}) don't count.</p>
+<div class="group-divider"></div>
+<p>You currently have <span class="unique-count-box inline">${uniqueNonBasic}</span> unique doodles in your portfolio, though you may have more in your notebook if you merged without learning.</p>
+<br>
+<p><b>Your doodles:</b> ${uniqueDoodles.map(d => renderDescription(`{${d}}`)).join('')}</p>
+`;
       // Show with optional fade-in (for polish)
       tooltip.style.opacity = '0';
       tooltip.style.display = 'block';
       void tooltip.offsetHeight;
       tooltip.style.transition = 'opacity 0.25s ease';
       tooltip.style.opacity = '1';
-
       // NEW: Click tooltip to close (simple dismiss)
       tooltip.addEventListener('click', hideVarietyTooltip, { once: true }); // Once to auto-remove after click
-
       // Optional: Add a close button (like modals) at top-right
       const closeBtn = document.createElement('button');
       closeBtn.className = 'close-btn'; // Reuse style (square, close.png bg)
@@ -3461,7 +3550,6 @@ function renderGuide(filterDoodle = null) {
       closeBtn.style.right = '2cqi';
       closeBtn.onclick = hideVarietyTooltip;
       tooltip.appendChild(closeBtn); // Add to tooltip
-
       function hideVarietyTooltip() {
         const tooltip = document.getElementById('variety-tooltip');
         tooltip.style.opacity = '0';
@@ -3524,10 +3612,11 @@ function renderGuide(filterDoodle = null) {
         // Do NOT remove 'slide-out' – persists off-screen position
       }, 1400); // Increased to 1400ms for safety (anim 0.8s + stagger 400ms + buffer)
     });
+
     document.getElementById('close-score').addEventListener('click', () => {
-      playSound('selectbutton');  // ← NEW
+      playSound('selectbutton');
       closeModal('score-modal');
-      if (scoreStream) { scoreStream.getTracks().forEach(t => t.stop()); scoreStream = null; }
+      resetScoreModal();  // ← NEW: Full reset on close
     });
 
     // Sub-Menu Close Button Listeners (back to previous)
@@ -3619,56 +3708,51 @@ function renderGuide(filterDoodle = null) {
       }, 350);
     });
 
-    // Make main doodles selectable on click/tap (so tooltip works there too)
     const mainDoodleContainers = document.querySelectorAll('#shuffle-zone > div[id^="doodle-"]');
     mainDoodleContainers.forEach(div => {
       div.style.cursor = 'pointer';
       div.addEventListener('click', () => {
-        playSound('selectbutton');
-        const wasSelected = div.classList.contains('selected');
+        playSound('button');
         mainDoodleContainers.forEach(d => d.classList.remove('selected'));
-        if (!wasSelected) {
-          div.classList.add('selected');
-          // NEW: Preserve current transform as base for animation
-          const currentTransform = div.style.transform || 'translate(0, 0) rotate(0deg)';
-          div.style.setProperty('--base-transform', currentTransform);
-          showTooltipForDoodle(div.dataset.doodle, div);
-        } else {
-          hideTooltip();
-        }
+        div.classList.add('selected');
+        const currentTransform = div.style.transform || 'translate(0, 0) rotate(0deg)';
+        div.style.setProperty('--base-transform', currentTransform);
+        hideTooltip(); // In case open from elsewhere
+        renderGuide(div.dataset.doodle);
+        openModal('guide-modal');
       });
     });
-    
-// Replace the existing function populateLearnGrid() { ... } in <script> with this updated version (adds new badge for mission 2-5 new doodles)
-function populateLearnGrid() {
-  const grid = document.getElementById('learn-grid');
-  grid.innerHTML = '';
-  const allowed = getAllowedDoodles(currentMission);
-  // NEW: Get new doodles for current mission (if 2-5)
-  let newDoodles = [];
-  if (currentMission >= 2 && currentMission <= 5) {
-    newDoodles = missionDoodles[currentMission];
-  }
-  allowed.forEach(doodle => {
-    const cell = document.createElement('div');
-    cell.className = 'doodle-cell';
-    cell.dataset.doodle = doodle;
-    // NEW: Helper to create doodle img (with optional new badge wrapper)
-    let imgHtml = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
-    if (newDoodles.includes(doodle)) {
-      imgHtml = `<div class="doodle-img-wrapper">
+
+    // Replace the existing function populateLearnGrid() { ... } in <script> with this updated version (adds new badge for mission 2-5 new doodles)
+    function populateLearnGrid() {
+      const grid = document.getElementById('learn-grid');
+      grid.innerHTML = '';
+      const allowed = getAllowedDoodles(currentMission);
+      // NEW: Get new doodles for current mission (if 2-5)
+      let newDoodles = [];
+      if (currentMission >= 2 && currentMission <= 5) {
+        newDoodles = missionDoodles[currentMission];
+      }
+      allowed.forEach(doodle => {
+        const cell = document.createElement('div');
+        cell.className = 'doodle-cell';
+        cell.dataset.doodle = doodle;
+        // NEW: Helper to create doodle img (with optional new badge wrapper)
+        let imgHtml = `<div class="doodle-img" style="background-image: url('images/${doodle}.png')"></div>`;
+        if (newDoodles.includes(doodle)) {
+          imgHtml = `<div class="doodle-img-wrapper">
         ${imgHtml}
         <img src="images/new.png" class="new-badge" alt="New">
       </div>`;
+        }
+        cell.innerHTML = imgHtml;
+        cell.addEventListener('click', () => {
+          playSound('selectbutton');
+          toggleSelection(cell, grid, 'learn');
+        });
+        grid.appendChild(cell);
+      });
     }
-    cell.innerHTML = imgHtml;
-    cell.addEventListener('click', () => {
-      playSound('selectbutton');
-      toggleSelection(cell, grid, 'learn');
-    });
-    grid.appendChild(cell);
-  });
-}
 
     function populatePortfolioGrid() {
       const grid = document.getElementById('portfolio-grid');
@@ -3702,38 +3786,31 @@ function populateLearnGrid() {
       if (!isSelected) {
         cell.classList.add('selected');
         showTooltipForDoodle(cell.dataset.doodle, cell);
-
         if (modalType === 'learn' || modalType === 'portfolio') { // ← Updated to handle both modals
           // Append button to grid for relative positioning (if not already)
           if (!grid.contains(actionBtn)) {
             grid.appendChild(actionBtn);
           }
-
           // Reset for reappearance
           actionBtn.style.display = 'none';
           actionBtn.style.opacity = '0';
           actionBtn.style.top = '0';
           actionBtn.style.left = '0';
           void actionBtn.offsetHeight;
-
           // Show hidden for measurement
           actionBtn.style.display = 'block';
           void actionBtn.offsetHeight;
-
           // Get rects
           const gridRect = grid.getBoundingClientRect();
           const cellRect = cell.getBoundingClientRect();
           const btnRect = actionBtn.getBoundingClientRect();
-
           // Account for grid padding (1.8cqi – convert to px for accuracy)
           const gridStyle = getComputedStyle(grid);
           const gridPaddingTop = parseFloat(gridStyle.paddingTop);
           const gridPaddingLeft = parseFloat(gridStyle.paddingLeft);
-
           // Vertical: Relative top from grid top, centered (no padding subtraction needed)
           const relativeCellTop = cellRect.top - gridRect.top;
           const topOffset = relativeCellTop + (cellRect.height / 2) - (btnRect.height / 2);
-
           // Horizontal: Relative left from grid left (no padding subtraction needed)
           let leftOffset;
           const gapCqi = 5.2; // Adjust this cqi value for spacing (e.g., 1.4cqi ≈ current grid gap; increase for more space)
@@ -3745,7 +3822,6 @@ function populateLearnGrid() {
             // Right columns: Button to the LEFT
             leftOffset = (cellRect.left - gridRect.left) - btnRect.width - gapPx;
           }
-
           // Apply and fade in
           actionBtn.style.top = `${topOffset}px`;
           actionBtn.style.left = `${leftOffset}px`;
@@ -3759,12 +3835,24 @@ function populateLearnGrid() {
         if (modalType === 'learn' || modalType === 'portfolio') { // ← Updated to handle both
           actionBtn.classList.remove('pulsing'); // ← Remove pulsing
           actionBtn.style.opacity = '0';
-          setTimeout(() => { actionBtn.style.display = 'none'; }, 200); // Fade out
+          setTimeout(() => {
+            actionBtn.style.display = 'none';
+            // NEW: Move button back to modal header (.buttons) after hide
+            const modal = document.getElementById(modalType + '-modal');
+            const buttonsDiv = modal.querySelector('.buttons');
+            if (buttonsDiv && !buttonsDiv.contains(actionBtn)) {
+              buttonsDiv.appendChild(actionBtn);
+            }
+            actionBtn.style.top = '';
+            actionBtn.style.left = '';
+            actionBtn.style.opacity = '';
+          }, 200); // After fade out
         } else {
           actionBtn.style.display = 'none';
         }
       }
     }
+
     document.getElementById('modal-learn-btn').addEventListener('click', () => {
       playSound('selectbutton');  // ← NEW
       const btn = document.getElementById('modal-learn-btn');
@@ -3981,8 +4069,11 @@ function populateLearnGrid() {
     }
 
     document.getElementById('score-snap-btn').onclick = async () => {
+      console.time('snapTotal'); // NEW: Profile total
       playSound('snap');
       scoreStatusEl.textContent = "Capturing...";
+      // NEW: Show loading IMMEDIATELY for feedback
+      document.getElementById('loading-container').style.display = 'flex';
       // Quick check if video frame is ready
       if (scoreVideoLeft.videoWidth === 0) {
         console.log("Video frame not ready yet – retrying in 100ms");
@@ -3991,6 +4082,7 @@ function populateLearnGrid() {
       }
       // Hide the initial instructions immediately on snap
       document.getElementById('score-tweak-prompt').style.display = 'none';
+      console.time('capture'); // NEW: Profile capture
       // Capture full frame from left video (represents full stream)
       const captured = document.createElement('canvas');
       captured.width = scoreVideoLeft.videoWidth;
@@ -4031,8 +4123,7 @@ function populateLearnGrid() {
       scoreOutputCanvasRight.style.display = 'block';
       // Hide instructions and snap btn immediately after showing snapshot
       document.getElementById('score-snap-btn').style.display = 'none';
-      // Show loading icon right after snapshot is visible (before flash and ML)
-      document.getElementById('loading-container').style.display = 'flex';
+      console.timeEnd('capture'); // NEW: End profile
       // Visual feedback: White flash then green on both sides (async, doesn't block)
       setTimeout(() => {
         drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left', 'rgba(255, 255, 255, 0.95)');
@@ -4043,7 +4134,10 @@ function populateLearnGrid() {
         drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right', 'rgba(95, 186, 233, 0.95)');
       }, 280); // Slightly longer for settle
       // Run detection (loading stays until hidden in scoreDetectFromCropped)
+      console.time('mlDetect'); // NEW: Profile ML
       await scoreDetectFromCropped(cropped);
+      console.timeEnd('mlDetect');
+      console.timeEnd('snapTotal');
     };
 
     function getCurrentGridRect(w, h) { return { left: 0, top: 0, w, h }; }
@@ -4079,7 +4173,6 @@ function populateLearnGrid() {
       };
     }
 
-    /* Replace the existing async function scoreDetectFromCropped(cropped) { ... } in your <script> (after scoreStartCamera) */
     async function scoreDetectFromCropped(cropped) {
       const numCols = 11;
       const numRows = 7;
@@ -4234,12 +4327,20 @@ function populateLearnGrid() {
 
     async function scoreExportTrainingData() {
       const zip = new JSZip();
+      let promises = [];
       scoreDetectedDoodles.forEach((doodle, i) => {
+        if (doodle === 'unknown') return; // Optional: Skip unknowns to avoid blank/noise images (remove if you want all)
         const className = doodle.toLowerCase().replace(/[^a-z0-9]/g, '');
         const randomNum = Math.floor(Math.random() * 900000) + 100000;
         const filename = `${className}${randomNum}.png`;
-        scoreCellCanvases[i].toBlob(blob => zip.file(filename, blob), 'image/png');
+        promises.push(new Promise(resolve => {
+          scoreCellCanvases[i].toBlob(blob => {
+            zip.file(filename, blob);
+            resolve();
+          }, 'image/png');
+        }));
       });
+      await Promise.all(promises);
       const content = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(content);
       const a = document.createElement('a');
@@ -4249,14 +4350,17 @@ function populateLearnGrid() {
       URL.revokeObjectURL(url);
     }
 
-    function initScoreScanner() {
+    async function initScoreScanner() {
       scoreVideoLeft = document.getElementById('score-camera-preview-left');
       scoreVideoRight = document.getElementById('score-camera-preview-right');
       scoreOutputCanvasLeft = document.getElementById('score-output-canvas-left');
       scoreOutputCanvasRight = document.getElementById('score-output-canvas-right');
       scoreStatusEl = document.getElementById('score-status');
-      scoreLoadModel().then(() => scoreStartCamera());
-
+      // NEW: Check if model ready (fallback load if failed preload)
+      if (!scoreModel) {
+        await scoreLoadModel(); // Rare fallback
+      }
+      scoreStartCamera();
       // Show initial elements
       document.querySelector('.camera-container-split').style.display = 'flex';
       document.getElementById('score-snap-btn').textContent = 'SNAP'; // Updated text
@@ -4264,20 +4368,74 @@ function populateLearnGrid() {
       document.getElementById('score-review-container').style.display = 'none';
       document.getElementById('score-detected-grid').style.display = 'none';
       document.getElementById('score-tally').style.display = 'none';
-      document.getElementById('score-score-btn').style.display = 'none';
       document.getElementById('score-export-btn').addEventListener('click', scoreExportTrainingData);
-
-
       // Hide canvases initially
       scoreOutputCanvasLeft.style.display = 'none';
       scoreOutputCanvasRight.style.display = 'none';
-
       // Init overlays and video loaded listener (on left)
       scoreVideoLeft.addEventListener('loadedmetadata', () => {
         scoreInitGridOverlay();
         document.getElementById('score-snap-btn').style.display = 'block';
         scoreStatusEl.textContent = "Camera ready! Point at notebook and SNAP";
       }, { once: true });
+    }
+    function resetScoreModal() {
+      // Reset videos and streams
+      if (scoreStream) {
+        scoreStream.getTracks().forEach(t => t.stop());
+        scoreStream = null;
+      }
+      scoreVideoLeft.srcObject = null;
+      scoreVideoRight.srcObject = null;
+      scoreVideoLeft.style.display = 'block';
+      scoreVideoRight.style.display = 'block';
+
+      // Reset overlays
+      document.getElementById('score-grid-overlay-left').style.display = 'block';
+      document.getElementById('score-grid-overlay-right').style.display = 'block';
+
+      // Reset output canvases (hide and clear content)
+      scoreOutputCanvasLeft.style.display = 'none';
+      scoreOutputCanvasRight.style.display = 'none';
+      scoreOutputCanvasLeft.getContext('2d').clearRect(0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height);
+      scoreOutputCanvasRight.getContext('2d').clearRect(0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height);
+
+      // Reset containers and buttons
+      document.querySelector('.camera-container-split').style.display = 'flex';
+      document.getElementById('score-snap-btn').style.display = 'block';
+      document.getElementById('score-snap-btn').textContent = 'SNAP';
+      document.getElementById('score-review-container').style.display = 'none';
+      document.getElementById('score-detected-grid').style.display = 'none';
+      document.getElementById('score-tally').style.display = 'none';
+      document.getElementById('score-buttons-container').style.display = 'none';
+      document.getElementById('score-export-btn').style.display = 'none';
+      document.getElementById('score-score-btn').style.display = 'none';
+      document.getElementById('score-new-scan-btn').style.display = 'none';
+      document.getElementById('loading-container').style.display = 'none';
+
+      // Reset text elements
+      document.getElementById('score-tweak-prompt').textContent = "Scan your game sheet by lining up the grids with your two Notebook pages. Ensure each doodle is in its own grid cell, then press SNAP.";
+      document.getElementById('score-tweak-prompt').style.display = 'block';
+      document.getElementById('score-status').textContent = "Waiting for photo...";
+      document.getElementById('score-console-log').textContent = "";
+
+      // Reset data arrays and boards
+      scoreDetectedDoodles = [];
+      scoreConfidences = [];
+      scoreCellCanvases = [];
+      scoreBoard = Array(7).fill().map(() => Array(11).fill(null));
+      scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
+      scoreGridCells = [];
+
+      // Clear any popup or other dynamic content
+      document.getElementById('score-doodle-popup').style.display = 'none';
+      document.getElementById('score-popup-grid').innerHTML = '';
+      document.getElementById('score-review-container').innerHTML = '';
+      document.getElementById('score-tally').innerHTML = '';
+      document.getElementById('score-detected-grid').innerHTML = '';
+
+      // Force reflow to ensure all changes are applied
+      void document.body.offsetHeight;
     }
 
     populateLearnGrid();
@@ -4504,12 +4662,13 @@ function populateLearnGrid() {
       }
       return { total, perCellList };
     }
+    // Replace the existing function calculateLetter() in <script> (likely near other calc functions like calculateCrown or calculateSmiley) with this updated version (changes heart-above bonus from +5 to +3):
     function calculateLetter() {
       let total = 0, perCellList = [];
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'letter') {
           let hasHeartAbove = (r > 0 && scoreBoard[r - 1][c] === 'heart');
-          let pts = 1 + (hasHeartAbove ? 5 : 0);
+          let pts = 1 + (hasHeartAbove ? 3 : 0);
           total += pts;
           perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
@@ -4534,6 +4693,8 @@ function populateLearnGrid() {
       }
       return { total, perCellList };
     }
+
+    // Replace the existing function calculateButterfly() in <script> (likely near other calc functions like calculateRocket or calculateCat) with this updated version (changes to per-butterfly scoring based on largest flower group size):
     function calculateButterfly() {
       let visited = Array(7).fill().map(() => Array(11).fill(false));
       let maxSize = 0;
@@ -4550,9 +4711,18 @@ function populateLearnGrid() {
           maxSize = Math.max(maxSize, dfs(r, c));
         }
       }
-      let total = maxSize * 1;
-      return { total, positions: [] };
+      let total = 0, perCellList = [];
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+        if (scoreBoard[r][c] === 'butterfly') {
+          let pts = maxSize * 1;
+          total += pts;
+          perCellList.push({ r, c, pts });
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return { total, perCellList };
     }
+
     function calculateFish() {
       let total = 0, perCellList = [];
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
