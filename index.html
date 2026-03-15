@@ -3514,48 +3514,70 @@
         setTimeout(() => { tooltip.style.display = 'none'; }, 250); // After fade
       }
     });
-    document.getElementById('variety-bonus-btn').addEventListener('click', () => {
-      playSound('button'); // Optional: Sound on click (matches other buttons)
-      const tooltip = document.getElementById('variety-tooltip');
-      if (tooltip.style.display === 'block') {
-        tooltip.style.display = 'none'; // Hide on re-click
-        return;
-      }
-      // Calculate unique non-basic doodles (excludes basics explicitly)
-      const baseDoodles = ['circle', 'square', 'triangle', 'dot', 'line'];
-      const uniqueNonBasic = Object.keys(deck).filter(k => deck[k] > 0 && !baseDoodles.includes(k)).length;
-      const uniqueDoodles = Object.keys(deck).filter(k => deck[k] > 0 && !baseDoodles.includes(k)).sort(); // Sort alphabetically for consistency
-      // Populate tooltip content
-      tooltip.innerHTML = `
+    
+    // Replace the existing document.getElementById('variety-bonus-btn').addEventListener('click', () => { ... }); in <script> with this updated version (renders 3D group first if complete)
+document.getElementById('variety-bonus-btn').addEventListener('click', () => {
+  playSound('button'); // Optional: Sound on click (matches other buttons)
+  const tooltip = document.getElementById('variety-tooltip');
+  if (tooltip.style.display === 'block') {
+    tooltip.style.display = 'none'; // Hide on re-click
+    return;
+  }
+  // NEW: Define non-scoring (basics + intermediates)
+  const nonScoringDoodles = ['circle', 'square', 'triangle', 'dot', 'line', 'lens', 'halfcircle', 'teeth', 'drop'];
+  // Unique potential-scoring doodles in deck
+  const unique = Object.keys(deck).filter(k => deck[k] > 0 && !nonScoringDoodles.includes(k)).sort();
+  // Adjusted count: Treat 3D as 1 only if all three present
+  let adjustedCount = unique.length;
+  const num3D = ['cube', 'cylinder', 'pyramid'].filter(d => deck[d] > 0).length;
+  const hasAll3D = num3D === 3;
+  if (num3D > 0) {
+    if (hasAll3D) {
+      adjustedCount -= 2; // All 3: subtract 2 to count as 1
+    } else {
+      adjustedCount -= num3D; // Partial: subtract all to count as 0
+    }
+  }
+  // NEW: Filtered display: Exclude partial 3D; group all three in parens if complete (and render first)
+  const filteredUnique = unique.filter(d => !['cube', 'cylinder', 'pyramid'].includes(d));
+  let doodlesHtml = '';
+  if (hasAll3D) {
+    doodlesHtml += `(${renderDescription('{cylinder}{cube}{pyramid}')}) `;
+  }
+  doodlesHtml += filteredUnique.map(d => renderDescription(`{${d}}`)).join('');
+  // Populate tooltip content (updated text)
+  tooltip.innerHTML = `
 <img src="images/varietybonusgrid.png" style="width:100%; height:auto; margin-bottom:2.2cqi; border-radius:1.5cqi;">
-<p>Your <b><i>Variety Bonus</i></b> is determined by the number of unique doodles you've created in your Notebook. Basic shapes (${renderDescription('{circle}{square}{triangle}{line}{dot}')}) don't count.</p>
+<p>Your <b><i>Variety Bonus</i></b> is determined by the number of unique scoring doodles you've created in your Notebook. Basic shapes and intermediates ${renderDescription('{circle}{square}{triangle}{line}{dot}{lens}{halfcircle}{teeth}{drop}')} don't count. The 3D shapes count as one group only if you have all three.</p>
 <div class="group-divider"></div>
-<p>You currently have <span class="unique-count-box inline">${uniqueNonBasic}</span> unique doodles in your portfolio, though you may have more in your notebook if you merged without learning.</p>
+<p>You currently have <span class="unique-count-box inline">${adjustedCount}</span> unique scoring doodles in your portfolio, though you may have more in your notebook if you merged without learning.</p>
 <br>
-<p><b>Your doodles:</b> ${uniqueDoodles.map(d => renderDescription(`{${d}}`)).join('')}</p>
+<p><b>Your doodles:</b> ${doodlesHtml}</p>
+<br>
+<p>Keep in mind that some doodles only score when positioned properly in relation to other doodles. If they don't score, they don't count toward the variety bonus.</p>
 `;
-      // Show with optional fade-in (for polish)
-      tooltip.style.opacity = '0';
-      tooltip.style.display = 'block';
-      void tooltip.offsetHeight;
-      tooltip.style.transition = 'opacity 0.25s ease';
-      tooltip.style.opacity = '1';
-      // NEW: Click tooltip to close (simple dismiss)
-      tooltip.addEventListener('click', hideVarietyTooltip, { once: true }); // Once to auto-remove after click
-      // Optional: Add a close button (like modals) at top-right
-      const closeBtn = document.createElement('button');
-      closeBtn.className = 'close-btn'; // Reuse style (square, close.png bg)
-      closeBtn.style.position = 'absolute';
-      closeBtn.style.top = '2cqi';
-      closeBtn.style.right = '2cqi';
-      closeBtn.onclick = hideVarietyTooltip;
-      tooltip.appendChild(closeBtn); // Add to tooltip
-      function hideVarietyTooltip() {
-        const tooltip = document.getElementById('variety-tooltip');
-        tooltip.style.opacity = '0';
-        setTimeout(() => { tooltip.style.display = 'none'; }, 250); // After fade
-      }
-    });
+  // Show with optional fade-in (for polish)
+  tooltip.style.opacity = '0';
+  tooltip.style.display = 'block';
+  void tooltip.offsetHeight;
+  tooltip.style.transition = 'opacity 0.25s ease';
+  tooltip.style.opacity = '1';
+  // NEW: Click tooltip to close (simple dismiss)
+  tooltip.addEventListener('click', hideVarietyTooltip, { once: true }); // Once to auto-remove after click
+  // Optional: Add a close button (like modals) at top-right
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'close-btn'; // Reuse style (square, close.png bg)
+  closeBtn.style.position = 'absolute';
+  closeBtn.style.top = '2cqi';
+  closeBtn.style.right = '2cqi';
+  closeBtn.onclick = hideVarietyTooltip;
+  tooltip.appendChild(closeBtn); // Add to tooltip
+  function hideVarietyTooltip() {
+    const tooltip = document.getElementById('variety-tooltip');
+    tooltip.style.opacity = '0';
+    setTimeout(() => { tooltip.style.display = 'none'; }, 250); // After fade
+  }
+});
 
     document.getElementById('score-btn').addEventListener('click', () => {
       playSound('button');
@@ -4823,19 +4845,131 @@
       cell.classList.remove('scoring');
     }
 
-    function addTallyRow(type, subtotal) {
-      const tally = document.getElementById('score-tally');
+    // Replace the existing function addTallyRow(type, subtotal) { ... } in <script> with this updated version (adds optional extra param for variety count/text tweaks)
+function addTallyRow(type, subtotal, extra = {}) {
+  const tally = document.getElementById('score-tally');
+  const row = document.createElement('div');
+  row.className = 'tally-row';
+  const img = document.createElement('img');
+  img.src = type === '3dset' ? 'images/cube.png' : type === 'variety' ? 'images/varietybonus.png' : `images/${type}.png`;
+  img.style.width = '10cqi'; // Ensure consistent sizing (already from .tally-row img, but explicit here)
+  img.style.height = '10cqi';
+  img.style.objectFit = 'contain';
+  const line = document.createElement('div'); line.className = 'tally-line';
+  const scoreBox = document.createElement('div');
+  scoreBox.className = 'score-box';
+  scoreBox.style.backgroundImage = subtotal >= 0 ? "url('images/purplepointbubble.png')" : "url('images/blackpointbubble.png')";
+  scoreBox.style.backgroundSize = 'contain';
+  scoreBox.style.backgroundRepeat = 'no-repeat';
+  scoreBox.style.backgroundPosition = 'center';
+  scoreBox.style.display = 'flex';
+  scoreBox.style.alignItems = 'center';
+  scoreBox.style.justifyContent = 'center';
+  scoreBox.style.color = '#fff';
+  scoreBox.style.textShadow = '0 1px 2px #000';
+  scoreBox.textContent = subtotal < 0 ? `${subtotal}` : `${Math.abs(subtotal)}`; // - for negative, plain for positive/zero
+  if (type === 'variety') {
+    const unique = extra.unique || 0; // Use passed uniqueScoringTypes
+    const countBox = document.createElement('div');
+    countBox.className = 'unique-count-box';
+    countBox.textContent = unique;
+    const textSpan = document.createElement('span');
+    textSpan.className = 'unique-text';
+    textSpan.textContent = 'unique scoring doodles'; // Updated text to match new logic
+    row.append(img, countBox, textSpan, line, scoreBox); // Special order for variety
+  } else {
+    row.append(img, line, scoreBox); // Standard for others
+  }
+  tally.appendChild(row);
+}
+
+// Replace the existing async function runScoringAnimation() { ... } in <script> with this updated version (uses uniqueScoringTypes for variety count display)
+async function runScoringAnimation() {
+  console.log("SCORE SHEET clicked – starting full animation");
+  scoreBuildBoard();
+  scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
+  const tally = document.getElementById('score-tally');
+  tally.style.display = 'block';
+  tally.innerHTML = '';
+  let total = 0;
+  // Pre-compute all scoring results
+  const nonZeroResults = [];
+  for (let rule of scoringRules) {
+    let result = rule.base !== undefined
+      ? calculateBase(rule.type, rule.base)
+      : rule.calc();
+    let subtotal = result.total || 0;
+    if (subtotal !== 0) {
+      nonZeroResults.push({ rule, result, subtotal });
+    }
+    total += subtotal;
+  }
+  // Variety bonus (NEW: based on nonZeroResults.length = unique scoring types with tally rows)
+  let uniqueScoringTypes = nonZeroResults.length;
+  let bonus = (uniqueScoringTypes >= 1 && uniqueScoringTypes <= 5) ? -10 : uniqueScoringTypes === 6 ? 1 : uniqueScoringTypes === 7 ? 5 : uniqueScoringTypes === 8 ? 10 : uniqueScoringTypes === 9 ? 16 : uniqueScoringTypes === 10 ? 23 : uniqueScoringTypes === 11 ? 31 : uniqueScoringTypes >= 12 ? 40 : 0;
+  // NEW: Only if allowed (arcade or mission 5+)
+  if (currentMission === null || currentMission >= 5) {
+    total += bonus;
+  }
+  // === ANIMATE EACH DOODLE TYPE GROUP ===
+  for (let entry of nonZeroResults) {
+    const { rule, result, subtotal } = entry;
+    // For normal rules use perCellList / positions
+    // For 3D set use special allPositions for highlighting
+    const bubbleItems = result.perCellList || result.positions || [];
+    const highlightItems = (rule.type === '3dset' && result.allPositions)
+      ? result.allPositions
+      : bubbleItems;
+    if (highlightItems.length === 0) continue;
+    // Fade everything except the current group
+    scoreGridCells.forEach(gridCell => {
+      if (gridCell.dataset.doodle && gridCell.dataset.doodle !== 'unknown') {
+        gridCell.classList.add('low-opacity', 'non-scoring');
+      }
+    });
+    highlightItems.forEach(item => {
+      const gridIdx = item.r * 11 + item.c;
+      const cell = scoreGridCells[gridIdx];
+      if (cell) cell.classList.remove('low-opacity', 'non-scoring');
+    });
+    void document.body.offsetHeight; // Force reflow
+    await new Promise(r => setTimeout(r, 400)); // Give fade time to be visible
+    // === POINT BUBBLE SOUNDS (max 4 per doodle type) ===
+    let soundCount = 0;
+    const maxSounds = 4;
+    const animationPromises = [];
+    for (let i = 0; i < bubbleItems.length; i++) {
+      const item = bubbleItems[i];
+      const gridIdx = item.r * 11 + item.c;
+      const cell = scoreGridCells[gridIdx];
+      if (cell) {
+        setTimeout(() => {
+          if (soundCount < maxSounds && item.pts !== null && item.pts !== 0) {
+            playSound('pointbubble');
+            soundCount++;
+          }
+          animationPromises.push(animateCell(cell, item.pts !== undefined ? item.pts : null));
+        }, i * 12);
+      }
+    }
+    await Promise.all(animationPromises);
+    // === TALLY ROW (special 3-image row for 3D set) ===
+    if (rule.type === '3dset') {
       const row = document.createElement('div');
       row.className = 'tally-row';
-      const img = document.createElement('img');
-      img.src = type === '3dset' ? 'images/cube.png' : type === 'variety' ? 'images/varietybonus.png' : `images/${type}.png`;
-      img.style.width = '10cqi'; // Ensure consistent sizing (already from .tally-row img, but explicit here)
-      img.style.height = '10cqi';
-      img.style.objectFit = 'contain';
+      // Three doodles in order: cylinder, cube, pyramid
+      ['cylinder', 'cube', 'pyramid'].forEach(doodle => {
+        const img = document.createElement('img');
+        img.src = `images/${doodle}.png`;
+        img.style.width = '10cqi';
+        img.style.height = '10cqi';
+        img.style.objectFit = 'contain';
+        row.appendChild(img);
+      });
       const line = document.createElement('div'); line.className = 'tally-line';
       const scoreBox = document.createElement('div');
       scoreBox.className = 'score-box';
-      scoreBox.style.backgroundImage = subtotal >= 0 ? "url('images/purplepointbubble.png')" : "url('images/blackpointbubble.png')";
+      scoreBox.style.backgroundImage = "url('images/purplepointbubble.png')";
       scoreBox.style.backgroundSize = 'contain';
       scoreBox.style.backgroundRepeat = 'no-repeat';
       scoreBox.style.backgroundPosition = 'center';
@@ -4844,175 +4978,63 @@
       scoreBox.style.justifyContent = 'center';
       scoreBox.style.color = '#fff';
       scoreBox.style.textShadow = '0 1px 2px #000';
-      scoreBox.textContent = subtotal < 0 ? `${subtotal}` : `${Math.abs(subtotal)}`; // - for negative, plain for positive/zero
-      if (type === 'variety') {
-        const baseDoodles = ['circle', 'square', 'triangle', 'dot', 'line'];
-        const unique = new Set(scoreDetectedDoodles.filter(d => d !== 'unknown' && !baseDoodles.includes(d))).size; // NEW: Exclude basics
-        const countBox = document.createElement('div');
-        countBox.className = 'unique-count-box';
-        countBox.textContent = unique;
-        const textSpan = document.createElement('span');
-        textSpan.className = 'unique-text';
-        textSpan.textContent = 'unique doodles';
-        row.append(img, countBox, textSpan, line, scoreBox); // Special order for variety
-      } else {
-        row.append(img, line, scoreBox); // Standard for others
-      }
+      scoreBox.textContent = `${Math.abs(subtotal)}`;
+      row.append(line, scoreBox);
       tally.appendChild(row);
+    } else {
+      addTallyRow(rule.type, subtotal);
     }
-
-    async function runScoringAnimation() {
-      console.log("SCORE SHEET clicked – starting full animation");
-      scoreBuildBoard();
-      scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
-      const tally = document.getElementById('score-tally');
-      tally.style.display = 'block';
-      tally.innerHTML = '';
-      let total = 0;
-      // Pre-compute all scoring results
-      const nonZeroResults = [];
-      for (let rule of scoringRules) {
-        let result = rule.base !== undefined
-          ? calculateBase(rule.type, rule.base)
-          : rule.calc();
-        let subtotal = result.total || 0;
-        if (subtotal !== 0) {
-          nonZeroResults.push({ rule, result, subtotal });
-        }
-        total += subtotal;
-      }
-      // Variety bonus
-      const baseDoodles = ['circle', 'square', 'triangle', 'dot', 'line'];
-      const unique = new Set(scoreDetectedDoodles.filter(d => d !== 'unknown' && !baseDoodles.includes(d))).size;
-      let bonus = (unique >= 1 && unique <= 5) ? -10 : unique === 6 ? 1 : unique === 7 ? 5 : unique === 8 ? 10 : unique === 9 ? 16 : unique === 10 ? 23 : unique === 11 ? 31 : unique >= 12 ? 40 : 0;
-      // NEW: Only if allowed (arcade or mission 5+)
-      if (currentMission === null || currentMission >= 5) {
-        total += bonus;
-      }
-      // === ANIMATE EACH DOODLE TYPE GROUP ===
-      for (let entry of nonZeroResults) {
-        const { rule, result, subtotal } = entry;
-        // For normal rules use perCellList / positions
-        // For 3D set use special allPositions for highlighting
-        const bubbleItems = result.perCellList || result.positions || [];
-        const highlightItems = (rule.type === '3dset' && result.allPositions)
-          ? result.allPositions
-          : bubbleItems;
-        if (highlightItems.length === 0) continue;
-        // Fade everything except the current group
-        scoreGridCells.forEach(gridCell => {
-          if (gridCell.dataset.doodle && gridCell.dataset.doodle !== 'unknown') {
-            gridCell.classList.add('low-opacity', 'non-scoring');
-          }
-        });
-        highlightItems.forEach(item => {
-          const gridIdx = item.r * 11 + item.c;
-          const cell = scoreGridCells[gridIdx];
-          if (cell) cell.classList.remove('low-opacity', 'non-scoring');
-        });
-        void document.body.offsetHeight; // Force reflow
-        await new Promise(r => setTimeout(r, 400)); // Give fade time to be visible
-        // === POINT BUBBLE SOUNDS (max 4 per doodle type) ===
-        let soundCount = 0;
-        const maxSounds = 4;
-        const animationPromises = [];
-        for (let i = 0; i < bubbleItems.length; i++) {
-          const item = bubbleItems[i];
-          const gridIdx = item.r * 11 + item.c;
-          const cell = scoreGridCells[gridIdx];
-          if (cell) {
-            setTimeout(() => {
-              if (soundCount < maxSounds && item.pts !== null && item.pts !== 0) {
-                playSound('pointbubble');
-                soundCount++;
-              }
-              animationPromises.push(animateCell(cell, item.pts !== undefined ? item.pts : null));
-            }, i * 12);
-          }
-        }
-        await Promise.all(animationPromises);
-        // === TALLY ROW (special 3-image row for 3D set) ===
-        if (rule.type === '3dset') {
-          const row = document.createElement('div');
-          row.className = 'tally-row';
-          // Three doodles in order: cylinder, cube, pyramid
-          ['cylinder', 'cube', 'pyramid'].forEach(doodle => {
-            const img = document.createElement('img');
-            img.src = `images/${doodle}.png`;
-            img.style.width = '10cqi';
-            img.style.height = '10cqi';
-            img.style.objectFit = 'contain';
-            row.appendChild(img);
-          });
-          const line = document.createElement('div'); line.className = 'tally-line';
-          const scoreBox = document.createElement('div');
-          scoreBox.className = 'score-box';
-          scoreBox.style.backgroundImage = "url('images/purplepointbubble.png')";
-          scoreBox.style.backgroundSize = 'contain';
-          scoreBox.style.backgroundRepeat = 'no-repeat';
-          scoreBox.style.backgroundPosition = 'center';
-          scoreBox.style.display = 'flex';
-          scoreBox.style.alignItems = 'center';
-          scoreBox.style.justifyContent = 'center';
-          scoreBox.style.color = '#fff';
-          scoreBox.style.textShadow = '0 1px 2px #000';
-          scoreBox.textContent = `${Math.abs(subtotal)}`;
-          row.append(line, scoreBox);
-          tally.appendChild(row);
-        } else {
-          addTallyRow(rule.type, subtotal);
-        }
-        // Pause before next doodle type
-        await new Promise(r => setTimeout(r, 2800)); // ← Change this number to adjust pause (ms)
-      }
-      // NEW: Animate variety bonus last (if allowed and non-zero)
-      if ((currentMission === null || currentMission >= 5) && bonus !== 0) {
-        addTallyRow('variety', bonus);
-        await new Promise(r => setTimeout(r, 600));
-      }
-      // NEW: Restore all doodles to normal view (remove opacity/scale classes)
-      scoreGridCells.forEach(gridCell => {
-        gridCell.classList.remove('low-opacity', 'non-scoring');
-      });
-      void document.body.offsetHeight; // Reflow for smooth transition back
-      await new Promise(r => setTimeout(r, 400)); // Short pause for fade-back visibility
-      // === FINAL TOTAL (custom text + large bubble) ===
-      const totalContainer = document.createElement('div');
-      totalContainer.style.textAlign = 'center';
-      totalContainer.style.marginTop = '25px';
-      // Text: "Total Score:" in black, Covered By Your Grace
-      const totalText = document.createElement('div');
-      totalText.style.fontFamily = "'Covered By Your Grace', cursive";
-      totalText.style.fontSize = '7.5cqi';
-      totalText.style.fontWeight = '400'; // Normal weight for Grace font
-      totalText.style.color = '#000000'; // Black
-      totalText.textContent = 'Total Score:';
-      totalContainer.appendChild(totalText);
-      // Large purple bubble centered below, 3x size (30cqi w/h, font 9cqi)
-      const totalBubble = document.createElement('div');
-      totalBubble.className = 'score-box';
-      totalBubble.style.backgroundImage = "url('images/purplepointbubble.png')";
-      totalBubble.style.backgroundSize = 'contain';
-      totalBubble.style.backgroundRepeat = 'no-repeat';
-      totalBubble.style.backgroundPosition = 'center';
-      totalBubble.style.display = 'flex';
-      totalBubble.style.alignItems = 'center';
-      totalBubble.style.justifyContent = 'center';
-      totalBubble.style.color = '#fff';
-      totalBubble.style.textShadow = '0 3px 6px #000'; // Scaled shadow for larger size
-      totalBubble.style.fontFamily = "'Fira Sans', sans-serif";
-      totalBubble.style.fontSize = '9cqi'; // 3x original 3cqi
-      totalBubble.style.fontWeight = 'bold';
-      totalBubble.style.width = '30cqi'; // 3x original 10cqi
-      totalBubble.style.height = '30cqi'; // 3x original 10cqi
-      totalBubble.style.minWidth = 'auto';
-      totalBubble.style.padding = '0';
-      totalBubble.style.margin = '2cqi auto 0'; // Centered horizontally, small top margin from text
-      totalBubble.textContent = `${total}`;
-      totalContainer.appendChild(totalBubble);
-      tally.appendChild(totalContainer);
-      document.getElementById('score-new-scan-btn').style.display = 'block';
-    }
+    // Pause before next doodle type
+    await new Promise(r => setTimeout(r, 2800)); // ← Change this number to adjust pause (ms)
+  }
+  // NEW: Animate variety bonus last (if allowed and non-zero)
+  if ((currentMission === null || currentMission >= 5) && bonus !== 0) {
+    addTallyRow('variety', bonus, {unique: uniqueScoringTypes});
+    await new Promise(r => setTimeout(r, 600));
+  }
+  // NEW: Restore all doodles to normal view (remove opacity/scale classes)
+  scoreGridCells.forEach(gridCell => {
+    gridCell.classList.remove('low-opacity', 'non-scoring');
+  });
+  void document.body.offsetHeight; // Reflow for smooth transition back
+  await new Promise(r => setTimeout(r, 400)); // Short pause for fade-back visibility
+  // === FINAL TOTAL (custom text + large bubble) ===
+  const totalContainer = document.createElement('div');
+  totalContainer.style.textAlign = 'center';
+  totalContainer.style.marginTop = '25px';
+  // Text: "Total Score:" in black, Covered By Your Grace
+  const totalText = document.createElement('div');
+  totalText.style.fontFamily = "'Covered By Your Grace', cursive";
+  totalText.style.fontSize = '7.5cqi';
+  totalText.style.fontWeight = '400'; // Normal weight for Grace font
+  totalText.style.color = '#000000'; // Black
+  totalText.textContent = 'Total Score:';
+  totalContainer.appendChild(totalText);
+  // Large purple bubble centered below, 3x size (30cqi w/h, font 9cqi)
+  const totalBubble = document.createElement('div');
+  totalBubble.className = 'score-box';
+  totalBubble.style.backgroundImage = "url('images/purplepointbubble.png')";
+  totalBubble.style.backgroundSize = 'contain';
+  totalBubble.style.backgroundRepeat = 'no-repeat';
+  totalBubble.style.backgroundPosition = 'center';
+  totalBubble.style.display = 'flex';
+  totalBubble.style.alignItems = 'center';
+  totalBubble.style.justifyContent = 'center';
+  totalBubble.style.color = '#fff';
+  totalBubble.style.textShadow = '0 3px 6px #000'; // Scaled shadow for larger size
+  totalBubble.style.fontFamily = "'Fira Sans', sans-serif";
+  totalBubble.style.fontSize = '9cqi'; // 3x original 3cqi
+  totalBubble.style.fontWeight = 'bold';
+  totalBubble.style.width = '30cqi'; // 3x original 10cqi
+  totalBubble.style.height = '30cqi'; // 3x original 10cqi
+  totalBubble.style.minWidth = 'auto';
+  totalBubble.style.padding = '0';
+  totalBubble.style.margin = '2cqi auto 0'; // Centered horizontally, small top margin from text
+  totalBubble.textContent = `${total}`;
+  totalContainer.appendChild(totalBubble);
+  tally.appendChild(totalContainer);
+  document.getElementById('score-new-scan-btn').style.display = 'block';
+}
 
     document.getElementById('score-score-btn').onclick = () => {
       // Hide review and camera snapshot/overlay
