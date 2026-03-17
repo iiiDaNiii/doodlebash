@@ -2652,9 +2652,9 @@
       teeth: "{teeth} is an intermediate shape that can merge to create {cat}, {rocket}, and {crown}.",
       lens: "{lens} is an intermediate shape that can merge to create {rocket}, {planet}, and {fish}.",
       halfcircle: "{halfcircle} is an intermediate shape that can merge to create {chest}, {butterfly}, and {umbrella}.",
-      boat: "{boat} scores {2pt} per {fish} <i><b>below</b></i> on <i><b>same page</b></i>.",
-      butterfly: "{butterfly} scores {1pt} per {flower} in largest <i><b>group</b></i>.",
-      cat: "{cat} scores {3pt} (+{2pt} per <i><b>surrounding</b></i> {fish}/{turd})",
+      boat: "{boat} scores {2pt} (+{1pt} per {fish} <i><b>below</b></i> on <i><b>same page</b></i> +{1pt} per {star} <i><b>above</b></i> on <i><b>other page</b></i>).",
+      butterfly: "{butterfly} scores {1pt} (+{1pt} per {flower} in largest {flower} <i><b>group</b></i>.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {cat}.",
+      cat: "{cat} scores {3pt} (+{2pt} per <i><b>surrounding</b></i> {fish}/{butterfly}/{turd})",
       chest: "{chest} scores {2pt} per <i><b>surrounding</b></i> {coin}/{diamond}/{crown}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
       cloud: "{cloud} scores {1pt} per {drop} <i><b>below</b></i> on <i><b>same page</b></i>.",
       coin: "{coin} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
@@ -2663,24 +2663,24 @@
       cylinder: "{cylinder} is an intermediate shape that can merge to create {mug} or {toiletpaper}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} per set of {cube}{cylinder}{pyramid}.",
       diamond: "{diamond} scores {4pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
       die: "{die} copies the value of a <i><b>surrounding</b></i> doodle.",
-      flower: "{flower} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {butterfly}.",
-      heart: "{heart} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {letter}.",
+      flower: "{flower} scores {2pt} (+{2pt} if {heart} is <i><b>directly-above</b></i>).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {butterfly}.",
+      heart: "{heart} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {letter}, {music}, and {flower}.",
       house: "{house} scores {1pt} (+{1pt} per <i><b>surrounding</b></i> {smiley}/{wireless}).",
       icecream: "{icecream} scores {4pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {smiley}.",
-      letter: "{letter} scores {1pt} (+{3pt} if {heart} is <i><b>directly-above</b></i>).",
+      letter: "{letter} scores {1pt} (+{3pt} if {heart} is <i><b>directly-above</b></i>). Contributes to scoring for{present}.",
       mug: "{mug} scores {2pt} (+{2pt} if {drop} is <i><b>directly-above</b></i>).",
-      music: "{music} scores {1pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {piano}.",
+      music: "{music} scores {1pt} (+{2pt} if {heart} is <i><b>directly-above</b></i>).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {piano}.",
       piano: "{piano} scores {1pt} per <i><b>column</b></i> with {music} on <i><b>any page</b></i>.",
       pizza: "{pizza} scores {3pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {smiley}.",
-      planet: "{planet} scores {1pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {rocket}.",
-      present: "{present} scores {6pt}.",
+      planet: "{planet} scores {1pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {rocket} and {star}.",
+      present: "{present} scores {4pt} (+{2pt} if {letter} is <i><b>directly left or right</b></i>).",
       pyramid: "{pyramid} is an intermediate shape that can merge to create {diamond} or {icecream}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} per set of {cube}{cylinder}{pyramid}.",
-      rocket: "{rocket} scores {3pt} per {planet}/{star} in the same column.",
-      smiley: "{smiley} scores {1pt} (+{1pt} per <i><b>surrounding</b></i> {pizza}/{icecream}).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
-      star: "{star} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {rocket}.",
+      rocket: "{rocket} scores {2pt} (+{3pt} if {cloud} is <i><b>directly-below</b></i> +{1pt} per {planet}/{star} <b><i>above</i></b> on same page.",
+      smiley: "{smiley} scores {1pt} (+{2pt} per <i><b>surrounding</b></i> {pizza}/{icecream}).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
+      star: "{star} scores {2pt} (+{1pt} per <b><i>surrounding</i></b> {planet}).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {rocket} and {boat}.",
       sword: "{sword} scores {5pt}.",
       toiletpaper: "{toiletpaper} scores {1pt} (+{1pt} per <i><b>surrounding</b></i> {turd}).",
-      turd: "{turd} scores {minus2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {toiletpaper}.",
+      turd: "{turd} scores {minus2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {toiletpaper} and {cat}.",
       umbrella: "{umbrella} scores {1pt} per {drop} <i><b>above</b></i> on the <i><b>same page</b></i>",
       wireless: "{wireless} is used to merge non-adjacent doodles. Circle a {wireless} to use it, then individually circle any doodles you'd like to merge.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
       fish: "{fish} scores {1pt} per <i><b>surrounding</b></i> {fish}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {boat}."
@@ -4600,10 +4600,10 @@ function renderReviewRows() {
     populateLearnGrid();
     // ====================== FULL SCORING ANIMATION ======================
     const scoringRules = [
-      { type: 'turd', base: -2 }, { type: 'music', base: 1 }, { type: 'planet', base: 1 },
-      { type: 'star', base: 2 }, { type: 'flower', base: 2 }, { type: 'coin', base: 2 },
+      { type: 'turd', base: -2 }, { type: 'music', calc: calculateMusic }, { type: 'planet', base: 1 },
+      { type: 'star', calc: calculateStar }, { type: 'flower', calc: calculateFlower }, { type: 'coin', base: 2 },
       { type: 'heart', base: 2 }, { type: 'pizza', base: 3 }, { type: 'diamond', base: 4 },
-      { type: 'icecream', base: 4 }, { type: 'sword', base: 5 }, { type: 'present', base: 6 },
+      { type: 'icecream', base: 4 }, { type: 'sword', base: 5 }, { type: 'present', calc: calculatePresent },
       { type: '3dset', calc: calculate3DSet }, { type: 'chest', calc: calculateChest },
       { type: 'rocket', calc: calculateRocket }, { type: 'cat', calc: calculateCat },
       { type: 'cloud', calc: calculateCloud }, { type: 'umbrella', calc: calculateUmbrella },
@@ -4684,35 +4684,65 @@ function renderReviewRows() {
       }
       return { total, perCellList };
     }
-    function calculateRocket() {
-      let total = 0, perCellList = [];
-      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-        if (scoreBoard[r][c] === 'rocket') {
-          let count = 0;
-          for (let rr = 0; rr < 7; rr++) {
-            if (rr !== r && (scoreBoard[rr][c] === 'planet' || scoreBoard[rr][c] === 'star')) count++;
+    
+function calculateRocket() {
+  let total = 0, perCellList = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    if (scoreBoard[r][c] === 'rocket') {
+      let pts = 2; // base
+
+      // +3 if cloud is directly below (single cell, same column)
+      if (r < 6 && scoreBoard[r + 1][c] === 'cloud') {
+        pts += 3;
+      }
+
+      // +1 per planet or star above on SAME page (any column on the page)
+      const pageCols = c < 5 ? [0, 1, 2, 3, 4] : [6, 7, 8, 9, 10];
+      let count = 0;
+      for (let rr = 0; rr < r; rr++) {           // rows strictly above
+        for (let pc of pageCols) {
+          if (['planet', 'star'].includes(scoreBoard[rr][pc])) {
+            count++;
           }
-          let pts = count * 3;
-          total += pts;
-          perCellList.push({ r, c, pts });
-          scorePerCellScore[r][c] += pts;
         }
       }
-      return { total, perCellList };
+      pts += count * 1;
+
+      total += pts;
+      perCellList.push({ r, c, pts });
+      scorePerCellScore[r][c] += pts;
     }
-    function calculateCat() {
-      let total = 0, perCellList = [];
-      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-        if (scoreBoard[r][c] === 'cat') {
-          let count = getSurrounding(r, c).filter(s => ['fish', 'turd'].includes(s.doodle)).length;
-          let pts = 3 + count * 2;
-          total += pts;
-          perCellList.push({ r, c, pts });
-          scorePerCellScore[r][c] += pts;
-        }
-      }
-      return { total, perCellList };
+  }
+  return { total, perCellList };
+}
+
+function calculateStar() {
+  let total = 0, perCellList = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    if (scoreBoard[r][c] === 'star') {
+      let surroundingPlanets = getSurrounding(r, c).filter(s => s.doodle === 'planet').length;
+      let pts = 2 + surroundingPlanets * 1; // 2 base + 1 per adjacent planet
+      total += pts;
+      perCellList.push({ r, c, pts });
+      scorePerCellScore[r][c] += pts;
     }
+  }
+  return { total, perCellList };
+}
+
+function calculateCat() {
+  let total = 0, perCellList = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    if (scoreBoard[r][c] === 'cat') {
+      let count = getSurrounding(r, c).filter(s => ['fish', 'turd', 'butterfly'].includes(s.doodle)).length;
+      let pts = 3 + count * 2;
+      total += pts;
+      perCellList.push({ r, c, pts });
+      scorePerCellScore[r][c] += pts;
+    }
+  }
+  return { total, perCellList };
+}
 
     /* Replace the existing function calculateCloud() in <script> with this (counts drops below on same page, any column) */
     function calculateCloud() {
@@ -4808,20 +4838,21 @@ function renderReviewRows() {
       }
       return { total, perCellList };
     }
-    function calculateSmiley() {
-      let total = 0, perCellList = [];
-      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-        if (scoreBoard[r][c] === 'smiley') {
-          let count = getSurrounding(r, c).filter(s => ['pizza', 'icecream'].includes(s.doodle)).length;
-          let pts = 1 + count * 1;
-          total += pts;
-          perCellList.push({ r, c, pts });
-          scorePerCellScore[r][c] += pts;
-        }
-      }
-      return { total, perCellList };
+    
+function calculateSmiley() {
+  let total = 0, perCellList = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    if (scoreBoard[r][c] === 'smiley') {
+      let count = getSurrounding(r, c).filter(s => ['pizza', 'icecream'].includes(s.doodle)).length;
+      let pts = 1 + count * 2; // ← Changed: 1 base + 2 per surrounding pizza/icecream
+      total += pts;
+      perCellList.push({ r, c, pts });
+      scorePerCellScore[r][c] += pts;
     }
-    // Replace the existing function calculateLetter() in <script> (likely near other calc functions like calculateCrown or calculateSmiley) with this updated version (changes heart-above bonus from +5 to +3):
+  }
+  return { total, perCellList };
+}
+
     function calculateLetter() {
       let total = 0, perCellList = [];
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
@@ -4835,6 +4866,53 @@ function renderReviewRows() {
       }
       return { total, perCellList };
     }
+    
+function calculateMusic() {
+  let total = 0, perCellList = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    if (scoreBoard[r][c] === 'music') {
+      let hasHeartAbove = (r > 0 && scoreBoard[r - 1][c] === 'heart');
+      let pts = 1 + (hasHeartAbove ? 2 : 0);
+      total += pts;
+      perCellList.push({ r, c, pts });
+      scorePerCellScore[r][c] += pts;
+    }
+  }
+  return { total, perCellList };
+}
+
+function calculateFlower() {
+  let total = 0, perCellList = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    if (scoreBoard[r][c] === 'flower') {
+      let hasHeartAbove = (r > 0 && scoreBoard[r - 1][c] === 'heart');
+      let pts = 2 + (hasHeartAbove ? 2 : 0);
+      total += pts;
+      perCellList.push({ r, c, pts });
+      scorePerCellScore[r][c] += pts;
+    }
+  }
+  return { total, perCellList };
+}
+
+    function calculatePresent() {
+  let total = 0, perCellList = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    if (scoreBoard[r][c] === 'present') {
+      // Check directly left OR right (same row only)
+      let hasLetterAdjacent = false;
+      if (c > 0 && scoreBoard[r][c - 1] === 'letter') hasLetterAdjacent = true;
+      if (c < 10 && scoreBoard[r][c + 1] === 'letter') hasLetterAdjacent = true;
+
+      let pts = 4 + (hasLetterAdjacent ? 2 : 0); // +2 max, never +4 even if both sides
+      total += pts;
+      perCellList.push({ r, c, pts });
+      scorePerCellScore[r][c] += pts;
+    }
+  }
+  return { total, perCellList };
+}
+
     function calculatePiano() {
       let columnsWithMusic = new Set();
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
@@ -4853,35 +4931,36 @@ function renderReviewRows() {
       return { total, perCellList };
     }
 
-    // Replace the existing function calculateButterfly() in <script> (likely near other calc functions like calculateRocket or calculateCat) with this updated version (changes to per-butterfly scoring based on largest flower group size):
     function calculateButterfly() {
-      let visited = Array(7).fill().map(() => Array(11).fill(false));
-      let maxSize = 0;
-      const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
-      function dfs(r, c) {
-        if (r < 0 || r >= 7 || c < 0 || c >= 11 || visited[r][c] || scoreBoard[r][c] !== 'flower') return 0;
-        visited[r][c] = true;
-        let size = 1;
-        for (let [dr, dc] of dirs) size += dfs(r + dr, c + dc);
-        return size;
-      }
-      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-        if (scoreBoard[r][c] === 'flower' && !visited[r][c]) {
-          maxSize = Math.max(maxSize, dfs(r, c));
-        }
-      }
-      let total = 0, perCellList = [];
-      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-        if (scoreBoard[r][c] === 'butterfly') {
-          let pts = maxSize * 1;
-          total += pts;
-          perCellList.push({ r, c, pts });
-          scorePerCellScore[r][c] += pts;
-        }
-      }
-      return { total, perCellList };
-    }
+  let visited = Array(7).fill().map(() => Array(11).fill(false));
+  let maxSize = 0;
+  const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 
+  function dfs(r, c) {
+    if (r < 0 || r >= 7 || c < 0 || c >= 11 || visited[r][c] || scoreBoard[r][c] !== 'flower') return 0;
+    visited[r][c] = true;
+    let size = 1;
+    for (let [dr, dc] of dirs) size += dfs(r + dr, c + dc);
+    return size;
+  }
+
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    if (scoreBoard[r][c] === 'flower' && !visited[r][c]) {
+      maxSize = Math.max(maxSize, dfs(r, c));
+    }
+  }
+
+  let total = 0, perCellList = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    if (scoreBoard[r][c] === 'butterfly') {
+      let pts = 2 + maxSize * 1;   // ← NEW: 2pt base + 1 per flower in largest group
+      total += pts;
+      perCellList.push({ r, c, pts });
+      scorePerCellScore[r][c] += pts;
+    }
+  }
+  return { total, perCellList };
+}
     function calculateFish() {
       let total = 0, perCellList = [];
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
@@ -4896,27 +4975,40 @@ function renderReviewRows() {
       return { total, perCellList };
     }
 
-    /* Replace the existing function calculateBoat() in <script> with this (counts fish below on same page, any column) */
     function calculateBoat() {
-      let total = 0, perCellList = [];
-      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-        if (scoreBoard[r][c] === 'boat') {
-          let count = 0;
-          const pageCols = c < 5 ? [0, 1, 2, 3, 4] : [6, 7, 8, 9, 10];
-          for (let rr = r + 1; rr < 7; rr++) {
-            for (let pc of pageCols) {
-              if (scoreBoard[rr][pc] === 'fish') count++;
-            }
-          }
-          let pts = count * 2;
-          total += pts;
-          perCellList.push({ r, c, pts });
-          scorePerCellScore[r][c] += pts;
+  let total = 0, perCellList = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    if (scoreBoard[r][c] === 'boat') {
+      // Base points
+      let pts = 2;
+
+      // === 1. Fish below on SAME page (unchanged) ===
+      const pageCols = c < 5 ? [0, 1, 2, 3, 4] : [6, 7, 8, 9, 10];
+      let fishCount = 0;
+      for (let rr = r + 1; rr < 7; rr++) {
+        for (let pc of pageCols) {
+          if (scoreBoard[rr][pc] === 'fish') fishCount++;
         }
       }
-      return { total, perCellList };
-    }
+      pts += fishCount * 1;
 
+      // === 2. Stars ABOVE on the OTHER page ===
+      const otherPageCols = c < 5 ? [6, 7, 8, 9, 10] : [0, 1, 2, 3, 4];
+      let starCount = 0;
+      for (let rr = 0; rr < r; rr++) {           // rows above
+        for (let pc of otherPageCols) {
+          if (scoreBoard[rr][pc] === 'star') starCount++;
+        }
+      }
+      pts += starCount * 1;
+
+      total += pts;
+      perCellList.push({ r, c, pts });
+      scorePerCellScore[r][c] += pts;
+    }
+  }
+  return { total, perCellList };
+}
     /* Replace the existing function calculateDie() in <script> with this (skips 3D neighbors) */
     function calculateDie() {
       let total = 0, perCellList = [];
