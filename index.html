@@ -4199,79 +4199,87 @@ document.getElementById('variety-bonus-btn').addEventListener('click', () => {
         ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x, gy + gh); ctx.stroke();
       }
     }
-
-    document.getElementById('score-snap-btn').onclick = async () => {
-      console.time('snapTotal'); // NEW: Profile total
-      playSound('snap');
-      scoreStatusEl.textContent = "Capturing...";
-      // NEW: Show loading IMMEDIATELY for feedback
-      document.getElementById('loading-container').style.display = 'flex';
-      // Quick check if video frame is ready
-      if (scoreVideoLeft.videoWidth === 0) {
-        console.log("Video frame not ready yet – retrying in 100ms");
-        setTimeout(() => document.getElementById('score-snap-btn').click(), 100);
-        return;
-      }
-      // Hide the initial instructions immediately on snap
-      document.getElementById('score-tweak-prompt').style.display = 'none';
-      console.time('capture'); // NEW: Profile capture
-      // Capture full frame from left video (represents full stream)
-      const captured = document.createElement('canvas');
-      captured.width = scoreVideoLeft.videoWidth;
-      captured.height = scoreVideoLeft.videoHeight;
-      captured.getContext('2d').drawImage(scoreVideoLeft, 0, 0);
-      console.log(`Capture dimensions: ${captured.width}x${captured.height}`); // Debug: Should be non-zero
-      // Get crop rect based on display
-      const displayRect = { left: 0, top: 0, w: scoreVideoLeft.clientWidth + scoreVideoRight.clientWidth + (scoreVideoLeft.clientWidth / 5), h: scoreVideoLeft.clientHeight }; // Approx full with gap
-      const sourceRect = getVideoSourceRect(displayRect);
-      console.log(`Crop rect: ${JSON.stringify(sourceRect)}`); // Debug: Check if valid
-      // Crop to match overlay area
-      const cropped = document.createElement('canvas');
-      cropped.width = sourceRect.w;
-      cropped.height = sourceRect.h;
-      cropped.getContext('2d').drawImage(captured, sourceRect.left, sourceRect.top, sourceRect.w, sourceRect.h, 0, 0, sourceRect.w, sourceRect.h);
-      // Get containers and unitW for center skip
-      const containerLeft = document.querySelector('.camera-left');
-      const containerRight = document.querySelector('.camera-right');
-      const unitW = cropped.width / 11;
-      // Left side draw (columns 1-5)
-      scoreOutputCanvasLeft.width = containerLeft.clientWidth;
-      scoreOutputCanvasLeft.height = containerLeft.clientHeight;
-      const outCtxLeft = scoreOutputCanvasLeft.getContext('2d');
-      outCtxLeft.drawImage(cropped, 0, 0, 5 * unitW, cropped.height, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height);
-      drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left');
-      // Right side draw (columns 7-11, skipping center unitW in source x)
-      scoreOutputCanvasRight.width = containerRight.clientWidth;
-      scoreOutputCanvasRight.height = containerRight.clientHeight;
-      const outCtxRight = scoreOutputCanvasRight.getContext('2d');
-      outCtxRight.drawImage(cropped, 6 * unitW, 0, 5 * unitW, cropped.height, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height);
-      drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right');
-      // Freeze: Hide videos and live overlays, show canvases
-      scoreVideoLeft.style.display = 'none';
-      scoreVideoRight.style.display = 'none';
-      document.getElementById('score-grid-overlay-left').style.display = 'none';
-      document.getElementById('score-grid-overlay-right').style.display = 'none';
-      scoreOutputCanvasLeft.style.display = 'block';
-      scoreOutputCanvasRight.style.display = 'block';
-      // Hide instructions and snap btn immediately after showing snapshot
-      document.getElementById('score-snap-btn').style.display = 'none';
-      console.timeEnd('capture'); // NEW: End profile
-      // Visual feedback: White flash then green on both sides (async, doesn't block)
-      setTimeout(() => {
-        drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left', 'rgba(255, 255, 255, 0.95)');
-        drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right', 'rgba(255, 255, 255, 0.95)');
-      }, 80);
-      setTimeout(() => {
-        drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left', 'rgba(95, 186, 233, 0.95)');
-        drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right', 'rgba(95, 186, 233, 0.95)');
-      }, 280); // Slightly longer for settle
-      // Run detection (loading stays until hidden in scoreDetectFromCropped)
-      console.time('mlDetect'); // NEW: Profile ML
+document.getElementById('score-snap-btn').onclick = async () => {
+  // INSTANT SYNC: Show loading + hide prompt/btn FIRST (quick DOM, no heavy work)
+  const loadingContainer = document.getElementById('loading-container');
+  loadingContainer.style.display = 'flex';
+  document.getElementById('score-tweak-prompt').style.display = 'none';
+  document.getElementById('score-snap-btn').style.display = 'none';
+  void document.body.offsetHeight; // Force paint of above changes IMMEDIATELY (flushes queue)
+  // Quick status + sound (still early, but non-blocking)
+  scoreStatusEl.textContent = "Capturing...";
+  playSound('snap');
+  // Quick check if video frame is ready (if not, retry with instant visuals already applied)
+  if (scoreVideoLeft.videoWidth === 0) {
+    console.log("Video frame not ready yet – retrying in 100ms");
+    setTimeout(() => document.getElementById('score-snap-btn').click(), 100);
+    return;
+  }
+  // Queue CAPTURE/DRAW/FLASH in rAF (aligns with paint for fast snapshot display)
+  requestAnimationFrame(() => {
+    console.time('snapTotal');
+    console.time('capture');
+    // Capture full frame from left video (represents full stream)
+    const captured = document.createElement('canvas');
+    captured.width = scoreVideoLeft.videoWidth;
+    captured.height = scoreVideoLeft.videoHeight;
+    captured.getContext('2d').drawImage(scoreVideoLeft, 0, 0);
+    console.log(`Capture dimensions: ${captured.width}x${captured.height}`);
+    // Get crop rect based on display
+    const displayRect = { left: 0, top: 0, w: scoreVideoLeft.clientWidth + scoreVideoRight.clientWidth + (scoreVideoLeft.clientWidth / 5), h: scoreVideoLeft.clientHeight };
+    const sourceRect = getVideoSourceRect(displayRect);
+    console.log(`Crop rect: ${JSON.stringify(sourceRect)}`);
+    // Crop to match overlay area
+    const cropped = document.createElement('canvas');
+    cropped.width = sourceRect.w;
+    cropped.height = sourceRect.h;
+    cropped.getContext('2d').drawImage(captured, sourceRect.left, sourceRect.top, sourceRect.w, sourceRect.h, 0, 0, sourceRect.w, sourceRect.h);
+    console.timeEnd('capture');
+    console.time('draw');
+    // Get containers and unitW for center skip
+    const containerLeft = document.querySelector('.camera-left');
+    const containerRight = document.querySelector('.camera-right');
+    const unitW = cropped.width / 11;
+    // Left side draw (columns 1-5)
+    scoreOutputCanvasLeft.width = containerLeft.clientWidth;
+    scoreOutputCanvasLeft.height = containerLeft.clientHeight;
+    const outCtxLeft = scoreOutputCanvasLeft.getContext('2d');
+    outCtxLeft.drawImage(cropped, 0, 0, 5 * unitW, cropped.height, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height);
+    drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left');
+    // Right side draw (columns 7-11, skipping center unitW in source x)
+    scoreOutputCanvasRight.width = containerRight.clientWidth;
+    scoreOutputCanvasRight.height = containerRight.clientHeight;
+    const outCtxRight = scoreOutputCanvasRight.getContext('2d');
+    outCtxRight.drawImage(cropped, 6 * unitW, 0, 5 * unitW, cropped.height, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height);
+    drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right');
+    // Freeze: Hide videos and live overlays, show canvases (snapshot now visible)
+    scoreVideoLeft.style.display = 'none';
+    scoreVideoRight.style.display = 'none';
+    document.getElementById('score-grid-overlay-left').style.display = 'none';
+    document.getElementById('score-grid-overlay-right').style.display = 'none';
+    scoreOutputCanvasLeft.style.display = 'block';
+    scoreOutputCanvasRight.style.display = 'block';
+    void document.body.offsetHeight; // Force paint of snapshot (flushes draw to screen)
+    console.timeEnd('draw');
+    // INSTANT WHITE FLASH: Draw sync after initial overlay (feels part of capture)
+    drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left', 'rgba(255, 255, 255, 0.95)');
+    drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right', 'rgba(255, 255, 255, 0.95)');
+    void document.body.offsetHeight; // Extra force for white paint
+    // BLUE SHIFT: Short delay for sequence (feels like a quick "confirm" animation)
+    setTimeout(() => {
+      drawOverlaySide(outCtxLeft, 0, 0, scoreOutputCanvasLeft.width, scoreOutputCanvasLeft.height, 'left', 'rgba(95, 186, 233, 0.95)');
+      drawOverlaySide(outCtxRight, 0, 0, scoreOutputCanvasRight.width, scoreOutputCanvasRight.height, 'right', 'rgba(95, 186, 233, 0.95)');
+      void document.body.offsetHeight; // Extra force for blue paint
+    }, 150);
+    // Run detection AFTER visuals (loading stays over it)
+    setTimeout(async () => {
+      console.time('mlDetect');
       await scoreDetectFromCropped(cropped);
       console.timeEnd('mlDetect');
       console.timeEnd('snapTotal');
-    };
-
+    }, 0);
+  });
+};
     function getCurrentGridRect(w, h) { return { left: 0, top: 0, w, h }; }
 
     function getVideoSourceRect(displayRect) {
@@ -4306,30 +4314,38 @@ document.getElementById('variety-bonus-btn').addEventListener('click', () => {
     }
 
     async function scoreDetectFromCropped(cropped) {
-      const numCols = 11;
-      const numRows = 7;
-      const cellW = cropped.width / numCols;
-      const cellH = cropped.height / numRows;
-      scoreDetectedDoodles = [];
-      scoreConfidences = [];
-      scoreCellCanvases = [];
-      scoreLog("Detecting...");
-      for (let r = 0; r < numRows; r++) {
-        for (let pc of playableCols) {
-          const cellCanvas = document.createElement('canvas');
-          cellCanvas.width = 224;
-          cellCanvas.height = 224;
-          const cellCtx = cellCanvas.getContext('2d');
-          cellCtx.drawImage(cropped, Math.round(pc * cellW), Math.round(r * cellH), Math.round(cellW), Math.round(cellH), 0, 0, 224, 224);
-          scoreCellCanvases.push(cellCanvas);
+  await tf.setBackend('webgl'); // NEW: Force GPU for speed
+  await tf.ready();
+  const numCols = 11;
+  const numRows = 7;
+  const cellW = cropped.width / numCols;
+  const cellH = cropped.height / numRows;
+  scoreDetectedDoodles = [];
+  scoreConfidences = [];
+  scoreCellCanvases = [];
+  scoreLog("Detecting...");
+  const allowed = getAllowedDoodles(currentMission);
+  const batchSize = 20; // Increased for more concurrency
+  const tasks = [];
+  let idx = 0;
+  for (let r = 0; r < numRows; r++) {
+    for (let pc of playableCols) {
+      const cellCanvas = document.createElement('canvas');
+      cellCanvas.width = 224;
+      cellCanvas.height = 224;
+      const cellCtx = cellCanvas.getContext('2d');
+      cellCtx.drawImage(cropped, Math.round(pc * cellW), Math.round(r * cellH), Math.round(cellW), Math.round(cellH), 0, 0, 224, 224);
+      scoreCellCanvases.push(cellCanvas);
+      // NEW: tf.tidy for auto-cleanup + sync array for speed
+      tasks.push((async () => {
+        return tf.tidy(() => {
           const tensor = tf.browser.fromPixels(cellCanvas).expandDims(0).toFloat().div(255);
           const prediction = scoreModel.predict(tensor);
-          const scores = await prediction.array();
+          const scores = prediction.arraySync(); // Sync for faster small data
           let scoresArray = scores[0].slice();
           let maxIndex = scoresArray.indexOf(Math.max(...scoresArray));
           let predicted = scoreClassNames[maxIndex];
           let confidence = scoresArray[maxIndex];
-          const allowed = getAllowedDoodles(currentMission);
           if (!allowed.includes(predicted)) {
             predicted = 'unknown';
             confidence = 0;
@@ -4340,27 +4356,38 @@ document.getElementById('variety-bonus-btn').addEventListener('click', () => {
             predicted = scoreClassNames[maxIndex];
             confidence = scoresArray[maxIndex];
           }
-          scoreDetectedDoodles.push(predicted);
-          scoreConfidences.push(confidence);
-        }
-      }
-      scoreBuildBoard();
-      // Hide loading icon after detection completes
-      document.getElementById('loading-container').style.display = 'none';
-      // Show review
-      document.getElementById('score-review-container').style.display = 'flex';
-      document.getElementById('score-buttons-container').style.display = 'flex'; // Show container with both buttons
-      document.getElementById('score-export-btn').style.display = 'block';
-      document.getElementById('score-score-btn').style.display = 'block';
-      renderReviewRows();
-      document.getElementById('score-tweak-prompt').textContent = "Make sure your doodles have been identified correctly. Tap misplaced doodles to correct them.";
-      document.getElementById('score-tweak-prompt').style.display = 'block';
-      // Update status
-      scoreStatusEl.textContent = "Review detections below. Tap snippets to correct.";
-      scoreStatusEl.style.display = 'block';
+          return { predicted, confidence };
+        });
+      })());
+      idx++;
     }
+  }
+  // Process in batches with Promise.all for concurrency
+  for (let i = 0; i < tasks.length; i += batchSize) {
+    const batch = tasks.slice(i, i + batchSize);
+    const results = await Promise.all(batch);
+    results.forEach(({ predicted, confidence }) => {
+      scoreDetectedDoodles.push(predicted);
+      scoreConfidences.push(confidence);
+    });
+  }
+  scoreBuildBoard();
+  // Hide loading icon after detection completes
+  document.getElementById('loading-container').style.display = 'none';
+  // Show review
+  document.getElementById('score-review-container').style.display = 'flex';
+  document.getElementById('score-buttons-container').style.display = 'flex'; // Show container with both buttons
+  document.getElementById('score-export-btn').style.display = 'block';
+  document.getElementById('score-score-btn').style.display = 'block';
+  renderReviewRows();
+  document.getElementById('score-tweak-prompt').textContent = "Make sure your doodles have been identified correctly. Tap misplaced doodles to correct them.";
+  document.getElementById('score-tweak-prompt').style.display = 'block';
+  // Update status
+  scoreStatusEl.textContent = "Review detections below. Tap snippets to correct.";
+  scoreStatusEl.style.display = 'block';
+}
 
-    function renderReviewRows() {
+function renderReviewRows() {
       const reviewContainer = document.getElementById('score-review-container');
       reviewContainer.innerHTML = '';
       const uniqueDoodles = [...new Set(scoreDetectedDoodles.filter(d => d !== 'unknown'))].sort();
