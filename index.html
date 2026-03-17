@@ -318,6 +318,21 @@
       /* No anticipation (y1=0), no overshoot (y2=1) */
     }
 
+    #header-bg.slide-in {
+  transform: translateY(-100%);
+  transition: transform 0.8s ease-out;
+}
+#header-bg.slide-in.active {
+  transform: translateY(0);
+}
+#footer-bg.slide-in {
+  transform: translateY(100%);
+  transition: transform 0.8s ease-out;
+}
+#footer-bg.slide-in.active {
+  transform: translateY(0);
+}
+
     @keyframes spinMain {
       0% {
         transform: translate(-50%, -50%) rotate(0deg) scale(1);
@@ -2321,6 +2336,101 @@
 </head>
 
 <body>
+  <div id="loading-screen">
+    <style>
+  #loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #ffffff; /* White bg – or match your theme */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000; /* Super high to cover everything */
+    font-family: 'Fira Sans', sans-serif;
+    font-size: 5vw; /* Responsive text */
+    color: #222;
+    flex-direction: column;
+    gap: 2vw;
+    opacity: 1; /* ← NEW: Explicit base opacity for fade-out transition */
+    transition: opacity 0.6s ease-out;
+  }
+  /* Adapted from score modal loading styles – scaled for small container */
+  #app-loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center gears horizontally */
+    justify-content: center; /* Center vertically within container */
+    gap: 0;
+    height: auto; /* Size to content */
+    width: auto; /* Fit content */
+    animation: slideInTop 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+  }
+  #app-loading-container.sliding-out {
+    animation: slideOutBottom 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+  }
+  @keyframes slideInTop {
+    from { transform: translateY(-100vh); }
+    to { transform: translateY(0); }
+  }
+  @keyframes slideOutBottom {
+    from { transform: translateY(0); }
+    to { transform: translateY(100vh); }
+  }
+  .loading-icons {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+  }
+  #app-loading-icon {
+    width: 4dvh !important; /* Doubled from 2dvh */
+    aspect-ratio: 1/1;
+    flex-shrink: 0;
+    background-image: url('images/gear1.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 0;
+    margin: 0;
+    animation: spin 1s linear infinite;
+  }
+  #app-loading-icon2 {
+    width: 8dvh !important; /* Doubled from 4dvh */
+    aspect-ratio: 1/1;
+    flex-shrink: 0;
+    background-image: url('images/gear2.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 0;
+    animation: spin-reverse 2s linear infinite;
+  }
+  #app-loading-icon,
+  #app-loading-icon2 {
+    margin-left: -1.25dvh; /* Doubled from -0.625dvh */
+    padding: 0;
+  }
+  @keyframes spin-reverse {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(-360deg); }
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+</style>
+  <div id="app-loading-container">
+    <div class="loading-icons">
+      <div id="app-loading-icon"></div>
+      <div id="app-loading-icon2"></div>
+    </div>
+  </div>
+</div>
   <!-- ANIMATED BACKGROUND IMAGES -->
   <div id="header-bg">
     <img src="images/greyheader.png" alt="">
@@ -5241,7 +5351,74 @@ async function runScoringAnimation() {
     });
 
     // Start with main menu
-    showMainMenu();
+    // Comprehensive list of ALL images used (from static HTML + JS arrays like allPossibleDoodles/customImages + points/missions/etc.)
+// I extracted this from your code – it's unique/ deduped to avoid waste.
+const imagePaths = [
+  'images/greyheader.png', 'images/yellowfooter.png', 'images/guidebutton.png', 'images/menu.png', 'images/learnbutton.png',
+  'images/shufflebutton.png', 'images/shufflebuttonoutline.png', 'images/portfoliobutton.png', 'images/audio.png', 'images/scorebutton.png',
+  'images/doodlebashlogo.png', 'images/close.png', 'images/closewhite.png', 'images/notebook.png', 'images/gear1.png', 'images/gear2.png',
+  'images/rawcat.png', 'images/new.png', 'images/varietybonusgrid.png', 'images/varietybonus.png', 'images/cube.png', 'images/purplepointbubble.png',
+  'images/blackpointbubble.png', 'images/circle.png', 'images/square.png', 'images/triangle.png', 'images/line.png', 'images/dot.png',
+  'images/lens.png', 'images/halfcircle.png', 'images/drop.png', 'images/teeth.png', 'images/cylinder.png', 'images/cube.png',
+  'images/pyramid.png', 'images/cloud.png', 'images/coin.png', 'images/smiley.png', 'images/letter.png', 'images/house.png',
+  'images/die.png', 'images/piano.png', 'images/pizza.png', 'images/star.png', 'images/wireless.png', 'images/music.png',
+  'images/planet.png', 'images/sword.png', 'images/fish.png', 'images/umbrella.png', 'images/boat.png', 'images/butterfly.png',
+  'images/heart.png', 'images/turd.png', 'images/flower.png', 'images/crown.png', 'images/cat.png', 'images/rocket.png',
+  'images/mug.png', 'images/toiletpaper.png', 'images/chest.png', 'images/present.png', 'images/diamond.png', 'images/icecream.png',
+  'images/rawcircle.png', 'images/rawsquare.png', 'images/rawtriangle.png', 'images/rawline.png', 'images/rawdot.png',
+  'images/rawlens.png', 'images/rawhalfcircle.png', 'images/rawdrop.png', 'images/rawteeth.png', 'images/rawcylinder.png',
+  'images/rawcube.png', 'images/rawpyramid.png', 'images/rawcloud.png', 'images/rawcoin.png', 'images/rawsmiley.png',
+  'images/rawletter.png', 'images/rawhouse.png', 'images/rawdie.png', 'images/rawpiano.png', 'images/rawpizza.png',
+  'images/rawstar.png', 'images/rawwireless.png', 'images/rawmusic.png', 'images/rawplanet.png', 'images/rawsword.png',
+  'images/rawfish.png', 'images/rawumbrella.png', 'images/rawboat.png', 'images/rawbutterfly.png', 'images/rawheart.png',
+  'images/rawturd.png', 'images/rawflower.png', 'images/rawcrown.png', 'images/rawcat.png', 'images/rawrocket.png',
+  'images/rawmug.png', 'images/rawtoiletpaper.png', 'images/rawchest.png', 'images/rawpresent.png', 'images/rawdiamond.png',
+  'images/rawicecream.png', 'images/gettingstarted1ptgoal.png', 'images/gettingstarted2ptgoal.png', 'images/gettingstarted3ptgoal.png',
+  'images/gettingstarted4ptgoal.png', 'images/gettingstarted5ptgoal.png', 'images/note1.png', 'images/note2.png',
+  'images/note3.png', 'images/guidebutton.png', 'images/minus2pt.png', 'images/1pt.png', 'images/2pt.png',
+  'images/3pt.png', 'images/4pt.png', 'images/5pt.png', 'images/6pt.png', 'images/mission1header.png',
+  'images/mission2header.png', 'images/mission3header.png', 'images/mission4header.png', 'images/mission5header.png'
+];
+
+function preloadImages() {
+  return Promise.all(imagePaths.map(path => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = path;
+      img.onload = resolve;
+      img.onerror = () => {
+        console.warn(`Failed to preload ${path} – continuing anyway`); // Log but don't halt
+        resolve(); // Don't reject (app still runs even if one fails)
+      };
+    });
+  }));
+}
+
+async function initApp() {
+  const startTime = Date.now();
+  try {
+    await preloadImages();
+    const elapsed = Date.now() - startTime;
+    const minTime = 1500; // 1.5s
+    if (elapsed < minTime) {
+      await new Promise(resolve => setTimeout(resolve, minTime - elapsed));
+    }
+    showMainMenu(); // Load menu behind loading screen
+    // Slide out gears
+    const loadingContainer = document.getElementById('app-loading-container');
+    loadingContainer.classList.add('sliding-out');
+    await new Promise(resolve => setTimeout(resolve, 400)); // Shorter wait (mid-slide)
+    // Fade out loading screen to reveal menu
+    const loadingScreen = document.getElementById('loading-screen');
+    loadingScreen.style.opacity = '0';
+    await new Promise(resolve => setTimeout(resolve, 600)); // Fade duration
+    loadingScreen.style.display = 'none';
+  } catch (e) {
+    console.error('Preload error:', e);
+    document.getElementById('loading-screen').textContent = 'Error loading assets – please refresh';
+  }
+}
+initApp();
     // After document ready/event listeners, add this to create sliders dynamically (or add to HTML if preferred)
     const audioControls = document.getElementById('audio-controls');
 
