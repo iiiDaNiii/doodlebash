@@ -2639,52 +2639,56 @@
       "note1", // NEW
       "note2", // NEW
       "note3",  // NEW
-      "guidebutton"
+      "guidebutton",
+      "black1pt"
     ];
-
+    
     const doodleDescriptions = {
-      circle: "{circle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
-      square: "{square} is a basic shape that can merge to create many doodles (see Doodle Guide).",
-      triangle: "{triangle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
-      dot: "{dot} is a basic shape that can merge to create many doodles (see Doodle Guide).",
-      line: "{line} is a basic shape that can merge to create many doodles (see Doodle Guide).",
-      drop: "{drop} is an intermediate shape that can merge to create {heart}, {flower}, and {turd}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {mug}, {umbrella}, and {cloud}.",
-      teeth: "{teeth} is an intermediate shape that can merge to create {cat}, {rocket}, and {crown}.",
-      lens: "{lens} is an intermediate shape that can merge to create {rocket}, {planet}, and {fish}.",
-      halfcircle: "{halfcircle} is an intermediate shape that can merge to create {chest}, {butterfly}, and {umbrella}.",
-      boat: "{boat} scores {2pt} (+{1pt} per {fish} <i><b>below</b></i> on <i><b>same page</b></i> +{1pt} per {star} <i><b>above</b></i> on <i><b>other page</b></i>).",
-      butterfly: "{butterfly} scores {1pt} (+{1pt} per {flower} in largest {flower} <i><b>group</b></i>.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {cat}.",
-      cat: "{cat} scores {3pt} (+{2pt} per <i><b>surrounding</b></i> {fish}/{butterfly}/{turd})",
-      chest: "{chest} scores {2pt} per <i><b>surrounding</b></i> {coin}/{diamond}/{crown}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
-      cloud: "{cloud} scores {1pt} per {drop} <i><b>below</b></i> on <i><b>same page</b></i>.",
-      coin: "{coin} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
-      crown: "{crown} scores {3pt} (+{4pt} if {smiley} is <i><b>directly-below</b></i>).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
-      cube: "{cube} is an intermediate shape that can merge to create {chest} or {present}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} per set of {cube}{cylinder}{pyramid}.",
-      cylinder: "{cylinder} is an intermediate shape that can merge to create {mug} or {toiletpaper}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} per set of {cube}{cylinder}{pyramid}.",
-      diamond: "{diamond} scores {4pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
-      die: "{die} copies the value of a <i><b>surrounding</b></i> doodle.",
-      flower: "{flower} scores {2pt} (+{2pt} if {heart} is <i><b>directly-above</b></i>).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {butterfly}.",
-      heart: "{heart} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {letter}, {music}, and {flower}.",
-      house: "{house} scores {1pt} (+{1pt} per <i><b>surrounding</b></i> {smiley}/{wireless}).",
-      icecream: "{icecream} scores {4pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {smiley}.",
-      letter: "{letter} scores {1pt} (+{3pt} if {heart} is <i><b>directly-above</b></i>). Contributes to scoring for{present}.",
-      mug: "{mug} scores {2pt} (+{2pt} if {drop} is <i><b>directly-above</b></i>).",
-      music: "{music} scores {1pt} (+{2pt} if {heart} is <i><b>directly-above</b></i>).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {piano}.",
-      piano: "{piano} scores {1pt} per <i><b>column</b></i> with {music} on <i><b>any page</b></i>.",
-      pizza: "{pizza} scores {3pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {smiley}.",
-      planet: "{planet} scores {1pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {rocket} and {star}.",
-      present: "{present} scores {4pt} (+{2pt} if {letter} is <i><b>directly left or right</b></i>).",
-      pyramid: "{pyramid} is an intermediate shape that can merge to create {diamond} or {icecream}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} per set of {cube}{cylinder}{pyramid}.",
-      rocket: "{rocket} scores {2pt} (+{3pt} if {cloud} is <i><b>directly-below</b></i> +{1pt} per {planet}/{star} <b><i>above</i></b> on same page.",
-      smiley: "{smiley} scores {1pt} (+{2pt} per <i><b>surrounding</b></i> {pizza}/{icecream}).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
-      star: "{star} scores {2pt} (+{1pt} per <b><i>surrounding</i></b> {planet}).<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {rocket} and {boat}.",
-      sword: "{sword} scores {5pt}.",
-      toiletpaper: "{toiletpaper} scores {1pt} (+{1pt} per <i><b>surrounding</b></i> {turd}).",
-      turd: "{turd} scores {minus2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {toiletpaper} and {cat}.",
-      umbrella: "{umbrella} scores {1pt} per {drop} <i><b>above</b></i> on the <i><b>same page</b></i>",
-      wireless: "{wireless} is used to merge non-adjacent doodles. Circle a {wireless} to use it, then individually circle any doodles you'd like to merge.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
-      fish: "{fish} scores {1pt} per <i><b>surrounding</b></i> {fish}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {boat}."
-    };
+  circle: "{circle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+  square: "{square} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+  triangle: "{triangle} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+  dot: "{dot} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+  line: "{line} is a basic shape that can merge to create many doodles (see Doodle Guide).",
+
+  drop: "{drop} is an intermediate shape that can merge to create {heart}, {flower}, and {turd}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {cloud}, {mug}, and {umbrella}.",
+  teeth: "{teeth} is an intermediate shape that can merge to create {cat}, {rocket}, and {crown}.",
+  lens: "{lens} is an intermediate shape that can merge to create {rocket}, {planet}, and {fish}.",
+  halfcircle: "{halfcircle} is an intermediate shape that can merge to create {chest}, {butterfly}, and {umbrella}.",
+
+  boat: "{boat} scores {2pt} + {1pt} PER {fish} <i><b>below</b></i> on <i><b>same page</b></i>&nbsp + {2pt} if any {star} is <i><b>above</b></i> on <i><b>same page</b></i>.",
+  butterfly: "{butterfly} scores {2pt} + {1pt} PER {flower} in largest <i><b>group</b></i>.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {cat}.",
+  cat: "{cat} scores {3pt} + {2pt} PER <i><b>surrounding</b></i> {fish}/{butterfly}/{turd}.",
+  chest: "{chest} scores {2pt} PER <i><b>surrounding</b></i> {coin}/{diamond}/{crown}.",
+  cloud: "{cloud} scores {1pt} PER {drop} <i><b>below</b></i> on <i><b>same page</b></i>.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {rocket}.",
+  coin: "{coin} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
+  crown: "{crown} scores {3pt} + {4pt} if {smiley} is <i><b>directly below</b></i>.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
+  cube: "{cube} is an intermediate shape that can merge to create {chest} or {present}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} PER <i><b>set</b></i> of {cube}{cylinder}{pyramid}.",
+  cylinder: "{cylinder} is an intermediate shape that can merge to create {mug} or {toiletpaper}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} PER <i><b>set</b></i> of {cube}{cylinder}{pyramid}.",
+  diamond: "{diamond} scores {4pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
+  die: "{die} copies the value of a <i><b>surrounding</b></i> doodle.",
+  flower: "{flower} scores {2pt} + {2pt} if {heart} is <i><b>directly above</b></i>.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {butterfly}.",
+  heart: "{heart} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {flower}, {letter}, and {music}.",
+  house: "{house} scores {1pt} + {1pt} PER <i><b>surrounding</b></i> {smiley}/{wireless}.",
+  icecream: "{icecream} scores {4pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {smiley}.",
+  letter: "{letter} scores {1pt} + {3pt} if {heart} is <i><b>directly above</b></i>. Contributes to scoring for {present}.",
+  mug: "{mug} scores {2pt} + {2pt} if {drop} is <i><b>directly above</b></i>.",
+  music: "{music} scores {1pt} + {2pt} if {heart} is <i><b>directly above</b></i>.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {piano}.",
+  piano: "{piano} scores {1pt} PER <i><b>column</b></i> with {music} on <i><b>any page</b></i>.",
+  pizza: "{pizza} scores {3pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {smiley}.",
+  planet: "{planet} scores {1pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {rocket} and {star}.",
+  present: "{present} scores {4pt} + {2pt} if {letter} is <i><b>directly left or right</b></i>.",
+  pyramid: "{pyramid} is an intermediate shape that can merge to create {diamond} or {icecream}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} PER <i><b>set</b></i> of {cube}{cylinder}{pyramid}.",
+  rocket: "{rocket} scores {2pt} + {3pt} if {cloud} is <i><b>directly below</b></i>&nbsp + {1pt} PER {planet}/{star} <i><b>above</b></i> on <i><b>same page</b></i>.",
+  smiley: "{smiley} scores {1pt} + {2pt} PER <i><b>surrounding</b></i> {pizza}/{icecream}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
+  star: "{star} scores {2pt} + {1pt} PER <i><b>surrounding</b></i> {planet}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {boat} and {rocket}.",
+  sword: "{sword} scores {5pt} - {black1pt} PER <b><i>other</i></b> {sword} on the <i><b>same page</b></i>&nbsp (the score can't be negative).",
+  toiletpaper: "{toiletpaper} scores {1pt} + {7pt} PER <i><b>surrounding</b></i> {turd}.",
+  turd: "{turd} scores {minus2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {cat} and {toiletpaper}.",
+  umbrella: "{umbrella} scores {1pt} PER {drop} <i><b>above</b></i> on the <i><b>same page</b></i>.",
+  wireless: "{wireless} is used to merge non-adjacent doodles. Circle a {wireless} to use it, then individually circle any doodles you'd like to merge.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
+  fish: "{fish} scores {1pt} + {1pt} PER <i><b>surrounding</b></i> {fish}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {boat} and {cat}."
+};
+    
     const doodleMerges = [
       { inputs: ["circle", "square"], output: "cylinder" },
       { inputs: ["circle", "circle"], output: "lens" },
@@ -2763,10 +2767,12 @@
            data-doodle="${lower}"
            style="cursor:pointer;">`;
         }
-        if (/^\d+pt$/.test(lower) || lower === 'minus2pt') {
-          const ptFile = lower === 'minus2pt' ? 'minus2pt' : lower;
-          return `<img src="images/${ptFile}.png" class="inline-doodle" alt="${key}">`;
-        }
+        if (/^\d+pt$/.test(lower) || lower === 'minus2pt' || lower === 'black1pt') {
+      let ptFile = lower;
+      if (lower === 'minus2pt') ptFile = 'minus2pt';
+      else if (lower === 'black1pt') ptFile = 'black1pt';
+      return `<img src="images/${ptFile}.png" class="inline-doodle" alt="${key}">`;
+    }
         return key;
       });
     }
@@ -2805,15 +2811,15 @@
       ['cat', 'icecream', 'toiletpaper', 'turd', 'present', 'wireless'] // Mission 5
     ];
 
-    // Add these constant arrays right after const missionDoodles = [...] (before getAllowedDoodles function)
-    const missionInstructions = [
-      '', // Placeholder for index 0
-      'For your first game, there are 12 doodles to discover:<br><br>{cube}{cylinder}{pyramid}{drop}{letter}{house}{smiley}{coin}{music}{pizza}{heart}{mug}<br><br> Use the {guidebutton} as a reference and try to learn as many of them as you can in one game.', // Mission 1
-      '<p>You’re doing great! Time to learn a few more doodles! We’ll add these ones to the mix:</p><br><p>{lens}{teeth}{rocket}{planet}{star}{piano}</p><br><p>Try to draw as many of the new doodles as you can!</p>', // Mission 2
-      'New doodles bring new scoring opportunities. Let’s see if you can handle six more!<br><br>{halfcircle}{die}{umbrella}{crown}{diamond}{chest}<br><br>', // Mission 3
-      'New doodles unlocked! The cloud {cloud} is yet another way to score {drop} and there are several new advanced doodles!<br><br>{cloud}{sword}{butterfly}{flower}{fish}{boat}<br><br>', // Mission 4
-      'From this point on, you\'ll be playing with the complete Doodle Guide.<br><br> You’ve now unlocked a final set of doodles to complete your repertoire. Five advanced doodles offer even more clever scoring opportunities, and the Wireless {wireless} symbol comes with a powerful, in-game ability!<br><br>{cat}{icecream}{toiletpaper}{turd}{present}{wireless}<br><br>You now also earn a <i>Variety Bonus</i> based on how many uniqe doodles are in your notebook!<br><br>' // Mission 5
-    ];
+    
+const missionInstructions = [
+  '', // Placeholder for index 0
+  'For your first game, there are 12 doodles to discover:<br><br>{cube}{cylinder}{pyramid}{drop}{letter}{house}{smiley}{coin}{music}{pizza}{heart}{mug}<br><br> Use the {guidebutton} as a reference and try to learn as many of them as you can in one game.', // Mission 1
+  '<p>You’re doing great! Time to learn a few more doodles! We’ll add these ones to the mix:</p><br><p>{lens}{teeth}{rocket}{planet}{star}{piano}</p><br><p>Try to draw as many of the new doodles as you can!</p>', // Mission 2
+  'New doodles bring new scoring opportunities. Let’s see if you can handle six more!<br><br>{halfcircle}{die}{umbrella}{crown}{diamond}{chest}<br><br>', // Mission 3
+  'New doodles unlocked! The cloud {cloud} is yet another way to score {drop} and there are several new advanced doodles!<br><br>{cloud}{sword}{butterfly}{flower}{fish}{boat}<br><br>', // Mission 4  ← comma added here
+  'From this point on, you’ll be playing with the complete Doodle Guide.<br><br> You’ve now unlocked a final set of doodles to complete your repertoire. Five advanced doodles offer even more clever scoring opportunities, and the Wireless {wireless} symbol comes with a powerful, in-game ability!<br><br>{cat}{icecream}{toiletpaper}{turd}{present}{wireless}<br><br>You now also earn a <i>Variety Bonus</i> based on how many unique scoring doodle types are in your notebook!<img src="images/varietybonusgrid.png" style="display:block; width:100%; height:auto; margin:12px 0 16px 0; border-radius:8px;">' // Mission 5 — no comma needed here (last item)
+];
 
     const missionGoals = [
       '', // Placeholder for index 0
@@ -2834,7 +2840,7 @@
 
       '<div class="note-heading">{note1} {butterfly} scores your largest <i>group</i> of adjacent {flower}</div><p class="note-paragraph">To be considered a “group” of {flower} for {butterfly}scoring, the {flower} must be orthogonally adjacent (diagonal doesn’t count).</p><div class="note-heading">{note2} {cloud} and {umbrella} can both score the same {drop}</div><p class="note-paragraph">Do with that information what you will.</p>', // Mission 4
 
-      '<div class="note-heading">{note1} The {wireless} doodle allows you to merge doodles that are not adjacent.</div><p class="note-paragraph">When you are ready to <i>Merge</i>, simply circle the {wireless} symbol, and then individually circle any doodles in your Notebook that you would like to Merge.</p><div class="note-heading">{note2} Old doodles have new scoring opportunities.</div><p class="note-paragraph">Some familiar doodles now have new ways to score. Review the scoring criteria for these doodles: {house}{smiley}{cat}</p><div class="note-heading">{note3} {turd} is worth negative points. However...</div><p class="note-paragraph">You can earn your points back quickly with well placed <toiletpaper> and <cat>.</p>' // Mission 5
+      '<div class="note-heading">{note1} The {wireless} doodle allows you to merge doodles that are not adjacent.</div><p class="note-paragraph">When you are ready to <i>Merge</i>, simply circle the {wireless} symbol, and then individually circle any doodles in your Notebook that you would like to Merge.</p><div class="note-heading">{note2} Old doodles have new scoring opportunities.</div><p class="note-paragraph">Some familiar doodles now have new ways to score. Review the scoring criteria for these doodles: {house}{smiley}{cat}</p><div class="note-heading">{note3} {turd} is worth negative points. However...</div><p class="note-paragraph">You can earn your points back quickly with well placed {toiletpaper} and {cat}.</p>' // Mission 5
     ];
 
     const baseDoodles = ['circle', 'square', 'triangle', 'dot', 'line'];
@@ -4603,7 +4609,7 @@ function renderReviewRows() {
       { type: 'turd', base: -2 }, { type: 'music', calc: calculateMusic }, { type: 'planet', base: 1 },
       { type: 'star', calc: calculateStar }, { type: 'flower', calc: calculateFlower }, { type: 'coin', base: 2 },
       { type: 'heart', base: 2 }, { type: 'pizza', base: 3 }, { type: 'diamond', base: 4 },
-      { type: 'icecream', base: 4 }, { type: 'sword', base: 5 }, { type: 'present', calc: calculatePresent },
+      { type: 'icecream', base: 4 }, { type: 'sword', calc: calculateSword }, { type: 'present', calc: calculatePresent },
       { type: '3dset', calc: calculate3DSet }, { type: 'chest', calc: calculateChest },
       { type: 'rocket', calc: calculateRocket }, { type: 'cat', calc: calculateCat },
       { type: 'cloud', calc: calculateCloud }, { type: 'umbrella', calc: calculateUmbrella },
@@ -4853,7 +4859,54 @@ function calculateSmiley() {
   return { total, perCellList };
 }
 
-    function calculateLetter() {
+function calculateSword() {
+  let total = 0, perCellList = [];
+
+  // Group swords by page (left = cols 0-4, right = cols 6-10)
+  const leftSwords = [];
+  const rightSwords = [];
+
+  for (let r = 0; r < 7; r++) {
+    for (let c = 0; c < 11; c++) {
+      if (scoreBoard[r][c] === 'sword') {
+        if (c < 5) leftSwords.push({ r, c });
+        else if (c > 5) rightSwords.push({ r, c });
+      }
+    }
+  }
+
+  // Helper: score per sword = max(0, 5 - (total swords on page - 1))
+  function getPageScore(swordCount) {
+    if (swordCount === 0) return 0;
+    return Math.max(0, 5 - (swordCount - 1));
+  }
+
+  // Left page
+  const leftCount = leftSwords.length;
+  if (leftCount > 0) {
+    const ptsPerSword = getPageScore(leftCount);
+    leftSwords.forEach(({ r, c }) => {
+      total += ptsPerSword;
+      perCellList.push({ r, c, pts: ptsPerSword });
+      scorePerCellScore[r][c] += ptsPerSword;
+    });
+  }
+
+  // Right page
+  const rightCount = rightSwords.length;
+  if (rightCount > 0) {
+    const ptsPerSword = getPageScore(rightCount);
+    rightSwords.forEach(({ r, c }) => {
+      total += ptsPerSword;
+      perCellList.push({ r, c, pts: ptsPerSword });
+      scorePerCellScore[r][c] += ptsPerSword;
+    });
+  }
+
+  return { total, perCellList };
+}
+
+function calculateLetter() {
       let total = 0, perCellList = [];
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'letter') {
@@ -4979,10 +5032,9 @@ function calculateFlower() {
   let total = 0, perCellList = [];
   for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
     if (scoreBoard[r][c] === 'boat') {
-      // Base points
-      let pts = 2;
+      let pts = 2; // base
 
-      // === 1. Fish below on SAME page (unchanged) ===
+      // === 1. Fish below on SAME page (unchanged: +1 per fish) ===
       const pageCols = c < 5 ? [0, 1, 2, 3, 4] : [6, 7, 8, 9, 10];
       let fishCount = 0;
       for (let rr = r + 1; rr < 7; rr++) {
@@ -4992,15 +5044,18 @@ function calculateFlower() {
       }
       pts += fishCount * 1;
 
-      // === 2. Stars ABOVE on the OTHER page ===
-      const otherPageCols = c < 5 ? [6, 7, 8, 9, 10] : [0, 1, 2, 3, 4];
-      let starCount = 0;
-      for (let rr = 0; rr < r; rr++) {           // rows above
-        for (let pc of otherPageCols) {
-          if (scoreBoard[rr][pc] === 'star') starCount++;
+      // === 2. NEW: +2 flat if ANY star is above on SAME page ===
+      let hasStarAbove = false;
+      for (let rr = 0; rr < r; rr++) {           // rows strictly above
+        for (let pc of pageCols) {
+          if (scoreBoard[rr][pc] === 'star') {
+            hasStarAbove = true;
+            break; // no need to keep counting
+          }
         }
+        if (hasStarAbove) break; // early exit
       }
-      pts += starCount * 1;
+      if (hasStarAbove) pts += 2;
 
       total += pts;
       perCellList.push({ r, c, pts });
@@ -5009,7 +5064,7 @@ function calculateFlower() {
   }
   return { total, perCellList };
 }
-    /* Replace the existing function calculateDie() in <script> with this (skips 3D neighbors) */
+
     function calculateDie() {
       let total = 0, perCellList = [];
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
