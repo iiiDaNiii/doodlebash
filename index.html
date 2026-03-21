@@ -1807,7 +1807,7 @@
       border-radius: 1.5cqh;
       display: none;
       flex-direction: column;
-      justify-content: flex-start;
+      justify-content: center;
       /* ← Changed from flex-start to center for vertical centering */
       align-items: center;
       padding-top: 15cqi;
@@ -2973,6 +2973,7 @@ const missionInstructions = [
         updateAnimatedBackgrounds();
         menuAdjustedTimeout = null; // Reset after run
       }, 800); // Longer delay to ensure DOM fully painted after menu fall-in
+      setTimeout(updateAnimatedBackgrounds, 950);
 
       // NEW: Delay model preload until after animations complete (avoids main-thread hitch during stagger)
       setTimeout(preloadScoreModel, 1000); // 1000ms > animation duration (0.6s) + max stagger (~500ms) + buffer
@@ -5636,21 +5637,19 @@ async function initApp() {
   try {
     await preloadImages();
     const elapsed = Date.now() - startTime;
-    
-    const minTime = 2800; // ← ONLY CHANGE: was 1500ms, now waits for full logo animation
-
+    const minTime = 2800; // keeps your logo animation perfect
     if (elapsed < minTime) {
       await new Promise(resolve => setTimeout(resolve, minTime - elapsed));
     }
-    
+
     showMainMenu(); // Load menu behind loading screen (exactly as original)
-    
-    // Fade out loading screen to reveal menu (no gear code anymore)
+
+    // Fade out loading screen to reveal menu
     const loadingScreen = document.getElementById('loading-screen');
     loadingScreen.style.opacity = '0';
-    await new Promise(resolve => setTimeout(resolve, 600)); // Fade duration (exactly as original)
+    await new Promise(resolve => setTimeout(resolve, 600));
     loadingScreen.style.display = 'none';
-    
+
   } catch (e) {
     console.error('Preload error:', e);
     document.getElementById('loading-screen').textContent = 'Error loading assets – please refresh';
