@@ -5638,17 +5638,16 @@ async function initApp() {
     await preloadImages();
 
     const elapsed = Date.now() - startTime;
-    const minHoldTime = 2400; // exactly matches your logo animation length + small buffer
+    const minHoldTime = 2400; // your current value — change if you want
 
     if (elapsed < minHoldTime) {
       await new Promise(r => setTimeout(r, minHoldTime - elapsed));
     }
 
-    // === ORIGINAL BEHAVIOR RESTORED ===
-    // Render the main menu BEHIND the loading screen first
+    // Render menu behind loading screen
     showMainMenu();
 
-    // Now fade out the new animated logo for polish
+    // Gentle logo fade
     const logoContainer = document.getElementById('loading-logo-container');
     if (logoContainer) {
       logoContainer.style.transition = 'opacity 0.85s ease-out, transform 0.85s ease-out';
@@ -5656,19 +5655,26 @@ async function initApp() {
       logoContainer.style.transform = 'scale(0.94)';
     }
 
-    // Fade out the entire loading screen (reveals menu instantly, no flash)
     const loadingScreen = document.getElementById('loading-screen');
     loadingScreen.style.transition = 'opacity 0.85s ease-out';
     loadingScreen.style.opacity = '0';
 
-    await new Promise(r => setTimeout(r, 900)); // matches fade duration
+    await new Promise(r => setTimeout(r, 900));
 
     loadingScreen.style.display = 'none';
 
+    // ── CRITICAL FIX: Force correct layout after loading screen is gone ──
+    setTimeout(() => {
+      void document.body.offsetHeight;     // force reflow
+      updateAnimatedBackgrounds();         // re-calculate header/footer heights
+      const headerBg = document.getElementById('header-bg');
+      const footerBg = document.getElementById('footer-bg');
+      headerBg.classList.add('adjusted');
+      footerBg.classList.add('adjusted');
+    }, 50);
+
   } catch (e) {
     console.error('Preload error:', e);
-    document.getElementById('loading-screen').innerHTML = 
-      '<p style="color:#000; font-size:5cqi; text-align:center;">Error loading assets – please refresh</p>';
   }
 }
 
