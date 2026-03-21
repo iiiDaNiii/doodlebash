@@ -2354,12 +2354,10 @@
 
     #loading-logo-container {
       position: relative;
-      width: min(82vw, 52dvh);
-      height: min(82vw, 52dvh);
-      max-width: 500px;
-      max-height: 500px;
-      overflow: hidden;
+      width: 40dvh;
+      height: 40dvh;
       margin: 0 auto;
+      container-type:size;
     }
 
     .logo-element {
@@ -5640,7 +5638,7 @@ async function initApp() {
     await preloadImages();
 
     const elapsed = Date.now() - startTime;
-    const minHoldTime = 3400; // exactly matches your logo animation length + small buffer
+    const minHoldTime = 2400; // exactly matches your logo animation length + small buffer
 
     if (elapsed < minHoldTime) {
       await new Promise(r => setTimeout(r, minHoldTime - elapsed));
