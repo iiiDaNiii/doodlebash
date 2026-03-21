@@ -2336,101 +2336,170 @@
 </head>
 
 <body>
+  
   <div id="loading-screen">
-    <style>
-  #loading-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100dvh;
-    background: #ffffff; /* White bg – or match your theme */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000; /* Super high to cover everything */
-    font-family: 'Fira Sans', sans-serif;
-    font-size: 5vw; /* Responsive text */
-    color: #222;
-    flex-direction: column;
-    gap: 2vw;
-    opacity: 1; /* ← NEW: Explicit base opacity for fade-out transition */
-    transition: opacity 0.6s ease-out;
-  }
-  /* Adapted from score modal loading styles – scaled for small container */
-  #app-loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center gears horizontally */
-    justify-content: center; /* Center vertically within container */
-    gap: 0;
-    height: auto; /* Size to content */
-    width: auto; /* Fit content */
-    animation: slideInTop 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
-  }
-  #app-loading-container.sliding-out {
-    animation: slideOutBottom 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
-  }
-  @keyframes slideInTop {
-    from { transform: translateY(-100dvh); }
-    to { transform: translateY(0); }
-  }
-  @keyframes slideOutBottom {
-    from { transform: translateY(0); }
-    to { transform: translateY(100dvh); }
-  }
-  .loading-icons {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: center;
-    align-items: center;
-    gap: 0;
-  }
-  #app-loading-icon {
-    width: 4dvh !important; /* Doubled from 2dvh */
-    aspect-ratio: 1/1;
-    flex-shrink: 0;
-    background-image: url('images/gear1.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    border-radius: 0;
-    margin: 0;
-    animation: spin 1s linear infinite;
-  }
-  #app-loading-icon2 {
-    width: 8dvh !important; /* Doubled from 4dvh */
-    aspect-ratio: 1/1;
-    flex-shrink: 0;
-    background-image: url('images/gear2.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    border-radius: 0;
-    animation: spin-reverse 2s linear infinite;
-  }
-  #app-loading-icon,
-  #app-loading-icon2 {
-    margin-left: -1.25dvh; /* Doubled from -0.625dvh */
-    padding: 0;
-  }
-  @keyframes spin-reverse {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(-360deg); }
-  }
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-</style>
-  <div id="app-loading-container">
-    <div class="loading-icons">
-      <div id="app-loading-icon"></div>
-      <div id="app-loading-icon2"></div>
-    </div>
+  <style>
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 1;
+      transition: opacity 0.85s ease-out;
+    }
+
+    #loading-logo-container {
+      position: relative;
+      width: min(82vw, 52dvh);
+      height: min(82vw, 52dvh);
+      max-width: 500px;
+      max-height: 500px;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+
+    .logo-element {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      will-change: transform, opacity, mask, -webkit-mask;
+      transform: translate(0, 0);
+      box-sizing: border-box;
+    }
+
+    /* ── EXACT ORIGINAL PEN ANIMATION ── */
+    #logolpen {
+      z-index: 10;
+      opacity: 0;
+      transform: translateX(-35cqi) translateY(0cqh) rotate(90deg);
+      transform-origin: center center;
+      animation: pen-unrotate 0.6s ease-out forwards,
+                 pen-slide 250ms cubic-bezier(0.25, 0.1, 0.25, 1) 400ms forwards;
+    }
+    @keyframes pen-unrotate {
+      0%   { opacity: 0; transform: translateX(-35cqi) translateY(-50cqh) rotate(90deg); }
+      10%  { opacity: 0; transform: translateX(-35cqi) translateY(-50cqh) rotate(90deg); }
+      50%  { opacity: 1; transform: translateX(-35cqi) translateY(0cqh) rotate(0deg); }
+      100% { opacity: 1; transform: translateX(-35cqi) translateY(0cqh) rotate(0deg); }
+    }
+    @keyframes pen-slide {
+      0%   { transform: translateX(-35cqi) translateY(0cqh) rotate(5deg); }
+      100% { transform: translateX(0cqi) translateY(0cqh) rotate(0deg); }
+    }
+
+    /* Underline */
+    #logounderline {
+      opacity: 1;
+      mask-image: linear-gradient(to right, black 50%, transparent 50%);
+      -webkit-mask-image: linear-gradient(to right, black 50%, transparent 50%);
+      mask-size: 200% 100%;
+      -webkit-mask-size: 200% 100%;
+      mask-position: 100% 0;
+      -webkit-mask-position: 100% 0;
+      animation: underline-reveal .7s cubic-bezier(0.25, 0.3, 0.4, 1) 300ms forwards;
+    }
+    @keyframes underline-reveal {
+      from { mask-position: 100% 0; -webkit-mask-position: 100% 0; }
+      to   { mask-position: 0% 0; -webkit-mask-position: 0% 0; }
+    }
+
+    /* Initial states (exact from your original) */
+    #logod1, #logoo1, #logoo2, #logod2, #logoe {
+      opacity: 0;
+      transform: translateY(-25cqh);
+    }
+    #logosubtitle {
+      opacity: 0;
+      transform: translateY(22cqh);
+    }
+    #logopizza, #logocat, #logomusic {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      opacity: 0;
+    }
+
+    /* Letters (exact timing) */
+    #logod1  { animation: letter-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 700ms forwards; }
+    #logoo1  { animation: letter-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 750ms forwards; }
+    #logoo2  { animation: letter-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 800ms forwards; }
+    #logod2  { animation: letter-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 850ms forwards; }
+    #logoe   { animation: letter-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 900ms forwards; }
+    @keyframes letter-in {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Subtitle */
+    #logosubtitle {
+      animation: appear-up .5s cubic-bezier(0.34, 1.56, 0.64, 1) 1s forwards;
+    }
+    @keyframes appear-up {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Doodles — EXACT original (top for entrance + rock on transform) */
+    #logopizza { animation: doodle-in 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55) 1.1s forwards, rock 3.5s ease-in-out infinite 0s; }
+    #logocat   { animation: doodle-in 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55) 1.2s forwards, rock 3.5s ease-in-out infinite 0.5s; }
+    #logomusic { animation: doodle-in 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55) 1.3s forwards, rock 3.5s ease-in-out infinite 0.9s; }
+
+    @keyframes doodle-in {
+      from { opacity: 0; top: -32cqh; }
+      to   { opacity: 1; top: 0cqh; }
+    }
+    @keyframes rock {
+      0%, 100% { transform: translateY(0) scale(1) rotate(-4deg); }
+      50%      { transform: translateY(0) scale(1) rotate(4deg); }
+    }
+
+    /* Blue backgrounds */
+    #logoblueback1, #logoblueback2 {
+      opacity: 0;
+      transform: rotate(0deg);
+      will-change: opacity, transform;
+    }
+    #logoblueback1 {
+      animation: fade-bg 1.2s ease-in 0.5s forwards,
+                 slow-rotate 45s linear 1.2s infinite;
+    }
+    #logoblueback2 {
+      animation: fade-bg 1.5s ease-in 0.5s forwards,
+                 slow-rotate 38s linear 1.2s infinite reverse;
+    }
+    @keyframes fade-bg {
+      to { opacity: 0.35; }
+    }
+    @keyframes slow-rotate {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+
+  <div id="loading-logo-container">
+    <img id="logoblueback1" class="logo-element" src="images/logoblueback1.png" alt="">
+    <img id="logoblueback2" class="logo-element" src="images/logoblueback2.png" alt="">
+    <img id="logounderline" class="logo-element" src="images/logounderline.png" alt="">
+    <img id="logod1"        class="logo-element" src="images/logod1.png" alt="">
+    <img id="logoo1"        class="logo-element" src="images/logoo1.png" alt="">
+    <img id="logoo2"        class="logo-element" src="images/logoo2.png" alt="">
+    <img id="logod2"        class="logo-element" src="images/logod2.png" alt="">
+    <img id="logolpen"      class="logo-element" src="images/logolpen.png" alt="">
+    <img id="logoe"         class="logo-element" src="images/logoe.png" alt="">
+    <img id="logosubtitle"  class="logo-element" src="images/logosubtitle.png" alt="">
+    <img id="logopizza"     class="logo-element" src="images/logopizza.png" alt="">
+    <img id="logocat"       class="logo-element" src="images/logocat.png" alt="">
+    <img id="logomusic"     class="logo-element" src="images/logomusic.png" alt="">
   </div>
 </div>
+
   <!-- ANIMATED BACKGROUND IMAGES -->
   <div id="header-bg">
     <img src="images/greyheader.png" alt="">
@@ -2465,10 +2534,6 @@
     </div>
     <!-- Main Menu -->
     <div id="main-menu" class="menu-panel">
-      <!-- Buttons will be dynamically added here via JS -->
-      <div id="logo-container">
-        <img src="images/doodlebashlogo.png" alt="Doodle Bash Logo" style="width: 75cqi; height: auto;">
-      </div>
     </div>
 
     <!-- Arcade Sub-Menu -->
@@ -5570,28 +5635,45 @@ function preloadImages() {
 
 async function initApp() {
   const startTime = Date.now();
+
   try {
     await preloadImages();
+
     const elapsed = Date.now() - startTime;
-    const minTime = 1500; // 1.5s
-    if (elapsed < minTime) {
-      await new Promise(resolve => setTimeout(resolve, minTime - elapsed));
+    const minHoldTime = 3400; // exactly matches your logo animation length + small buffer
+
+    if (elapsed < minHoldTime) {
+      await new Promise(r => setTimeout(r, minHoldTime - elapsed));
     }
-    showMainMenu(); // Load menu behind loading screen
-    // Slide out gears
-    const loadingContainer = document.getElementById('app-loading-container');
-    loadingContainer.classList.add('sliding-out');
-    await new Promise(resolve => setTimeout(resolve, 400)); // Shorter wait (mid-slide)
-    // Fade out loading screen to reveal menu
+
+    // === ORIGINAL BEHAVIOR RESTORED ===
+    // Render the main menu BEHIND the loading screen first
+    showMainMenu();
+
+    // Now fade out the new animated logo for polish
+    const logoContainer = document.getElementById('loading-logo-container');
+    if (logoContainer) {
+      logoContainer.style.transition = 'opacity 0.85s ease-out, transform 0.85s ease-out';
+      logoContainer.style.opacity = '0';
+      logoContainer.style.transform = 'scale(0.94)';
+    }
+
+    // Fade out the entire loading screen (reveals menu instantly, no flash)
     const loadingScreen = document.getElementById('loading-screen');
+    loadingScreen.style.transition = 'opacity 0.85s ease-out';
     loadingScreen.style.opacity = '0';
-    await new Promise(resolve => setTimeout(resolve, 600)); // Fade duration
+
+    await new Promise(r => setTimeout(r, 900)); // matches fade duration
+
     loadingScreen.style.display = 'none';
+
   } catch (e) {
     console.error('Preload error:', e);
-    document.getElementById('loading-screen').textContent = 'Error loading assets – please refresh';
+    document.getElementById('loading-screen').innerHTML = 
+      '<p style="color:#000; font-size:5cqi; text-align:center;">Error loading assets – please refresh</p>';
   }
 }
+
 initApp();
     // After document ready/event listeners, add this to create sliders dynamically (or add to HTML if preferred)
     const audioControls = document.getElementById('audio-controls');
