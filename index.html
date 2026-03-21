@@ -2977,7 +2977,26 @@ const missionInstructions = [
 
       // NEW: Delay model preload until after animations complete (avoids main-thread hitch during stagger)
       setTimeout(preloadScoreModel, 1000); // 1000ms > animation duration (0.6s) + max stagger (~500ms) + buffer
+
+            // FINAL STABILIZER — forces container queries + menu centering to settle consistently on cold start
+      setTimeout(() => {
+        const menu = document.getElementById('main-menu');
+        if (!menu) return;
+        
+        void menu.offsetHeight;           // force reflow
+        void menu.offsetWidth;
+        
+        requestAnimationFrame(() => {
+          void menu.offsetHeight;
+          updateAnimatedBackgrounds();    // safe extra call — backgrounds stay perfect
+        });
+        
+        // Extra 200ms pass for mobile container-query jitter
+        setTimeout(updateAnimatedBackgrounds, 280);
+      }, 950);
     }
+    
+    
     function renderMenuButtons() {
       const menu = document.getElementById('main-menu');
       menu.innerHTML = ''; // Reset fully (no static logo)
