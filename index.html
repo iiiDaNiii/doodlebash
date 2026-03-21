@@ -5633,48 +5633,27 @@ function preloadImages() {
 
 async function initApp() {
   const startTime = Date.now();
-
   try {
     await preloadImages();
-
     const elapsed = Date.now() - startTime;
-    const minHoldTime = 2400; // your current value — change if you want
+    
+    const minTime = 2800; // ← ONLY CHANGE: was 1500ms, now waits for full logo animation
 
-    if (elapsed < minHoldTime) {
-      await new Promise(r => setTimeout(r, minHoldTime - elapsed));
+    if (elapsed < minTime) {
+      await new Promise(resolve => setTimeout(resolve, minTime - elapsed));
     }
-
-    // Render menu behind loading screen
-    showMainMenu();
-
-    // Gentle logo fade
-    const logoContainer = document.getElementById('loading-logo-container');
-    if (logoContainer) {
-      logoContainer.style.transition = 'opacity 0.85s ease-out, transform 0.85s ease-out';
-      logoContainer.style.opacity = '0';
-      logoContainer.style.transform = 'scale(0.94)';
-    }
-
+    
+    showMainMenu(); // Load menu behind loading screen (exactly as original)
+    
+    // Fade out loading screen to reveal menu (no gear code anymore)
     const loadingScreen = document.getElementById('loading-screen');
-    loadingScreen.style.transition = 'opacity 0.85s ease-out';
     loadingScreen.style.opacity = '0';
-
-    await new Promise(r => setTimeout(r, 900));
-
+    await new Promise(resolve => setTimeout(resolve, 600)); // Fade duration (exactly as original)
     loadingScreen.style.display = 'none';
-
-    // ── CRITICAL FIX: Force correct layout after loading screen is gone ──
-    setTimeout(() => {
-      void document.body.offsetHeight;     // force reflow
-      updateAnimatedBackgrounds();         // re-calculate header/footer heights
-      const headerBg = document.getElementById('header-bg');
-      const footerBg = document.getElementById('footer-bg');
-      headerBg.classList.add('adjusted');
-      footerBg.classList.add('adjusted');
-    }, 50);
-
+    
   } catch (e) {
     console.error('Preload error:', e);
+    document.getElementById('loading-screen').textContent = 'Error loading assets – please refresh';
   }
 }
 
