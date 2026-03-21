@@ -2978,31 +2978,22 @@ const missionInstructions = [
       // NEW: Delay model preload until after animations complete (avoids main-thread hitch during stagger)
       setTimeout(preloadScoreModel, 1000); // 1000ms > animation duration (0.6s) + max stagger (~500ms) + buffer
 
-                  // EDGE-SPECIFIC FINAL STABILIZER — accounts for bottom address bar + slow cqh settling in Edge
+            // FINAL STABILIZER — forces container queries + menu centering to settle consistently on cold start
       setTimeout(() => {
         const menu = document.getElementById('main-menu');
         if (!menu) return;
-
-        void menu.offsetHeight;
-        void document.body.offsetHeight;
-
+        
+        void menu.offsetHeight;           // force reflow
+        void menu.offsetWidth;
+        
         requestAnimationFrame(() => {
           void menu.offsetHeight;
-          updateAnimatedBackgrounds();
+          updateAnimatedBackgrounds();    // safe extra call — backgrounds stay perfect
         });
-
-        requestAnimationFrame(() => {
-          void menu.offsetHeight;
-          updateAnimatedBackgrounds();
-        });
-
-        // Extra safety pass for Edge's slower layout engine
-        setTimeout(() => {
-          updateAnimatedBackgrounds();
-          void menu.offsetHeight;
-        }, 650);
-
-      }, 1450); // longer delay specifically tuned for Edge
+        
+        // Extra 200ms pass for mobile container-query jitter
+        setTimeout(updateAnimatedBackgrounds, 280);
+      }, 950);
     }
     
     
@@ -5682,13 +5673,6 @@ async function initApp() {
     console.error('Preload error:', e);
     document.getElementById('loading-screen').textContent = 'Error loading assets – please refresh';
   }
-}
-
-// VisualViewport fix for Edge mobile bottom address bar (handles bar hide/resize)
-if ('visualViewport' in window) {
-  window.visualViewport.addEventListener('resize', () => {
-    setTimeout(updateAnimatedBackgrounds, 120);
-  }, { once: true });
 }
 
 initApp();
