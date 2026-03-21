@@ -2978,33 +2978,31 @@ const missionInstructions = [
       // NEW: Delay model preload until after animations complete (avoids main-thread hitch during stagger)
       setTimeout(preloadScoreModel, 1000); // 1000ms > animation duration (0.6s) + max stagger (~500ms) + buffer
 
-                  // FINAL STABILIZER — now tuned for Edge mobile (extra patience + reflows)
+                  // EDGE-SPECIFIC FINAL STABILIZER — accounts for bottom address bar + slow cqh settling in Edge
       setTimeout(() => {
         const menu = document.getElementById('main-menu');
-        const gameContainer = document.getElementById('game-container');
-        if (!menu || !gameContainer) return;
+        if (!menu) return;
 
-        // Force multiple full layout passes
         void menu.offsetHeight;
-        void menu.offsetWidth;
-        void gameContainer.offsetHeight;
+        void document.body.offsetHeight;
 
-        requestAnimationFrame(() => {
-          void menu.offsetHeight;
-          void gameContainer.offsetHeight;
-          updateAnimatedBackgrounds();
-        });
-
-        // Edge needs one more cycle
         requestAnimationFrame(() => {
           void menu.offsetHeight;
           updateAnimatedBackgrounds();
         });
 
-        // Extra safety pass (covers the 1200–1400ms window Edge sometimes needs)
-        setTimeout(updateAnimatedBackgrounds, 420);
+        requestAnimationFrame(() => {
+          void menu.offsetHeight;
+          updateAnimatedBackgrounds();
+        });
 
-      }, 1250); // ← increased from 950ms — this is the magic number for Edge
+        // Extra safety pass for Edge's slower layout engine
+        setTimeout(() => {
+          updateAnimatedBackgrounds();
+          void menu.offsetHeight;
+        }, 650);
+
+      }, 1450); // longer delay specifically tuned for Edge
     }
     
     
@@ -5684,6 +5682,13 @@ async function initApp() {
     console.error('Preload error:', e);
     document.getElementById('loading-screen').textContent = 'Error loading assets – please refresh';
   }
+}
+
+// VisualViewport fix for Edge mobile bottom address bar (handles bar hide/resize)
+if ('visualViewport' in window) {
+  window.visualViewport.addEventListener('resize', () => {
+    setTimeout(updateAnimatedBackgrounds, 120);
+  }, { once: true });
 }
 
 initApp();
