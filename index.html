@@ -4461,6 +4461,14 @@ document.getElementById('score-snap-btn').onclick = async () => {
   try {
     await ensureOpenCVReady();
 
+    // === WAIT FOR DETECTION FIRST (live loop stays running) ===
+    let detected = latestDetectedCorners;
+    if (!detected) {
+      console.log("⚠️ No live detection on SNAP — waiting up to 1.5s and watching live feed...");
+      detected = await waitForGoodDetection(1500);
+    }
+
+    // === NOW capture the frame at the exact moment we have a rectangle ===
     const displayW = scoreVideo.clientWidth;
     const displayH = scoreVideo.clientHeight;
     const sourceRect = getVideoSourceRect({ w: displayW, h: displayH });
@@ -4481,24 +4489,19 @@ document.getElementById('score-snap-btn').onclick = async () => {
 
     scoreCapturedMat = cv.imread(croppedCanvas);
 
-    // === STOP THE LIVE LOOP (this is the critical line) ===
+    // === Only now stop the live loop ===
     stopLiveSquareDetection();
-    console.log("✅ Live detection loop stopped before adjustment mode");
-
-    let detected = latestDetectedCorners;
-    if (!detected) {
-      console.log("⚠️ No live detection — waiting up to 1.5s...");
-      detected = await waitForGoodDetection(1500);
-    }
+    console.log("✅ Live detection loop stopped after successful capture");
 
     if (detected) {
       scoreCornerPoints = sortCorners(detected);
-      console.log("✅ Used live-detected rectangle (relative crop)");
+      console.log("✅ Used live-detected rectangle from the moment it appeared");
     } else {
       scoreCornerPoints = getExpectedRect(scoreCapturedMat);
       console.log("⚠️ Fallback to expected rectangle");
     }
 
+    // === Proceed to adjustment mode (unchanged) ===
     document.getElementById('score-adjustment-mode').style.display = 'flex';
     document.querySelector('.camera-container').style.display = 'none';
 
