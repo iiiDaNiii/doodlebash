@@ -4451,59 +4451,73 @@ function sortCorners(pts) {
 document.getElementById('score-snap-btn').onclick = async () => {
   console.log("📸 SNAP button clicked");
   playSound('snap');
-  
+
   const snapBtn = document.getElementById('score-snap-btn');
   const continueBtn = document.getElementById('score-confirm-warp-btn');
-  
-  // NEW: Removed loading display entirely from SNAP
+
   snapBtn.disabled = true;
   snapBtn.textContent = "Capturing...";
 
   try {
     await ensureOpenCVReady();
-    
+
+    // === EXACT SAME CROP AS LIVE DETECTION ===
+    const displayW = scoreVideo.clientWidth;
+    const displayH = scoreVideo.clientHeight;
+    const sourceRect = getVideoSourceRect({ w: displayW, h: displayH });
+
     // Capture full frame
     const captureCanvas = document.createElement('canvas');
     captureCanvas.width = scoreVideo.videoWidth;
     captureCanvas.height = scoreVideo.videoHeight;
     captureCanvas.getContext('2d').drawImage(scoreVideo, 0, 0);
-    scoreCapturedMat = cv.imread(captureCanvas);
-    
-    // Smart detection with 1.5s grace period
+
+    // Crop to exactly what the user sees in the live preview
+    const croppedCanvas = document.createElement('canvas');
+    croppedCanvas.width = sourceRect.w;
+    croppedCanvas.height = sourceRect.h;
+    croppedCanvas.getContext('2d').drawImage(
+      captureCanvas,
+      sourceRect.left, sourceRect.top, sourceRect.w, sourceRect.h,
+      0, 0, sourceRect.w, sourceRect.h
+    );
+
+    scoreCapturedMat = cv.imread(croppedCanvas);
+
+    // Smart detection (same as live)
     let detected = latestDetectedCorners;
     if (!detected) {
       console.log("⚠️ No live detection — waiting up to 1.5s...");
       detected = await waitForGoodDetection(1500);
     }
-    
+
     if (detected) {
       scoreCornerPoints = sortCorners(detected);
-      console.log("✅ Used live-detected rectangle");
+      console.log("✅ Used live-detected rectangle (relative crop)");
     } else {
       scoreCornerPoints = getExpectedRect(scoreCapturedMat);
       console.log("⚠️ Fallback to expected rectangle");
     }
-    
-    // Switch directly to adjustment mode (no loading)
+
+    // Switch to adjustment mode
     document.getElementById('score-adjustment-mode').style.display = 'flex';
     document.querySelector('.camera-container').style.display = 'none';
-    stopLiveSquareDetection();
-    
+
     const capCanvas = document.getElementById('score-captured-canvas');
     cv.imshow(capCanvas, scoreCapturedMat);
-    
-    positionCornerHandles(capCanvas);
+
+    positionCornerHandles(capCanvas);        // ← now receives correctly cropped mat
     addWarpedGridOverlay();
     drawQuadrilateralLines();
     updateWarpedPreview(true);
     wireCornerDragListeners(capCanvas);
-    
+
     // Hide instructions + swap buttons
     const cameraInstructions = document.getElementById('score-camera-instructions');
     if (cameraInstructions) cameraInstructions.style.display = 'none';
     snapBtn.style.display = 'none';
     continueBtn.style.display = 'block';
-    
+
   } catch (err) {
     console.error("🚨 SNAP error:", err);
   } finally {
@@ -4603,7 +4617,7 @@ function computeGridCorners(binderCorners) {
 }
 
 function detectNotebookRectangle(mat) {
-  console.log("%c🔍 [NEW RECT DETECT] Starting strict rectangle scan", "color:#0f0;font-weight:bold");
+  console.log("%c🔍 [RELATIVE RECT DETECT] Running on cropped view", "color:#0f0;font-weight:bold");
   try {
     let gray = new cv.Mat();
     cv.cvtColor(mat, gray, cv.COLOR_RGBA2GRAY);
@@ -4623,11 +4637,13 @@ function detectNotebookRectangle(mat) {
 
     let bestArea = 0;
     let bestApprox = null;
+    const imageArea = mat.cols * mat.rows;
 
     for (let i = 0; i < contours.size(); ++i) {
       const cnt = contours.get(i);
       const area = cv.contourArea(cnt);
-      if (area > 12000) {
+
+      if (area > imageArea * 0.08) {   // ← relaxed from 0.12 to 0.08 for mobile
         const peri = cv.arcLength(cnt, true);
         const approx = new cv.Mat();
         cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
@@ -4645,7 +4661,7 @@ function detectNotebookRectangle(mat) {
 
     let corners = null;
     if (bestApprox) {
-      console.log(`%c✅ [NEW RECT DETECT] Locked binder cover (area ${bestArea.toFixed(0)})`, "color:#0f0");
+      console.log(`%c✅ Found binder (relative area ${(bestArea/imageArea*100).toFixed(1)}%)`, "color:#0f0");
       corners = [];
       for (let i = 0; i < 4; i++) {
         corners.push({
@@ -4654,6 +4670,8 @@ function detectNotebookRectangle(mat) {
         });
       }
       bestApprox.delete();
+    } else {
+      console.log(`%c⚠️ No good rectangle this frame (largest area was too small)`, "color:#f80");
     }
 
     contours.delete();
@@ -4663,7 +4681,6 @@ function detectNotebookRectangle(mat) {
     gray.delete();
 
     if (corners) {
-      // ← NEW: Convert binder → grid paper corners
       return computeGridCorners(sortCorners(corners));
     }
     return null;
@@ -4672,7 +4689,6 @@ function detectNotebookRectangle(mat) {
     return null;
   }
 }
-// STRICT RECTANGLE VALIDATION – exact copy from your test file
 function isGoodRectangle(approx, area) {
   if (!cv.isContourConvex(approx)) return false;
 
@@ -4717,6 +4733,7 @@ function getExpectedRect(mat) {
     {x: w*(1-inset), y: h*(1-inset)}, {x: w*inset, y: h*(1-inset)}
   ];
 }
+
 function positionCornerHandles(canvas) {
   const handles = [
     { id: 'handle-tl', index: 0 },
@@ -4730,15 +4747,17 @@ function positionCornerHandles(canvas) {
     if (!handle) return;
 
     const pt = scoreCornerPoints[h.index];
+
+    // Scale points directly to the captured canvas (no extra offset needed now)
     const scaleX = canvas.clientWidth / scoreCapturedMat.cols;
     const scaleY = canvas.clientHeight / scoreCapturedMat.rows;
 
     handle.style.left = `${pt.x * scaleX}px`;
-    handle.style.top  = `${pt.y * scaleY}px`;
+    handle.style.top = `${pt.y * scaleY}px`;
     handle.style.display = 'block';
   });
 
-  drawQuadrilateralLines(); // ← now redraws instantly and perfectly aligned
+  drawQuadrilateralLines();
 }
 
 function updateWarpedPreview() {
@@ -4850,36 +4869,28 @@ function updateLoupe(e) {
 
 function getCurrentGridRect(w, h) { return { left: 0, top: 0, w, h }; }
 
-    function getVideoSourceRect(displayRect) {
-      const vw = scoreVideoLeft.videoWidth;
-      const vh = scoreVideoLeft.videoHeight;
-      const targetAspect = 11 / 7; // Force exact match to container aspect
-      const videoAspect = vw / vh;
-      let sourceW, sourceH, sourceX = 0, sourceY = 0;
-      if (videoAspect > targetAspect) {
-        // Video wider: crop sides
-        sourceH = vh;
-        sourceW = vh * targetAspect;
-        sourceX = (vw - sourceW) / 2;
-      } else {
-        // Video taller: crop top/bottom
-        sourceW = vw;
-        sourceH = vw / targetAspect;
-        sourceY = (vh - sourceH) / 2;
-      }
-      // Scale back to display rect (but now cropped to 11/7)
-      const cw = displayRect.w;
-      const ch = displayRect.h;
-      const scaleW = cw / sourceW;
-      const scaleH = ch / sourceH;
-      const scale = Math.min(scaleW, scaleH); // Use min to avoid stretching
-      return {
-        left: sourceX,
-        top: sourceY,
-        w: sourceW,
-        h: sourceH
-      };
-    }
+function getVideoSourceRect(displayRect) {
+  const vw = scoreVideo.videoWidth;
+  const vh = scoreVideo.videoHeight;
+  const targetAspect = 11 / 7;
+  const videoAspect = vw / vh;
+  let sourceW, sourceH, sourceX = 0, sourceY = 0;
+  if (videoAspect > targetAspect) {
+    sourceH = vh;
+    sourceW = vh * targetAspect;
+    sourceX = (vw - sourceW) / 2;
+  } else {
+    sourceW = vw;
+    sourceH = vw / targetAspect;
+    sourceY = (vh - sourceH) / 2;
+  }
+  return {
+    left: sourceX,
+    top: sourceY,
+    w: sourceW,
+    h: sourceH
+  };
+}
 
     async function scoreDetectFromCropped(cropped) {
   await tf.setBackend('webgl');
@@ -5130,62 +5141,65 @@ function startLiveSquareDetection() {
   const offscreenCanvas = document.createElement('canvas');
 
   function detectLoop() {
-    if (!scoreVideo || scoreVideo.videoWidth === 0) {
-      liveDetectionFrameId = requestAnimationFrame(detectLoop);
+    if (!scoreVideo || scoreVideo.videoWidth === 0 || scoreVideo.videoHeight === 0) {
+      requestAnimationFrame(detectLoop);
       return;
     }
+
     const displayW = scoreVideo.clientWidth;
     const displayH = scoreVideo.clientHeight;
     liveOverlayCanvas.width = displayW;
     liveOverlayCanvas.height = displayH;
+
     offscreenCanvas.width = scoreVideo.videoWidth;
     offscreenCanvas.height = scoreVideo.videoHeight;
     const offCtx = offscreenCanvas.getContext('2d');
     offCtx.drawImage(scoreVideo, 0, 0);
+
+    const sourceRect = getVideoSourceRect({ w: displayW, h: displayH });
+
+    const croppedCanvas = document.createElement('canvas');
+    croppedCanvas.width = sourceRect.w;
+    croppedCanvas.height = sourceRect.h;
+    croppedCanvas.getContext('2d').drawImage(
+      offscreenCanvas,
+      sourceRect.left, sourceRect.top, sourceRect.w, sourceRect.h,
+      0, 0, sourceRect.w, sourceRect.h
+    );
+
     liveOverlayCtx.clearRect(0, 0, displayW, displayH);
+
     try {
-      const tempMat = cv.imread(offscreenCanvas);
+      const tempMat = cv.imread(croppedCanvas);
       const points = detectNotebookRectangle(tempMat);
       latestDetectedCorners = points || null;
       tempMat.delete();
+
       if (points) {
-        const vw = scoreVideo.videoWidth;
-        const vh = scoreVideo.videoHeight;
-        const targetAspect = 11 / 7;
-        const videoAspect = vw / vh;
-        let sourceX = 0, sourceY = 0, sourceW = vw, sourceH = vh;
-        if (videoAspect > targetAspect) {
-          sourceW = vh * targetAspect;
-          sourceX = (vw - sourceW) / 2;
-        } else {
-          sourceH = vw / targetAspect;
-          sourceY = (vh - sourceH) / 2;
-        }
-        const scaleX = displayW / sourceW;
-        const scaleY = displayH / sourceH;
+        const scaleX = displayW / sourceRect.w;
+        const scaleY = displayH / sourceRect.h;
+
         liveOverlayCtx.strokeStyle = '#00ff00';
         liveOverlayCtx.lineWidth = Math.max(3, displayW / 220);
         liveOverlayCtx.lineJoin = 'round';
         liveOverlayCtx.beginPath();
-        liveOverlayCtx.moveTo((points[0].x - sourceX) * scaleX, (points[0].y - sourceY) * scaleY);
-        liveOverlayCtx.lineTo((points[1].x - sourceX) * scaleX, (points[1].y - sourceY) * scaleY);
-        liveOverlayCtx.lineTo((points[2].x - sourceX) * scaleX, (points[2].y - sourceY) * scaleY);
-        liveOverlayCtx.lineTo((points[3].x - sourceX) * scaleX, (points[3].y - sourceY) * scaleY);
+        liveOverlayCtx.moveTo(points[0].x * scaleX, points[0].y * scaleY);
+        liveOverlayCtx.lineTo(points[1].x * scaleX, points[1].y * scaleY);
+        liveOverlayCtx.lineTo(points[2].x * scaleX, points[2].y * scaleY);
+        liveOverlayCtx.lineTo(points[3].x * scaleX, points[3].y * scaleY);
         liveOverlayCtx.closePath();
         liveOverlayCtx.stroke();
+
         liveOverlayCtx.fillStyle = '#00ff00';
         points.forEach(p => {
-          const screenX = (p.x - sourceX) * scaleX;
-          const screenY = (p.y - sourceY) * scaleY;
-          liveOverlayCtx.fillRect(screenX - 5, screenY - 5, 10, 10);
+          liveOverlayCtx.fillRect(p.x * scaleX - 5, p.y * scaleY - 5, 10, 10);
         });
       }
     } catch (e) {}
-    liveDetectionFrameId = requestAnimationFrame(detectLoop);
+    requestAnimationFrame(detectLoop);
   }
-  liveDetectionFrameId = requestAnimationFrame(detectLoop);
+  requestAnimationFrame(detectLoop);
 }
-
 function resetScoreModal() {
   // 1. Stop camera stream completely
   if (scoreStream) {
