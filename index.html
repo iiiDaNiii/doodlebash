@@ -4461,18 +4461,15 @@ document.getElementById('score-snap-btn').onclick = async () => {
   try {
     await ensureOpenCVReady();
 
-    // === EXACT SAME CROP AS LIVE DETECTION ===
     const displayW = scoreVideo.clientWidth;
     const displayH = scoreVideo.clientHeight;
     const sourceRect = getVideoSourceRect({ w: displayW, h: displayH });
 
-    // Capture full frame
     const captureCanvas = document.createElement('canvas');
     captureCanvas.width = scoreVideo.videoWidth;
     captureCanvas.height = scoreVideo.videoHeight;
     captureCanvas.getContext('2d').drawImage(scoreVideo, 0, 0);
 
-    // Crop to exactly what the user sees in the live preview
     const croppedCanvas = document.createElement('canvas');
     croppedCanvas.width = sourceRect.w;
     croppedCanvas.height = sourceRect.h;
@@ -4484,7 +4481,10 @@ document.getElementById('score-snap-btn').onclick = async () => {
 
     scoreCapturedMat = cv.imread(croppedCanvas);
 
-    // Smart detection (same as live)
+    // === STOP THE LIVE LOOP (this is the critical line) ===
+    stopLiveSquareDetection();
+    console.log("✅ Live detection loop stopped before adjustment mode");
+
     let detected = latestDetectedCorners;
     if (!detected) {
       console.log("⚠️ No live detection — waiting up to 1.5s...");
@@ -4499,20 +4499,18 @@ document.getElementById('score-snap-btn').onclick = async () => {
       console.log("⚠️ Fallback to expected rectangle");
     }
 
-    // Switch to adjustment mode
     document.getElementById('score-adjustment-mode').style.display = 'flex';
     document.querySelector('.camera-container').style.display = 'none';
 
     const capCanvas = document.getElementById('score-captured-canvas');
     cv.imshow(capCanvas, scoreCapturedMat);
 
-    positionCornerHandles(capCanvas);        // ← now receives correctly cropped mat
+    positionCornerHandles(capCanvas);
     addWarpedGridOverlay();
     drawQuadrilateralLines();
     updateWarpedPreview(true);
     wireCornerDragListeners(capCanvas);
 
-    // Hide instructions + swap buttons
     const cameraInstructions = document.getElementById('score-camera-instructions');
     if (cameraInstructions) cameraInstructions.style.display = 'none';
     snapBtn.style.display = 'none';
@@ -5142,7 +5140,7 @@ function startLiveSquareDetection() {
 
   function detectLoop() {
     if (!scoreVideo || scoreVideo.videoWidth === 0 || scoreVideo.videoHeight === 0) {
-      requestAnimationFrame(detectLoop);
+      liveDetectionFrameId = requestAnimationFrame(detectLoop);
       return;
     }
 
@@ -5157,7 +5155,6 @@ function startLiveSquareDetection() {
     offCtx.drawImage(scoreVideo, 0, 0);
 
     const sourceRect = getVideoSourceRect({ w: displayW, h: displayH });
-
     const croppedCanvas = document.createElement('canvas');
     croppedCanvas.width = sourceRect.w;
     croppedCanvas.height = sourceRect.h;
@@ -5178,7 +5175,6 @@ function startLiveSquareDetection() {
       if (points) {
         const scaleX = displayW / sourceRect.w;
         const scaleY = displayH / sourceRect.h;
-
         liveOverlayCtx.strokeStyle = '#00ff00';
         liveOverlayCtx.lineWidth = Math.max(3, displayW / 220);
         liveOverlayCtx.lineJoin = 'round';
@@ -5196,10 +5192,15 @@ function startLiveSquareDetection() {
         });
       }
     } catch (e) {}
-    requestAnimationFrame(detectLoop);
+
+    // ← THIS IS THE CRITICAL LINE THAT WAS MISSING
+    liveDetectionFrameId = requestAnimationFrame(detectLoop);
   }
-  requestAnimationFrame(detectLoop);
+
+  // Start the loop and immediately capture the first frame ID
+  liveDetectionFrameId = requestAnimationFrame(detectLoop);
 }
+
 function resetScoreModal() {
   // 1. Stop camera stream completely
   if (scoreStream) {
