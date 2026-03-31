@@ -1606,7 +1606,6 @@
       display: none !important;
     }
 
-    #score-tweak-prompt,
     #score-status {
       display: none !important;
     }
@@ -5040,48 +5039,42 @@ async function animateLearnDoodle(doodle) {
       }
     };
 
-    document.getElementById('score-confirm-warp-btn').onclick = async () => {
-      playSound('button');
-      console.log("=== CONTINUE TO SCORE CLICKED ===");
+document.getElementById('score-confirm-warp-btn').onclick = async () => {
+  playSound('button');
+  console.log("=== CONTINUE TO SCORE CLICKED ===");
+  const continueBtn = document.getElementById('score-confirm-warp-btn');
+  const loading = document.getElementById('loading-container');
+  
+  continueBtn.style.display = 'none';
+  loading.style.display = 'flex';
+  document.getElementById('score-adjustment-mode').style.display = 'none';
 
-      const continueBtn = document.getElementById('score-confirm-warp-btn');
-      const loading = document.getElementById('loading-container');
+  try {
+    if (!scoreModel) {
+      console.log("Model not loaded yet — loading now...");
+      await scoreLoadModel();
+    }
 
-      // Hide the button IMMEDIATELY when clicked
-      continueBtn.style.display = 'none';
+    const warpedCanvas = document.getElementById('score-warped-preview');
+    await scoreDetectFromCropped(warpedCanvas);
 
-      // Show loading animation
-      loading.style.display = 'flex';
+    // This now forces the message to appear on the review screen
+    const tweakPrompt = document.getElementById('score-tweak-prompt');
+    tweakPrompt.textContent = "Make sure your doodles have been identified correctly. Tap misplaced doodles to correct them.";
+    tweakPrompt.style.setProperty('display', 'block', 'important');
 
-      // Hide warp adjustment mode
-      document.getElementById('score-adjustment-mode').style.display = 'none';
+    // Show the review screen
+    document.getElementById('score-review-container').style.display = 'flex';
+    document.getElementById('score-buttons-container').style.display = 'flex';
 
-      try {
-        // === FORCE MODEL LOAD (this fixes the null error) ===
-        if (!scoreModel) {
-          console.log("Model not loaded yet — loading now...");
-          await scoreLoadModel();
-        }
-        console.log("1. Running ML detection on warped image...");
-        const warpedCanvas = document.getElementById('score-warped-preview');
-
-        await scoreDetectFromCropped(warpedCanvas);
-
-        // Force review screen visible
-        document.getElementById('score-review-container').style.display = 'flex';
-        document.getElementById('score-buttons-container').style.display = 'flex';
-        document.getElementById('score-tweak-prompt').style.display = 'block';
-        console.log("2. Review + correction screen loaded! (snippets are clickable)");
-      } catch (err) {
-        console.error("=== REVIEW ERROR ===", err);
-        alert("Review screen failed. Open console (F12) and send me the red text.");
-        // Safety: show button again only if something went wrong
-        continueBtn.style.display = 'block';
-      } finally {
-        loading.style.display = 'none';
-      }
-    };
-
+    console.log("✅ Review screen loaded with correction message!");
+  } catch (err) {
+    console.error("=== REVIEW ERROR ===", err);
+    continueBtn.style.display = 'block';
+  } finally {
+    loading.style.display = 'none';
+  }
+};
     // ====================== NEW NOTEBOOK DIMENSIONS (from your Adobe Illustrator file) ======================
     const BINDER_WIDTH_PT = 720;          // Outer binder cover detected by OpenCV
     const BINDER_HEIGHT_PT = 423.5699;
@@ -5784,6 +5777,8 @@ async function animateLearnDoodle(doodle) {
       // 8. Hide any leftover popup
       const popup = document.getElementById('score-doodle-popup');
       if (popup) popup.style.display = 'none';
+
+      document.getElementById('score-tweak-prompt').style.display = 'none';
 
       console.log('✅ Score modal fully reset – ready for next scan');
     }
@@ -6564,6 +6559,7 @@ async function animateLearnDoodle(doodle) {
 
     document.getElementById('score-score-btn').onclick = () => {
       playSound('score');
+      document.getElementById('score-tweak-prompt').style.display = 'none';
       stopLiveSquareDetection();
       console.log("SCORE SHEET clicked — hiding buttons + starting animation");
 
