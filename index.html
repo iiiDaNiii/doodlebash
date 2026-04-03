@@ -4532,79 +4532,83 @@ async function animateLearnDoodle(doodle) {
   await new Promise(r => setTimeout(r, 350));
 }
 
-    function toggleSelection(cell, grid, modalType) {
-      const isSelected = cell.classList.contains('selected');
-      const actionBtn = modalType === 'learn' ? document.getElementById('modal-learn-btn') : document.getElementById('modal-remove-btn');
-      grid.querySelectorAll('.doodle-cell').forEach(c => c.classList.remove('selected'));
-      if (!isSelected) {
-        cell.classList.add('selected');
-        showTooltipForDoodle(cell.dataset.doodle, cell);
-        if (modalType === 'learn' || modalType === 'portfolio') { // ← Updated to handle both modals
-          // Append button to grid for relative positioning (if not already)
-          if (!grid.contains(actionBtn)) {
-            grid.appendChild(actionBtn);
-          }
-          // Reset for reappearance
-          actionBtn.style.display = 'none';
-          actionBtn.style.opacity = '0';
-          actionBtn.style.top = '0';
-          actionBtn.style.left = '0';
-          void actionBtn.offsetHeight;
-          // Show hidden for measurement
-          actionBtn.style.display = 'block';
-          void actionBtn.offsetHeight;
-          // Get rects
+function toggleSelection(cell, grid, modalType) {
+  const isSelected = cell.classList.contains('selected');
+  const actionBtn = modalType === 'learn' 
+    ? document.getElementById('modal-learn-btn') 
+    : document.getElementById('modal-remove-btn');
+
+  // Deselect all other cells
+  grid.querySelectorAll('.doodle-cell').forEach(c => c.classList.remove('selected'));
+
+  if (!isSelected) {
+    cell.classList.add('selected');
+    showTooltipForDoodle(cell.dataset.doodle, cell);
+
+    if (modalType === 'learn' || modalType === 'portfolio') {
+      // Move button into grid (if not already there)
+      if (!grid.contains(actionBtn)) {
+        grid.appendChild(actionBtn);
+      }
+
+      // === iOS SAFARI HARDENING ===
+      actionBtn.style.display = 'block';
+      actionBtn.style.opacity = '0';
+      void actionBtn.offsetHeight;     // first reflow
+      void grid.offsetHeight;          // second reflow (forces grid layout pass)
+
+      // Give Safari one extra frame to settle the layout
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {   // double-RAF is the magic for iOS
           const gridRect = grid.getBoundingClientRect();
           const cellRect = cell.getBoundingClientRect();
           const btnRect = actionBtn.getBoundingClientRect();
-          // Account for grid padding (1.8cqi – convert to px for accuracy)
+
           const gridStyle = getComputedStyle(grid);
-          const gridPaddingTop = parseFloat(gridStyle.paddingTop);
-          const gridPaddingLeft = parseFloat(gridStyle.paddingLeft);
-          // Vertical: Relative top from grid top, centered (no padding subtraction needed)
+          const gapCqi = 5.2;
+          const gapPx = (gapCqi / 100) * gridRect.width;
+
           const relativeCellTop = cellRect.top - gridRect.top;
           const topOffset = relativeCellTop + (cellRect.height / 2) - (btnRect.height / 2);
-          // Horizontal: Relative left from grid left (no padding subtraction needed)
+
           let leftOffset;
-          const gapCqi = 5.2; // Adjust this cqi value for spacing (e.g., 1.4cqi ≈ current grid gap; increase for more space)
-          const gapPx = (gapCqi / 100) * gridRect.width; // Convert cqi to px based on grid inline-size
           if ((Array.from(grid.querySelectorAll('.doodle-cell')).indexOf(cell) % 6) + 1 <= 3) {
-            // Left columns: Button to the RIGHT
+            // left side → button goes to the right
             leftOffset = (cellRect.right - gridRect.left) + gapPx;
           } else {
-            // Right columns: Button to the LEFT
+            // right side → button goes to the left
             leftOffset = (cellRect.left - gridRect.left) - btnRect.width - gapPx;
           }
-          // Apply and fade in
+
           actionBtn.style.top = `${topOffset}px`;
           actionBtn.style.left = `${leftOffset}px`;
           actionBtn.style.opacity = '1';
-          actionBtn.classList.add('pulsing'); // ← Add pulsing for both
-        } else {
-          actionBtn.style.display = 'block'; // Fallback for other modals (if any)
-        }
-      } else {
-        hideTooltip();
-        if (modalType === 'learn' || modalType === 'portfolio') { // ← Updated to handle both
-          actionBtn.classList.remove('pulsing'); // ← Remove pulsing
-          actionBtn.style.opacity = '0';
-          setTimeout(() => {
-            actionBtn.style.display = 'none';
-            // NEW: Move button back to modal header (.buttons) after hide
-            const modal = document.getElementById(modalType + '-modal');
-            const buttonsDiv = modal.querySelector('.buttons');
-            if (buttonsDiv && !buttonsDiv.contains(actionBtn)) {
-              buttonsDiv.appendChild(actionBtn);
-            }
-            actionBtn.style.top = '';
-            actionBtn.style.left = '';
-            actionBtn.style.opacity = '';
-          }, 200); // After fade out
-        } else {
-          actionBtn.style.display = 'none';
-        }
-      }
+          actionBtn.classList.add('pulsing');
+        });
+      });
     }
+  } else {
+    // === DESELECT LOGIC (unchanged but cleaned up) ===
+    hideTooltip();
+    if (modalType === 'learn' || modalType === 'portfolio') {
+      actionBtn.classList.remove('pulsing');
+      actionBtn.style.opacity = '0';
+
+      setTimeout(() => {
+        actionBtn.style.display = 'none';
+        actionBtn.style.top = '';
+        actionBtn.style.left = '';
+
+        // Return button to header
+        const modal = document.getElementById(modalType + '-modal');
+        const buttonsDiv = modal.querySelector('.buttons');
+        if (buttonsDiv && !buttonsDiv.contains(actionBtn)) {
+          buttonsDiv.appendChild(actionBtn);
+        }
+      }, 200);
+    }
+  }
+}
 
     document.getElementById('modal-learn-btn').addEventListener('click', () => {
       playSound('selectbutton');  // ← NEW
