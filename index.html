@@ -6054,6 +6054,7 @@
     let scoreDragIndex = -1;
     let scoreLoupeCanvas = null;
     let scoreWarpedCanvas = null;
+    let scoreWarpedGrayMat = null;   // ← NEW: greyscale version used for model + export
 
     // === ROBUST OPENCV LOADER (replaces old cvReadyPromise) ===
     let cvReady = false;
@@ -6520,11 +6521,17 @@
       const srcPts = cv.matFromArray(4, 1, cv.CV_32FC2, scoreCornerPoints.flatMap(p => [p.x, p.y]));
       const dstPts = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, scoreCapturedMat.cols, 0, scoreCapturedMat.cols, scoreCapturedMat.rows, 0, scoreCapturedMat.rows]);
 
-      const M = cv.getPerspectiveTransform(srcPts, dstPts);
-      cv.warpPerspective(scoreCapturedMat, dst, M, new cv.Size(scoreCapturedMat.cols, scoreCapturedMat.rows));
-      cv.imshow(scoreWarpedCanvas, dst);
+        const M = cv.getPerspectiveTransform(srcPts, dstPts);
+  cv.warpPerspective(scoreCapturedMat, dst, M, new cv.Size(scoreCapturedMat.cols, scoreCapturedMat.rows));
 
-      dst.delete(); M.delete(); srcPts.delete(); dstPts.delete();
+  // === NEW: CREATE GREYSCALE VERSION FOR MODEL AND TRAINING EXPORT ===
+  if (scoreWarpedGrayMat) scoreWarpedGrayMat.delete(); // clean up previous
+  scoreWarpedGrayMat = new cv.Mat();
+  cv.cvtColor(dst, scoreWarpedGrayMat, cv.COLOR_RGBA2GRAY);
+  // ================================================================
+
+  cv.imshow(scoreWarpedCanvas, dst);           // keep the colorful preview for the user
+  dst.delete(); M.delete(); srcPts.delete(); dstPts.delete();
     }
 
     function wireCornerDragListeners(canvas) {
@@ -6668,7 +6675,17 @@
           cellCanvas.width = 224;
           cellCanvas.height = 224;
           const cellCtx = cellCanvas.getContext('2d');
-          cellCtx.drawImage(cropped, Math.round(pc * cellW), Math.round(r * cellH), Math.round(cellW), Math.round(cellH), 0, 0, 224, 224);
+              // NEW: Use greyscale Mat instead of the color canvas
+    const cellRect = new cv.Rect(
+      Math.round(pc * cellW),
+      Math.round(r * cellH),
+      Math.round(cellW),
+      Math.round(cellH)
+    );
+    const cellMat = scoreWarpedGrayMat.roi(cellRect);
+    cv.resize(cellMat, cellMat, new cv.Size(224, 224));
+    cv.imshow(cellCanvas, cellMat);
+    cellMat.delete();
           scoreCellCanvases.push(cellCanvas);
 
           tasks.push((async () => {
@@ -6829,10 +6846,11 @@
         const randomNum = Math.floor(Math.random() * 900000) + 100000;
         const filename = `${className}${randomNum}.png`;
         promises.push(new Promise(resolve => {
-          scoreCellCanvases[i].toBlob(blob => {
-            zip.file(filename, blob);
-            resolve();
-          }, 'image/png');
+          makeCanvasGrayscale(scoreCellCanvases[i]);   // ← convert to greyscale before export
+scoreCellCanvases[i].toBlob(blob => {
+  zip.file(filename, blob);
+  resolve();
+}, 'image/png');
         }));
       });
       await Promise.all(promises);
@@ -6844,6 +6862,20 @@
       a.click();
       URL.revokeObjectURL(url);
     }
+
+function makeCanvasGrayscale(canvas) {
+  const ctx = canvas.getContext('2d');
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+    data[i] = gray;     // R
+    data[i + 1] = gray; // G
+    data[i + 2] = gray; // B
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
+}
 
     async function initScoreScanner() {
       resetScoreModal();
