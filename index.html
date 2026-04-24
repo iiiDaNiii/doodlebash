@@ -188,6 +188,55 @@
       cursor: pointer;
     }
 
+.doodle-checkbox {
+  position: absolute;
+  width: 15cqi;
+  height: 15cqi;
+  opacity: 0;
+  transition: opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  pointer-events: auto;
+  z-index: 20;
+  cursor: pointer;
+}
+
+.checkbox-bg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}.check-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.check-path {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  transition: stroke-dashoffset 420ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.doodle-checkbox.checked .check-path {
+  stroke-dashoffset: 0;
+}
+
+/* LEFT COLUMN (your current values) */
+#cb-l1 { top: 38%; right: 62cqi; }
+#cb-l2 { top: 50%; right: 62cqi; }
+#cb-l3 { top: 62%; right: 62cqi; }
+
+/* RIGHT COLUMN (your current values) */
+#cb-r1 { top: 38%; left: 62cqi; }
+#cb-r2 { top: 50%; left: 62cqi; }
+#cb-r3 { top: 62%; left: 62cqi; }
+
+/* Fade-in class */
+.doodle-checkbox.visible {
+  opacity: 1;
+}
+
     /* ==================== BUTTONS & NAV ==================== */
     button {
       border: none;
@@ -1256,7 +1305,6 @@
       font-size: 10cqi;
       font-weight: bold;
       color: #ff0;
-      margin: 20px 0;
       text-align: center;
     }
 
@@ -2842,6 +2890,91 @@
         z-index: 25;
         /* keeps them above the background layers */
       }
+
+      /* ==================== SCORE LINE (FINAL SCORE VISUAL) ==================== */
+      #score-line {
+        display: none;
+        margin-top: 6cqi;
+        width: 90cqi;
+        max-width: 100%;
+        /* safety cap */
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+        box-sizing: border-box;
+        transform: scale(0.935);
+        /* ← GROUP SHRINK (tune this number) */
+        transform-origin: center top;
+        /* keeps alignment clean */
+      }
+
+      #score-line>div:first-child {
+        position: relative;
+        width: 100%;
+        height: 20cqi;
+      }
+
+      #score-squiggle {
+        position: absolute;
+        top: 8.3cqi;
+        left: 0;
+        width: 100% !important;
+        height: 20cqi;
+        object-fit: contain;
+        z-index: 2;
+        clip-path: inset(0 100% 0 0);
+      }
+
+      #score-marker {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 5.5cqi;
+        height: auto;
+        transform: translate(-50%, -50%);
+        z-index: 3;
+        transform-origin: bottom center;   /* ← THIS IS THE KEY LINE */
+      }
+
+      #score-numberline {
+        position: absolute;
+        top: 20cqi;
+        left: 0;
+        width: 100% !important;
+        height: 12cqi;
+        object-fit: contain;
+        z-index: 1;
+      }
+
+      #score-line .score-numbers {
+        display: grid;
+        grid-template-columns: repeat(9, 1fr);
+        margin-top: 6cqi;
+        width: 100%;
+        padding: 0;
+        transform: scale(1.12);
+        /* ← YOUR ORIGINAL SCALE — UNTOUCHED */
+        transform-origin: center;
+      }
+
+      #score-line .score-numbers>div {
+        aspect-ratio: 1 / 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: visible;
+        min-width: 0;
+        font-family: 'Covered By Your Grace', cursive;
+        font-size: 4.2cqi;
+        color: #222;
+      }
+
+      #score-line .score-numbers>div.lit {
+        color: #7f2a8f !important;
+        font-weight: bold;
+        transform: scale(1.18);
+        transition: all 0.25s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      }
     </style>
 
     <div id="loading-logo-container">
@@ -2876,18 +3009,61 @@
       <img id="learn-btn" src="images/learnbutton.png" class="nav-btn" alt="Learn">
     </div>
     <div id="shuffle-zone">
-      <div id="doodle-l1"></div>
-      <div id="doodle-l2"></div>
-      <div id="doodle-l3"></div>
-      <div id="doodle-r1"></div>
-      <div id="doodle-r2"></div>
-      <div id="doodle-r3"></div>
-      <!-- NEW SPINNING SHUFFLE BUTTON -->
-      <div id="shuffle-container">
-        <img id="shuffle-main" src="images/shufflebutton.png" alt="Shuffle">
-        <img id="shuffle-outline" src="images/shufflebuttonoutline.png" alt="">
-      </div>
-    </div>
+  <!-- LEFT COLUMN DOODLES -->
+  <div id="doodle-l1"></div>
+  <div id="doodle-l2"></div>
+  <div id="doodle-l3"></div>
+
+  <!-- RIGHT COLUMN DOODLES -->
+  <div id="doodle-r1"></div>
+  <div id="doodle-r2"></div>
+  <div id="doodle-r3"></div>
+<!-- CHECKBOXES WITH ANIMATED CIRCLE -->
+<!-- LEFT COLUMN -->
+<div id="cb-l1" class="doodle-checkbox">
+  <img src="images/checkboxleft.png" class="checkbox-bg" alt="">
+  <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none" stroke-linecap="round"/>
+  </svg>
+</div>
+<div id="cb-l2" class="doodle-checkbox">
+  <img src="images/checkboxleft.png" class="checkbox-bg" alt="">
+  <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none" stroke-linecap="round"/>
+  </svg>
+</div>
+<div id="cb-l3" class="doodle-checkbox">
+  <img src="images/checkboxleft.png" class="checkbox-bg" alt="">
+  <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none" stroke-linecap="round"/>
+  </svg>
+</div>
+
+<!-- RIGHT COLUMN -->
+<div id="cb-r1" class="doodle-checkbox">
+  <img src="images/checkboxright.png" class="checkbox-bg" alt="">
+  <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none" stroke-linecap="round"/>
+  </svg>
+</div>
+<div id="cb-r2" class="doodle-checkbox">
+  <img src="images/checkboxright.png" class="checkbox-bg" alt="">
+  <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none" stroke-linecap="round"/>
+  </svg>
+</div>
+<div id="cb-r3" class="doodle-checkbox">
+  <img src="images/checkboxright.png" class="checkbox-bg" alt="">
+  <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none" stroke-linecap="round"/>
+  </svg>
+</div>
+  <!-- SHUFFLE BUTTON -->
+  <div id="shuffle-container">
+    <img id="shuffle-main" src="images/shufflebutton.png" alt="Shuffle">
+    <img id="shuffle-outline" src="images/shufflebuttonoutline.png" alt="">
+  </div>
+</div>
     <div id="footer">
       <img id="portfolio-btn" src="images/portfoliobutton.png" class="nav-btn" alt="Portfolio">
 
@@ -3106,6 +3282,26 @@
 
         <div id="score-tally"></div>
         <div id="score-final-total" style="display:none;"></div>
+        <!-- ==================== SCORE LINE (FINAL SCORE VISUAL) ==================== -->
+        <div id="score-line">
+          <div>
+            <img id="score-squiggle" src="images/scoresquiggle.png" alt="">
+            <img id="score-marker" src="images/scoremarker.png" alt="">
+            <img id="score-numberline" src="images/numberline.png" alt="">
+          </div>
+
+          <div class="score-numbers">
+            <div>0</div>
+            <div>25</div>
+            <div>50</div>
+            <div>75</div>
+            <div>100</div>
+            <div>125</div>
+            <div>150</div>
+            <div>175</div>
+            <div>200</div>
+          </div>
+        </div>
         <button id="score-new-scan-btn" style="display:none;">NEW SCAN</button>
 
       </div>
@@ -3330,8 +3526,9 @@
       win: 'sounds/win.mp3',
       modalslide: ['sounds/modalslide1.mp3', 'sounds/modalslide2.mp3', 'sounds/modalslide3.mp3', 'sounds/modalslide4.mp3'],
       button: ['sounds/button1.mp3', 'sounds/button2.mp3', 'sounds/button3.mp3'],
+      circle: ['sounds/circle1.mp3', 'sounds/circle2.mp3', 'sounds/circle3.mp3', 'sounds/circle4.mp3'],
       selectbutton: ['sounds/button9.mp3', 'sounds/button10.mp3', 'sounds/button11.mp3'],
-      bgm: 'sounds/01rain.mp3',
+      bgm: 'sounds/01raindisabled.mp3',
       flap: ['sounds/flap1.mp3', 'sounds/flap2.mp3', 'sounds/flap3.mp3', 'sounds/flap4.mp3', 'sounds/flap5.mp3', 'sounds/flap6.mp3'],
       pointbubble: ['sounds/pointbubble1.mp3', 'sounds/pointbubble2.mp3', 'sounds/pointbubble3.mp3', 'sounds/pointbubble4.mp3']
     };
@@ -3721,6 +3918,19 @@
         buttonAction: () => endTutorial()
       },
     ];
+
+// ====================== ASSESSMENT MESSAGES ======================
+const assessmentMessages = [
+  "Um... the important thing is that you drew SOMETHING... Not sure what it is... but it's really pretty!",
+  "Wow... that's um... really nice! Why don't you uh... hang it on the fridge or something?",
+  "Okay... a decent effort!: You're starting to get the hang of this!",
+  "Hey now! Look who's learning how to draw! I can tell you put some work into this.",
+  "This is actually quite good.  You could probably sell a few of these at a local craft market!",
+  "A stunning composition! You’ve got a keen eye for detail and a steady doodling hand. Let’s get this in an art gallery ASAP!",
+  "You’re like a modern day Picasso! or... another one of those old art dudes. Rembrant?  I think that’s another one...",
+  "*speechless applause*",
+  "I mean... you probably cheated... let’s be real. If you didn't, that's awesome! ... But people are saying you cheated."
+];
 
     // ====================== TUTORIAL CLICK WHITELIST ======================
     // Only these elements can be clicked during each step (menu/audio/close always allowed)
@@ -4249,10 +4459,10 @@
           const charNode = document.createTextNode(seg.content[i]);
           span.appendChild(charNode);
 
-          if (i % 3 === 0) playSound('flap');
+          if (i % 4 === 0) playSound('flap');
 
-          let delay = 20;
-          if (',.!'.includes(seg.content[i])) delay = 280;
+          let delay = 16;
+          if (',.!'.includes(seg.content[i])) delay = 210;
 
           await new Promise(r => setTimeout(r, delay));
         }
@@ -4267,7 +4477,86 @@
         currentSkipHandler = null;
       }
     }
-    // Helper: animate current tutorial message out, then run callback
+    
+// ====================== TYPEWRITER FOR ASSESSMENT MESSAGES ONLY (exact copy of tutorial) ======================
+
+async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetElement = null) {
+  const textEl = targetElement || document.getElementById('tutorial-text');
+  if (!textEl) return;
+
+  textEl.innerHTML = '';
+  textEl.style.opacity = '1';
+  textEl.style.visibility = 'visible';
+  textEl.style.color = '#222';
+
+  const temp = document.createElement('div');
+  temp.innerHTML = htmlContent;
+  const segments = [];
+
+  function parseNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent;
+      if (text.length > 0) segments.push({ type: 'text', content: text });
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      if (node.tagName === 'IMG') {
+        segments.push({ type: 'image', src: node.src, alt: node.alt || '', className: node.className });
+      } else {
+        node.childNodes.forEach(parseNode);
+      }
+    }
+  }
+  temp.childNodes.forEach(parseNode);
+
+  let i = 0;
+
+  function typeNext() {
+    if (i >= segments.length) {
+      onComplete();
+      return;
+    }
+
+    const seg = segments[i];
+
+    if (seg.type === 'image') {
+      const img = document.createElement('img');
+      img.src = seg.src;
+      img.alt = seg.alt;
+      img.className = seg.className || 'inline-doodle';
+      textEl.appendChild(img);
+      i++;
+      scrollScoreToBottom();           // ← live scroll on images
+      typeNext();
+      return;
+    }
+
+    const span = document.createElement('span');
+    textEl.appendChild(span);
+
+    let charIndex = 0;
+
+    function typeChar() {
+      if (charIndex < seg.content.length) {
+        span.appendChild(document.createTextNode(seg.content[charIndex]));
+        if (charIndex % 3 === 0) playSound('flap');
+
+        charIndex++;
+
+        // === LIVE SCROLL: call every character (very smooth) ===
+        scrollScoreToBottom();
+
+        const delay = ',.!'.includes(seg.content[charIndex - 1]) ? 280 : 20;
+        setTimeout(typeChar, delay);
+      } else {
+        i++;
+        scrollScoreToBottom();           // ← also scroll after each full word/sentence
+        typeNext();
+      }
+    }
+    typeChar();
+  }
+
+  typeNext();
+}
     function animateTutorialOut(callback) {
       const panel = document.getElementById('tutorial-panel');
       panel.classList.remove('animate-in');
@@ -4432,13 +4721,12 @@
         { text: 'Resume', id: 'resume-btn', disabled: !(hasGameInProgress || tutorialInProgress) },
         { text: 'Getting Started', id: 'getting-started-btn', disabled: false },
         { text: 'Arcade', id: 'arcade-btn', disabled: false },
-        { text: 'Campaign', id: 'campaign-btn', disabled: true },   // ← greyed out (secret triple-tap only)
+        { text: 'Campaign', id: 'campaign-btn', disabled: true }, // ← greyed out (secret triple-tap only)
         { text: 'Multiplayer', id: 'multiplayer-btn', disabled: true },
         { text: 'Options', id: 'options-btn', disabled: true }
       ];
 
       buttons.forEach(btnInfo => {
-        // NEW: Show Resume for both normal games AND active tutorial
         if (btnInfo.text === 'Resume' && !hasGameInProgress && !tutorialInProgress) return;
         const btn = document.createElement('button');
         btn.className = 'menu-btn';
@@ -4459,16 +4747,14 @@
 
       // Wire normal buttons
       document.getElementById('arcade-btn').addEventListener('click', showArcadeSubMenu);
-
       const resumeBtn = document.getElementById('resume-btn');
       if (resumeBtn) resumeBtn.addEventListener('click', startGame);
-
       document.getElementById('getting-started-btn').addEventListener('click', showGettingStartedSubMenu);
 
-      // NEW: Setup triple-tap for Campaign button
-      setupCampaignTripleTap();
+      // === TRIPLE-TAP SETUP ===
+      setupCampaignTripleTap();     // ← your existing campaign triple-tap
+      setupMultiplayerTestTap();    // ← NEW: secret triple-tap for instant score screen
     }
-    // Triple-tap detector (secret for now)
     let campaignTapCount = 0;
     let campaignLastTap = 0;
 
@@ -4493,7 +4779,112 @@
       });
     }
 
-    // Replace the entire showArcadeSubMenu function with this (sets pendingAction before prompt)
+    // === SECRET TRIPLE-TAP ON MULTIPLAYER FOR FAST TESTING ===
+    function setupMultiplayerTestTap() {
+      const multiplayerBtn = document.getElementById('multiplayer-btn');
+      if (!multiplayerBtn) return;
+
+      let tapCount = 0;
+      let lastTap = 0;
+
+      multiplayerBtn.addEventListener('click', () => {
+        const now = Date.now();
+        if (now - lastTap < 500) {
+          tapCount++;
+        } else {
+          tapCount = 1;
+        }
+        lastTap = now;
+
+        if (tapCount >= 3) {
+          tapCount = 0;
+          playSound('button');
+          console.log("🚀 SECRET: Jumping straight to score screen for testing");
+          instantTestScoreScreen();
+        }
+      });
+    }
+
+    function instantTestScoreScreen() {
+      console.log("🚀 SECRET TEST: Jumping directly to FINISHED scoring screen");
+
+      // === ONLY hide menu panels — NEVER touch the score modal ===
+      const menuPanels = [
+        'main-menu', 'arcade-sub-menu', 'abandon-prompt',
+        'getting-started-sub-menu', 'mission-detail',
+        'campaign-menu', 'campaign-intro', 'tutorial-choice-prompt'
+      ];
+      menuPanels.forEach(id => {
+        const panel = document.getElementById(id);
+        if (panel) {
+          panel.style.display = 'none';
+          panel.classList.remove('active', 'hiding', 'menu-panel');
+        }
+      });
+
+      // 1. Full clean reset of the score system
+      resetScoreModal();
+
+      // 2. Fake completed game data — diamonds + dots only
+      currentMission = null;
+      activeCampaign = null;
+      scoreDetectedDoodles = [];
+      scoreConfidences = [];
+      scoreCellCanvases = [];
+
+      const numDiamonds = Math.floor(Math.random() * 70) + 1; // 1 to 70 diamonds
+      const totalCells = 77;
+
+      console.log(`🔢 Test run: ${numDiamonds} diamonds + ${totalCells - numDiamonds} dots`);
+
+      for (let i = 0; i < totalCells; i++) {
+        const doodle = (i < numDiamonds) ? 'diamond' : 'dot';
+        scoreDetectedDoodles.push(doodle);
+        scoreConfidences.push(0.94);
+
+        // Simple canvas for the grid (still required)
+        const c = document.createElement('canvas');
+        c.width = 224; c.height = 224;
+        scoreCellCanvases.push(c);
+      }
+
+      scoreBuildBoard();
+
+      // 3. Open the score modal
+      openModal('score-modal');
+
+      // 4. Force final scoring layout after modal slide-in
+      setTimeout(() => {
+        // Hide transitional UI
+        document.querySelector('.camera-container').style.display = 'none';
+        document.getElementById('score-adjustment-mode').style.display = 'none';
+        document.getElementById('score-camera-instructions').style.display = 'none';
+        document.getElementById('score-confirm-warp-btn').style.display = 'none';
+        document.getElementById('score-snap-btn').style.display = 'none';
+        document.getElementById('score-tweak-prompt').style.display = 'none';
+        document.getElementById('loading-container').style.display = 'none';
+
+        // Show final elements
+        document.getElementById('score-detected-grid').style.display = 'grid';
+        document.getElementById('score-review-container').style.display = 'none';
+        document.getElementById('score-buttons-container').style.display = 'none';
+
+        scoreRenderDetectedGrid();
+
+        const tally = document.getElementById('score-tally');
+        tally.style.display = 'block';
+        tally.innerHTML = '';
+
+        const scoreLine = document.getElementById('score-line');
+        scoreLine.style.display = 'block';
+
+        // Run the scoring animation (now very fast)
+        runScoringAnimation();
+
+        console.log("✅ Clean finished scoring state loaded with diamonds + dots only");
+      }, 420);
+    }
+
     function showArcadeSubMenu() {
       if (hasGameInProgress || tutorialInProgress) {
         pendingNewGameAction = 'arcade';
@@ -4897,6 +5288,7 @@
 
     function startGame() {
       if (menuAdjustedTimeout) clearTimeout(menuAdjustedTimeout);
+      resetShuffleZone();
 
       // NEW: Tutorial resume handling — just restore visibility (no re-typing)
       if (tutorialInProgress && tutorialStep > 0) {
@@ -5037,6 +5429,7 @@
       }
 
       deck = { ...defaultDeck };
+      resetShuffleZone();
       activeCampaign = null;
 
       // NEW: Clear mission state when switching to Arcade (prevents tutorial from re-triggering)
@@ -5065,6 +5458,7 @@
       } else {
         hasGameInProgress = false; // New mission starts fresh
         deck = { ...defaultDeck }; // Reset deck
+        resetShuffleZone();
         startGame(); // Launch game with currentMission set
         hideMenuPanel('mission-detail'); // ← Replaced style.display = 'none'
       }
@@ -5622,123 +6016,201 @@
       showMainMenu(); // Back to main menu (or adjust to arcade-sub if needed)
     });
 
-    // Find this existing event listener in your <script> (around line ~500ish) and replace it entirely:
-    const shuffleContainer = document.getElementById('shuffle-container');
+    
+const shuffleContainer = document.getElementById('shuffle-container');
 
-    /* Replace the existing shuffleContainer.addEventListener('click', ...) in <script> with this full version (adds shifting class add/remove) */
-    shuffleContainer.addEventListener('click', () => {
-      playSound('shuffle');
-      playSound('button');
-      // Add the spinning class to trigger both animations
-      shuffleContainer.classList.add('spinning');
-      // NEW: Add shifting to backgrounds
-      const headerBg = document.getElementById('header-bg');
-      const footerBg = document.getElementById('footer-bg');
-      headerBg.classList.add('shifting');
-      footerBg.classList.add('shifting');
-      // Remove classes after the animation finishes so they can animate again
+shuffleContainer.addEventListener('click', () => {
+  playSound('shuffle');
+  playSound('button');
+  // Clear all checkbox lines when shuffle is pressed
+document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+  cb.classList.remove('checked');
+  // NEW: Reset column locking on shuffle
+updateColumnLock();
+});
+
+// === RIGHT AFTER playSound('button');  (fade OUT at the start of shuffle) ===
+document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+  cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
+  cb.style.opacity = '0';
+});
+
+  shuffleContainer.classList.add('spinning');
+
+  const headerBg = document.getElementById('header-bg');
+  const footerBg = document.getElementById('footer-bg');
+  headerBg.classList.add('shifting');
+  footerBg.classList.add('shifting');
+
+  setTimeout(() => {
+    shuffleContainer.classList.remove('spinning');
+    headerBg.classList.remove('shifting');
+    footerBg.classList.remove('shifting');
+  }, 1350);
+
+  // Unselect any selected doodle and hide tooltip
+  mainDoodleContainers.forEach(div => div.classList.remove('selected'));
+  hideTooltip();
+
+  // === Original draw logic (unchanged) ===
+  let drawn = drawSix();
+  if (!drawn || drawn.length < 6) return;
+
+  // Rigging for tutorial (unchanged)
+  if (currentMission === 1 && !firstTutorialShuffleDone) {
+    firstTutorialShuffleDone = true;
+    drawn[1] = 'circle';
+    drawn[3] = 'triangle';
+    drawn[5] = 'line';
+  }
+  if (tutorialStep === 19 || window.nextShuffleRiggedLeft) {
+    drawn[0] = 'dot';
+    drawn[2] = 'dot';
+    drawn[4] = 'drop';
+    window.nextShuffleRiggedLeft = false;
+  }
+
+  const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
+
+  // Outgoing doodles
+  order.forEach((id, i) => {
+    const div = document.getElementById(id);
+    if (div && div.style.backgroundImage) {
       setTimeout(() => {
-        shuffleContainer.classList.remove('spinning');
-        headerBg.classList.remove('shifting');
-        footerBg.classList.remove('shifting');
-      }, 1350);
-      // NEW: Unselect any selected doodle and hide tooltip before shuffling
-      mainDoodleContainers.forEach(div => div.classList.remove('selected'));
-      hideTooltip();
-      // Original shuffle logic (unchanged)
+        const spreadX = (Math.random() * 24 - 12).toFixed(2) + 'cqi';
+        div.style.transition = 'transform 0.33s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
+        div.style.transform = `translate(${spreadX}, 120dvh) rotate(-720deg)`;
+      }, i * 5);
+    }
+  });
 
-      // === RIGGED FIRST SHUFFLE FOR "FIRST SCRIBBLES" (Mission 1 only) ===
-      let drawn = drawSix();
-      if (!drawn || drawn.length < 6) return;   // safety check
+  // Incoming doodles + checkboxes that follow them
+setTimeout(() => {
+  order.forEach((id, i) => {
+    const div = document.getElementById(id);
+    if (!div) return;
 
-      // Rig only the VERY FIRST shuffle in "First Scribbles" (Mission 1)
-      if (currentMission === 1 && !firstTutorialShuffleDone) {
-        firstTutorialShuffleDone = true;
+    // === DOODLE SETUP (unchanged) ===
+    div.style.transition = 'none';
+    const startSpreadX = (Math.random() * 36 - 18).toFixed(2) + 'cqi';
+    div.style.transform = `translate(${startSpreadX}, 100dvh) rotate(720deg)`;
+    div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
+    div.dataset.doodle = drawn[i];
 
-        drawn[1] = 'circle';    // right column top
-        drawn[3] = 'triangle';  // right column middle
-        drawn[5] = 'line';      // right column bottom
+    void div.offsetWidth;
 
-        console.log('✅ FIRST SCRIBBLES RIGGED — Right column forced to circle / triangle / line');
-      }
-      // === TUTORIAL STEP 19: RIG LEFT COLUMN (dot, dot, drop) ===
-      if (tutorialStep === 19 || window.nextShuffleRiggedLeft) {
-        drawn[0] = 'dot';   // left top
-        drawn[2] = 'dot';   // left middle
-        drawn[4] = 'drop';  // left bottom
-        window.nextShuffleRiggedLeft = false; // clear the flag after use
-        console.log('✅ Step 19 rigged shuffle applied (left = dot / dot / drop)');
-      }
+    const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi';
+    const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi';
+    const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg';
 
-      const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
-      order.forEach((id, i) => {
-        const div = document.getElementById(id);
-        if (div && div.style.backgroundImage) {
-          setTimeout(() => {
-            // Outgoing doodles – add random horizontal spread as they fall
-            const spreadX = (Math.random() * 24 - 12).toFixed(2) + 'cqi'; // ±12cqi (tweak range for more/less spread)
-            div.style.transition = 'transform 0.33s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
-            div.style.transform = `translate(${spreadX}, 120dvh) rotate(-720deg)`;
-          }, i * 5);
-        }
-      });
-      setTimeout(() => {
-        order.forEach((id, i) => {
-          const div = document.getElementById(id);
-          if (!div) return;
-          div.style.transition = 'none';
-          // Incoming doodles – start with random horizontal spread below screen
-          const startSpreadX = (Math.random() * 36 - 18).toFixed(2) + 'cqi'; // ±12cqi (tweak range for more/less spread)
-          div.style.transform = `translate(${startSpreadX}, 100dvh) rotate(720deg)`;
-          div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
-          div.dataset.doodle = drawn[i];
-          void div.offsetWidth;
-          // === ORGANIC RANDOM SETTLE IN CQI ===
-          const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi'; // ±1.2 cqi left/right
-          const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi'; // ±0.8 cqi up/down
-          const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg'; // ±2° rotation
-          setTimeout(() => {
-            div.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            div.style.transform = `translate(${rx}, ${ry}) rotate(${rr})`;
-          }, i * 50);
-        });
-      }, 350);
-      // Tutorial advancement after shuffle
-      if (tutorialStep === 2) {
-        tutorialStep = 3; // mark immediately
-        animateTutorialOut(() => {
-          // Give the player a moment to see the new doodles
-          setTimeout(() => {
-            showTutorialStep(3);   // ← now uses the new data-driven system
-          }, 1250);
-        });
-      }// === TUTORIAL STEP 19 → STEP 20 (advance after shuffle) ===
-      if (tutorialStep === 19) {
-        animateTutorialOut(() => {
-          // Give the player a moment to see the rigged doodles settle
-          setTimeout(() => {
-            showTutorialStep(20);
-          }, 1400);   // ← tweak this number if you want it faster/slower
-        });
-      }
+    // Final settle for doodle
+    setTimeout(() => {
+      div.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      div.style.transform = `translate(${rx}, ${ry}) rotate(${rr})`;
+    }, i * 50);
+// === NEW: Apply the EXACT SAME final transform to the matching checkbox ===
+const checkboxId = id.replace('doodle-', 'cb-');
+const cb = document.getElementById(checkboxId);
+if (cb) {
+  setTimeout(() => {
+    cb.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    cb.style.transform = `translate(${rx}, ${ry}) rotate(${rr}) translateY(-50%)`;
+  }, i * 50);
+}
+  });
+
+// === INSIDE the incoming doodle setTimeout (fade IN after doodles settle) ===
+setTimeout(() => {
+  document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+    cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
+    cb.style.opacity = '1';
+  });
+}, 720);   // 720ms gives a nice, intentional pause after the doodles land
+
+}, 350);
+
+  // Tutorial advancement (unchanged)
+  if (tutorialStep === 2) {
+    tutorialStep = 3;
+    animateTutorialOut(() => setTimeout(() => showTutorialStep(3), 1250));
+  }
+  if (tutorialStep === 19) {
+    animateTutorialOut(() => setTimeout(() => showTutorialStep(20), 1400));
+  }
+});
+
+const mainDoodleContainers = document.querySelectorAll('#shuffle-zone > div[id^="doodle-"]');
+
+mainDoodleContainers.forEach(div => {
+  div.style.cursor = 'pointer';
+  div.addEventListener('click', (e) => {
+    // NEW: Completely ignore any click that started on a checkbox
+    if (e.target.closest('.doodle-checkbox')) {
+      return;
+    }
+
+    playSound('button');
+    mainDoodleContainers.forEach(d => d.classList.remove('selected'));
+    div.classList.add('selected');
+    const currentTransform = div.style.transform || 'translate(0, 0) rotate(0deg)';
+    div.style.setProperty('--base-transform', currentTransform);
+    hideTooltip();
+    renderGuide(div.dataset.doodle);
+    openModal('guide-modal');
+  });
+});
+
+// === CHECKBOX CLICK HANDLERS (animated circle + smart column locking) ===
+document.querySelectorAll('.doodle-checkbox').forEach(checkbox => {
+  checkbox.addEventListener('click', (e) => {
+    e.stopPropagation();
+    playSound('circle');
+
+    checkbox.classList.toggle('checked');
+
+    // FORCE immediate restart of the transition on uncheck
+    void checkbox.offsetHeight;
+
+    // Update column locking
+    updateColumnLock();
+  });
+});
+
+// === SMART COLUMN LOCKING - FIXED VERSION ===
+function updateColumnLock() {
+  const leftCbs = document.querySelectorAll('#cb-l1, #cb-l2, #cb-l3');
+  const rightCbs = document.querySelectorAll('#cb-r1, #cb-r2, #cb-r3');
+
+  const anyLeftChecked = Array.from(leftCbs).some(cb => cb.classList.contains('checked'));
+  const anyRightChecked = Array.from(rightCbs).some(cb => cb.classList.contains('checked'));
+
+  // Reset ALL checkboxes to fully visible first
+  leftCbs.forEach(cb => {
+    cb.style.transition = 'opacity 320ms ease';
+    cb.style.opacity = '1';
+    cb.style.pointerEvents = 'auto';
+  });
+  rightCbs.forEach(cb => {
+    cb.style.transition = 'opacity 320ms ease';
+    cb.style.opacity = '1';
+    cb.style.pointerEvents = 'auto';
+  });
+
+  // Now lock the opposite column only if one side is active
+  if (anyLeftChecked && !anyRightChecked) {
+    rightCbs.forEach(cb => {
+      cb.style.opacity = '0';
+      cb.style.pointerEvents = 'none';
     });
-
-    const mainDoodleContainers = document.querySelectorAll('#shuffle-zone > div[id^="doodle-"]');
-    mainDoodleContainers.forEach(div => {
-      div.style.cursor = 'pointer';
-      div.addEventListener('click', () => {
-        playSound('button');
-        mainDoodleContainers.forEach(d => d.classList.remove('selected'));
-        div.classList.add('selected');
-        const currentTransform = div.style.transform || 'translate(0, 0) rotate(0deg)';
-        div.style.setProperty('--base-transform', currentTransform);
-        hideTooltip(); // In case open from elsewhere
-        renderGuide(div.dataset.doodle);
-        openModal('guide-modal');
-      });
+  } else if (anyRightChecked && !anyLeftChecked) {
+    leftCbs.forEach(cb => {
+      cb.style.opacity = '0';
+      cb.style.pointerEvents = 'none';
     });
-
-    // Replace the existing function populateLearnGrid() { ... } in <script> with this updated version (adds new badge for mission 2-5 new doodles)
+  }
+  // If no checkboxes are checked at all → both columns stay visible (already reset above)
+}
+// Replace the existing function populateLearnGrid() { ... } in <script> with this updated version (adds new badge for mission 2-5 new doodles)
     function populateLearnGrid() {
       const grid = document.getElementById('learn-grid');
       grid.innerHTML = '';
@@ -6521,17 +6993,17 @@
       const srcPts = cv.matFromArray(4, 1, cv.CV_32FC2, scoreCornerPoints.flatMap(p => [p.x, p.y]));
       const dstPts = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, scoreCapturedMat.cols, 0, scoreCapturedMat.cols, scoreCapturedMat.rows, 0, scoreCapturedMat.rows]);
 
-        const M = cv.getPerspectiveTransform(srcPts, dstPts);
-  cv.warpPerspective(scoreCapturedMat, dst, M, new cv.Size(scoreCapturedMat.cols, scoreCapturedMat.rows));
+      const M = cv.getPerspectiveTransform(srcPts, dstPts);
+      cv.warpPerspective(scoreCapturedMat, dst, M, new cv.Size(scoreCapturedMat.cols, scoreCapturedMat.rows));
 
-  // === NEW: CREATE GREYSCALE VERSION FOR MODEL AND TRAINING EXPORT ===
-  if (scoreWarpedGrayMat) scoreWarpedGrayMat.delete(); // clean up previous
-  scoreWarpedGrayMat = new cv.Mat();
-  cv.cvtColor(dst, scoreWarpedGrayMat, cv.COLOR_RGBA2GRAY);
-  // ================================================================
+      // === NEW: CREATE GREYSCALE VERSION FOR MODEL AND TRAINING EXPORT ===
+      if (scoreWarpedGrayMat) scoreWarpedGrayMat.delete(); // clean up previous
+      scoreWarpedGrayMat = new cv.Mat();
+      cv.cvtColor(dst, scoreWarpedGrayMat, cv.COLOR_RGBA2GRAY);
+      // ================================================================
 
-  cv.imshow(scoreWarpedCanvas, dst);           // keep the colorful preview for the user
-  dst.delete(); M.delete(); srcPts.delete(); dstPts.delete();
+      cv.imshow(scoreWarpedCanvas, dst);           // keep the colorful preview for the user
+      dst.delete(); M.delete(); srcPts.delete(); dstPts.delete();
     }
 
     function wireCornerDragListeners(canvas) {
@@ -6675,17 +7147,17 @@
           cellCanvas.width = 224;
           cellCanvas.height = 224;
           const cellCtx = cellCanvas.getContext('2d');
-              // NEW: Use greyscale Mat instead of the color canvas
-    const cellRect = new cv.Rect(
-      Math.round(pc * cellW),
-      Math.round(r * cellH),
-      Math.round(cellW),
-      Math.round(cellH)
-    );
-    const cellMat = scoreWarpedGrayMat.roi(cellRect);
-    cv.resize(cellMat, cellMat, new cv.Size(224, 224));
-    cv.imshow(cellCanvas, cellMat);
-    cellMat.delete();
+          // NEW: Use greyscale Mat instead of the color canvas
+          const cellRect = new cv.Rect(
+            Math.round(pc * cellW),
+            Math.round(r * cellH),
+            Math.round(cellW),
+            Math.round(cellH)
+          );
+          const cellMat = scoreWarpedGrayMat.roi(cellRect);
+          cv.resize(cellMat, cellMat, new cv.Size(224, 224));
+          cv.imshow(cellCanvas, cellMat);
+          cellMat.delete();
           scoreCellCanvases.push(cellCanvas);
 
           tasks.push((async () => {
@@ -6739,6 +7211,8 @@
       document.getElementById('score-export-btn').onclick = scoreExportTrainingData;
 
     }
+
+
 
     function renderReviewRows() {
       const reviewContainer = document.getElementById('score-review-container');
@@ -6847,10 +7321,10 @@
         const filename = `${className}${randomNum}.png`;
         promises.push(new Promise(resolve => {
           makeCanvasGrayscale(scoreCellCanvases[i]);   // ← convert to greyscale before export
-scoreCellCanvases[i].toBlob(blob => {
-  zip.file(filename, blob);
-  resolve();
-}, 'image/png');
+          scoreCellCanvases[i].toBlob(blob => {
+            zip.file(filename, blob);
+            resolve();
+          }, 'image/png');
         }));
       });
       await Promise.all(promises);
@@ -6863,19 +7337,19 @@ scoreCellCanvases[i].toBlob(blob => {
       URL.revokeObjectURL(url);
     }
 
-function makeCanvasGrayscale(canvas) {
-  const ctx = canvas.getContext('2d');
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const data = imageData.data;
-  for (let i = 0; i < data.length; i += 4) {
-    const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
-    data[i] = gray;     // R
-    data[i + 1] = gray; // G
-    data[i + 2] = gray; // B
-  }
-  ctx.putImageData(imageData, 0, 0);
-  return canvas;
-}
+    function makeCanvasGrayscale(canvas) {
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+        data[i] = gray;     // R
+        data[i + 1] = gray; // G
+        data[i + 2] = gray; // B
+      }
+      ctx.putImageData(imageData, 0, 0);
+      return canvas;
+    }
 
     async function initScoreScanner() {
       resetScoreModal();
@@ -7060,6 +7534,31 @@ function makeCanvasGrayscale(canvas) {
 
       console.log('✅ Score modal fully reset – ready for next scan');
     }
+    
+    function resetShuffleZone() {
+  const doodleIds = ['doodle-l1','doodle-l2','doodle-l3','doodle-r1','doodle-r2','doodle-r3'];
+  doodleIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.backgroundImage = '';      // clear image
+      el.dataset.doodle = '';             // clear data
+      el.classList.remove('selected');
+      el.style.transition = 'none';
+      el.style.transform = 'translateY(100dvh) rotate(0deg)'; // initial off-screen state
+      void el.offsetHeight;               // force reflow
+    }
+  });
+
+  // Reset checkboxes too
+  document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+    cb.classList.remove('checked');
+    cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
+    cb.style.opacity = '0';
+  });
+
+  console.log('✅ Shuffle zone fully reset for new game');
+}
+
     populateLearnGrid();
     // ====================== FULL SCORING ANIMATION ======================
     const scoringRules = [
@@ -7643,198 +8142,377 @@ function makeCanvasGrayscale(canvas) {
       tally.appendChild(row);
     }
 
-    // Replace the existing async function runScoringAnimation() { ... } in <script> with this updated version (uses uniqueScoringTypes for variety count display)
-    async function runScoringAnimation() {
-      console.log("SCORE SHEET clicked – starting full animation");
-      scoreBuildBoard();
-      scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
+    function scrollScoreToBottom() {
+  const content = document.getElementById('score-content');
+  if (!content) return;
+
+  // Double requestAnimationFrame = guaranteed after current frame + after next paint
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      // Force full layout recalculation
+      void content.offsetHeight;
+      void content.scrollHeight;
+
+      // Primary method — most reliable
+      content.scrollTop = content.scrollHeight;
+
+      // Backup: scroll the last child of tally (or content) into view
       const tally = document.getElementById('score-tally');
-      tally.style.display = 'block';
-      tally.innerHTML = '';
-      let total = 0;
-      // Pre-compute all scoring results
-      const nonZeroResults = [];
-      for (let rule of scoringRules) {
-        let result = rule.base !== undefined
-          ? calculateBase(rule.type, rule.base)
-          : rule.calc();
-        let subtotal = result.total || 0;
-        if (subtotal !== 0) {
-          nonZeroResults.push({ rule, result, subtotal });
-        }
-        total += subtotal;
-      }
-      // Variety bonus (NEW: based on nonZeroResults.length = unique scoring types with tally rows)
-      let uniqueScoringTypes = nonZeroResults.length;
-      let bonus = (uniqueScoringTypes >= 1 && uniqueScoringTypes <= 5) ? -10 : uniqueScoringTypes === 6 ? 1 : uniqueScoringTypes === 7 ? 5 : uniqueScoringTypes === 8 ? 10 : uniqueScoringTypes === 9 ? 16 : uniqueScoringTypes === 10 ? 23 : uniqueScoringTypes === 11 ? 31 : uniqueScoringTypes >= 12 ? 40 : 0;
-      // NEW: Only if allowed (arcade or mission 5+)
-      if (currentMission === null || currentMission >= 5) {
-        total += bonus;
-      }
-      // === ANIMATE EACH DOODLE TYPE GROUP ===
-      for (let entry of nonZeroResults) {
-        const { rule, result, subtotal } = entry;
-        // For normal rules use perCellList / positions
-        // For 3D set use special allPositions for highlighting
-        const bubbleItems = result.perCellList || result.positions || [];
-        const highlightItems = (rule.type === '3dset' && result.allPositions)
-          ? result.allPositions
-          : bubbleItems;
-        if (highlightItems.length === 0) continue;
-        // Fade everything except the current group
-        scoreGridCells.forEach(gridCell => {
-          if (gridCell.dataset.doodle && gridCell.dataset.doodle !== 'unknown') {
-            gridCell.classList.add('low-opacity', 'non-scoring');
-          }
+      const lastChild = tally && tally.lastElementChild 
+                        ? tally.lastElementChild 
+                        : content.lastElementChild;
+
+      if (lastChild) {
+        lastChild.scrollIntoView({ 
+          behavior: 'instant',   // instant = no lag
+          block: 'end'
         });
-        highlightItems.forEach(item => {
-          const gridIdx = item.r * 11 + item.c;
-          const cell = scoreGridCells[gridIdx];
-          if (cell) cell.classList.remove('low-opacity', 'non-scoring');
-        });
-        void document.body.offsetHeight; // Force reflow
-        await new Promise(r => setTimeout(r, 400)); // Give fade time to be visible
-        // === POINT BUBBLE SOUNDS (max 4 per doodle type) ===
-        let soundCount = 0;
-        const maxSounds = 4;
-        const animationPromises = [];
-        for (let i = 0; i < bubbleItems.length; i++) {
-          const item = bubbleItems[i];
-          const gridIdx = item.r * 11 + item.c;
-          const cell = scoreGridCells[gridIdx];
-          if (cell) {
-            setTimeout(() => {
-              if (soundCount < maxSounds && item.pts !== null && item.pts !== 0) {
-                playSound('pointbubble');
-                soundCount++;
-              }
-              animationPromises.push(animateCell(cell, item.pts !== undefined ? item.pts : null));
-            }, i * 12);
+      }
+
+      console.log('✅ Scrolled to bottom (scrollHeight now:', content.scrollHeight, ')');
+    });
+  });
+}
+
+// ====================== TYPEWRITER FOR ASSESSMENT (reuses tutorial logic) ======================
+function typeScoreMessage(targetEl, htmlContent, onComplete = () => {}) {
+  targetEl.innerHTML = '';
+  targetEl.style.opacity = '1';
+  targetEl.style.visibility = 'visible';
+  targetEl.style.color = '#222';
+
+  const temp = document.createElement('div');
+  temp.innerHTML = htmlContent;
+  const segments = [];
+  function parseNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent;
+      if (text.length > 0) segments.push({ type: 'text', content: text });
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      if (node.tagName === 'IMG') {
+        segments.push({ type: 'image', src: node.src, alt: node.alt || '', className: node.className });
+      } else {
+        node.childNodes.forEach(parseNode);
+      }
+    }
+  }
+  temp.childNodes.forEach(parseNode);
+
+  let i = 0;
+  function typeNext() {
+    if (i >= segments.length) {
+      onComplete();
+      return;
+    }
+    const seg = segments[i];
+    if (seg.type === 'image') {
+      const img = document.createElement('img');
+      img.src = seg.src;
+      img.alt = seg.alt;
+      img.className = seg.className || 'inline-doodle';
+      targetEl.appendChild(img);
+      i++;
+      typeNext();
+      return;
+    }
+    const span = document.createElement('span');
+    targetEl.appendChild(span);
+    let charIndex = 0;
+    function typeChar() {
+      if (charIndex < seg.content.length) {
+        span.appendChild(document.createTextNode(seg.content[charIndex]));
+        if (charIndex % 3 === 0) playSound('flap');
+        charIndex++;
+        setTimeout(typeChar, 20);
+      } else {
+        i++;
+        typeNext();
+      }
+    }
+    typeChar();
+  }
+  typeNext();
+}
+
+async function runScoringAnimation() {
+  console.log("SCORE SHEET clicked – starting full animation");
+  scoreBuildBoard();
+  scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
+
+  const tally = document.getElementById('score-tally');
+  tally.style.display = 'block';
+  tally.innerHTML = '';
+
+  // Hide score line until the very end
+  const scoreLineContainer = document.getElementById('score-line');
+  scoreLineContainer.style.display = 'none';
+
+  let total = 0;
+  const nonZeroResults = [];
+
+  for (let rule of scoringRules) {
+    let result = rule.base !== undefined ? calculateBase(rule.type, rule.base) : rule.calc();
+    let subtotal = result.total || 0;
+    if (subtotal !== 0) nonZeroResults.push({ rule, result, subtotal });
+    total += subtotal;
+  }
+
+  let uniqueScoringTypes = nonZeroResults.length;
+  let bonus = (uniqueScoringTypes >= 1 && uniqueScoringTypes <= 5) ? -10 :
+    uniqueScoringTypes === 6 ? 1 : uniqueScoringTypes === 7 ? 5 :
+      uniqueScoringTypes === 8 ? 10 : uniqueScoringTypes === 9 ? 16 :
+        uniqueScoringTypes === 10 ? 23 : uniqueScoringTypes === 11 ? 31 :
+          uniqueScoringTypes >= 12 ? 40 : 0;
+  if (currentMission === null || currentMission >= 5) total += bonus;
+
+  // === Animate individual doodle rows ===
+  for (let entry of nonZeroResults) {
+    const { rule, result, subtotal } = entry;
+    const bubbleItems = result.perCellList || result.positions || [];
+    const highlightItems = (rule.type === '3dset' && result.allPositions) ? result.allPositions : bubbleItems;
+
+    if (highlightItems.length === 0) continue;
+
+    scoreGridCells.forEach(gridCell => gridCell.classList.add('low-opacity', 'non-scoring'));
+    highlightItems.forEach(item => {
+      const cell = scoreGridCells[item.r * 11 + item.c];
+      if (cell) cell.classList.remove('low-opacity', 'non-scoring');
+    });
+
+    await new Promise(r => setTimeout(r, 400));
+
+    let soundCount = 0;
+    const maxSounds = 4;
+    const animationPromises = [];
+    for (let i = 0; i < bubbleItems.length; i++) {
+      const item = bubbleItems[i];
+      const cell = scoreGridCells[item.r * 11 + item.c];
+      if (cell) {
+        setTimeout(() => {
+          if (soundCount < maxSounds && item.pts !== null && item.pts !== 0) {
+            playSound('pointbubble');
+            soundCount++;
           }
-        }
+          animationPromises.push(animateCell(cell, item.pts !== undefined ? item.pts : null));
+        }, i * 12);
+      }
+    }
         await Promise.all(animationPromises);
-        // === TALLY ROW (special 3-image row for 3D set) ===
-        if (rule.type === '3dset') {
-          const row = document.createElement('div');
-          row.className = 'tally-row';
-          // Three doodles in order: cylinder, cube, pyramid
-          ['cylinder', 'cube', 'pyramid'].forEach(doodle => {
-            const img = document.createElement('img');
-            img.src = `images/${doodle}.png`;
-            img.style.width = '10cqi';
-            img.style.height = '10cqi';
-            img.style.objectFit = 'contain';
-            row.appendChild(img);
-          });
-          const line = document.createElement('div'); line.className = 'tally-line';
-          const scoreBox = document.createElement('div');
-          scoreBox.className = 'score-box';
-          scoreBox.style.backgroundImage = "url('images/purplepointbubble.png')";
-          scoreBox.style.backgroundSize = 'contain';
-          scoreBox.style.backgroundRepeat = 'no-repeat';
-          scoreBox.style.backgroundPosition = 'center';
-          scoreBox.style.display = 'flex';
-          scoreBox.style.alignItems = 'center';
-          scoreBox.style.justifyContent = 'center';
-          scoreBox.style.color = '#fff';
-          scoreBox.style.textShadow = '0 1px 2px #000';
-          scoreBox.textContent = `${Math.abs(subtotal)}`;
-          row.append(line, scoreBox);
-          tally.appendChild(row);
-        } else {
-          addTallyRow(rule.type, subtotal);
-        }
-        // Pause before next doodle type
-        await new Promise(r => setTimeout(r, 2800)); // ← Change this number to adjust pause (ms)
-      }
-      // NEW: Animate variety bonus last (if allowed and non-zero)
-      if ((currentMission === null || currentMission >= 5) && bonus !== 0) {
-        addTallyRow('variety', bonus, { unique: uniqueScoringTypes });
-        await new Promise(r => setTimeout(r, 600));
-      }
-      // === REPETITION5 MISSION BONUS (Practice Makes Perfect) ===
-      if (activeCampaign && activeCampaign.code === "repetition5") {
-        const bonus = calculateRepetitionBonus();
-        if (bonus > 0) {
-          total += bonus;
 
-          const row = document.createElement('div');
-          row.className = 'tally-row';
-
-          const label = document.createElement('div');
-          label.style.fontFamily = "'Fira Sans', sans-serif";
-          label.style.fontSize = '5cqi';
-          label.style.color = '#222';
-          label.style.paddingRight = '8cqi';
-          label.style.whiteSpace = 'nowrap';
-          label.textContent = 'Mission Bonus';
-
-          const line = document.createElement('div');
-          line.className = 'tally-line';
-
-          const scoreBox = document.createElement('div');
-          scoreBox.className = 'score-box';
-          scoreBox.style.backgroundImage = "url('images/purplepointbubble.png')";
-          scoreBox.style.backgroundSize = 'contain';
-          scoreBox.style.backgroundRepeat = 'no-repeat';
-          scoreBox.style.backgroundPosition = 'center';
-          scoreBox.style.display = 'flex';
-          scoreBox.style.alignItems = 'center';
-          scoreBox.style.justifyContent = 'center';
-          scoreBox.style.color = '#fff';
-          scoreBox.style.textShadow = '0 1px 2px #000';
-          scoreBox.textContent = `${bonus}`;
-
-          row.append(label, line, scoreBox);
-          tally.appendChild(row);
-
-          await new Promise(r => setTimeout(r, 900)); // nice pause before final total
-        }
-      }
-      // NEW: Restore all doodles to normal view (remove opacity/scale classes)
-      scoreGridCells.forEach(gridCell => {
-        gridCell.classList.remove('low-opacity', 'non-scoring');
+    if (rule.type === '3dset') {
+      const row = document.createElement('div'); 
+      row.className = 'tally-row';
+      ['cylinder', 'cube', 'pyramid'].forEach(d => {
+        const img = document.createElement('img');
+        img.src = `images/${d}.png`;
+        img.style.width = '10cqi';
+        img.style.height = '10cqi';
+        row.appendChild(img);
       });
-      void document.body.offsetHeight; // Reflow for smooth transition back
-      await new Promise(r => setTimeout(r, 400)); // Short pause for fade-back visibility
-      // === FINAL TOTAL (custom text + large bubble) ===
-      const totalContainer = document.createElement('div');
-      totalContainer.style.textAlign = 'center';
-      totalContainer.style.marginTop = '25px';
-      // Text: "Total Score:" in black, Covered By Your Grace
-      const totalText = document.createElement('div');
-      totalText.style.fontFamily = "'Covered By Your Grace', cursive";
-      totalText.style.fontSize = '7.5cqi';
-      totalText.style.fontWeight = '400'; // Normal weight for Grace font
-      totalText.style.color = '#000000'; // Black
-      totalText.textContent = 'Total Score:';
-      totalContainer.appendChild(totalText);
-      // Large purple bubble centered below, 3x size (30cqi w/h, font 9cqi)
-      const totalBubble = document.createElement('div');
-      totalBubble.className = 'score-box';
-      totalBubble.style.backgroundImage = "url('images/purplepointbubble.png')";
-      totalBubble.style.backgroundSize = 'contain';
-      totalBubble.style.backgroundRepeat = 'no-repeat';
-      totalBubble.style.backgroundPosition = 'center';
-      totalBubble.style.display = 'flex';
-      totalBubble.style.alignItems = 'center';
-      totalBubble.style.justifyContent = 'center';
-      totalBubble.style.color = '#fff';
-      totalBubble.style.textShadow = '0 3px 6px #000'; // Scaled shadow for larger size
-      totalBubble.style.fontFamily = "'Fira Sans', sans-serif";
-      totalBubble.style.fontSize = '9cqi'; // 3x original 3cqi
-      totalBubble.style.fontWeight = 'bold';
-      totalBubble.style.width = '30cqi'; // 3x original 10cqi
-      totalBubble.style.height = '30cqi'; // 3x original 10cqi
-      totalBubble.style.minWidth = 'auto';
-      totalBubble.style.padding = '0';
-      totalBubble.style.margin = '2cqi auto 0'; // Centered horizontally, small top margin from text
-      totalBubble.textContent = `${total}`;
-      totalContainer.appendChild(totalBubble);
-      tally.appendChild(totalContainer);
-      document.getElementById('score-new-scan-btn').style.display = 'block';
+      const line = document.createElement('div'); 
+      line.className = 'tally-line';
+      const scoreBox = document.createElement('div'); 
+      scoreBox.className = 'score-box';
+      scoreBox.style.backgroundImage = "url('images/purplepointbubble.png')";
+      scoreBox.textContent = `${Math.abs(subtotal)}`;
+      row.append(line, scoreBox);
+      tally.appendChild(row);
+    } else {
+      addTallyRow(rule.type, subtotal);
     }
 
+    scrollScoreToBottom();           // ← keeps modal pinned to bottom
+    await new Promise(r => setTimeout(r, 2800));
+  }
+
+  // Variety & campaign bonuses
+  if ((currentMission === null || currentMission >= 5) && bonus !== 0) {
+    addTallyRow('variety', bonus, { unique: uniqueScoringTypes });
+    scrollScoreToBottom();
+    await new Promise(r => setTimeout(r, 600));
+  }
+  if (activeCampaign && activeCampaign.code === "repetition5") {
+    const repBonus = calculateRepetitionBonus();
+    if (repBonus > 0) {
+      total += repBonus;
+      const row = document.createElement('div'); row.className = 'tally-row';
+      const label = document.createElement('div');
+      label.style.fontFamily = "'Fira Sans', sans-serif";
+      label.style.fontSize = '5cqi';
+      label.style.color = '#222';
+      label.style.paddingRight = '8cqi';
+      label.style.whiteSpace = 'nowrap';
+      label.textContent = 'Mission Bonus';
+      const line = document.createElement('div'); line.className = 'tally-line';
+      const scoreBox = document.createElement('div'); scoreBox.className = 'score-box';
+      scoreBox.style.backgroundImage = "url('images/purplepointbubble.png')";
+      scoreBox.textContent = `${repBonus}`;
+      row.append(label, line, scoreBox);
+      tally.appendChild(row);
+      scrollScoreToBottom();
+      await new Promise(r => setTimeout(r, 900));
+    }
+  }
+
+  // Restore normal grid
+  scoreGridCells.forEach(gridCell => gridCell.classList.remove('low-opacity', 'non-scoring'));
+
+  // ==================== FINAL TOTAL BUBBLE (appears first) ====================
+  const finalTotalContainer = document.createElement('div');
+  finalTotalContainer.style.textAlign = 'center';
+  finalTotalContainer.style.marginTop = '25px';
+
+  const finalTotalText = document.createElement('div');
+  finalTotalText.style.fontFamily = "'Covered By Your Grace', cursive";
+  finalTotalText.style.fontSize = '7.5cqi';
+  finalTotalText.style.fontWeight = '400';
+  finalTotalText.style.color = '#000000';
+  finalTotalText.textContent = 'Total Score:';
+  finalTotalContainer.appendChild(finalTotalText);
+
+  const finalTotalBubble = document.createElement('div');
+  finalTotalBubble.className = 'score-box';
+  finalTotalBubble.style.backgroundImage = "url('images/purplepointbubble.png')";
+  finalTotalBubble.style.backgroundSize = 'contain';
+  finalTotalBubble.style.backgroundRepeat = 'no-repeat';
+  finalTotalBubble.style.backgroundPosition = 'center';
+  finalTotalBubble.style.display = 'flex';
+  finalTotalBubble.style.alignItems = 'center';
+  finalTotalBubble.style.justifyContent = 'center';
+  finalTotalBubble.style.color = '#fff';
+  finalTotalBubble.style.textShadow = '0 3px 6px #000';
+  finalTotalBubble.style.fontFamily = "'Fira Sans', sans-serif";
+  finalTotalBubble.style.fontSize = '9cqi';
+  finalTotalBubble.style.fontWeight = 'bold';
+  finalTotalBubble.style.width = '30cqi';
+  finalTotalBubble.style.height = '30cqi';
+  finalTotalBubble.style.margin = '2cqi auto 0';
+  finalTotalBubble.textContent = '0';
+  finalTotalContainer.appendChild(finalTotalBubble);
+
+  tally.appendChild(finalTotalContainer);
+  scrollScoreToBottom();
+
+  // ==================== MOVE SCORE LINE INTO TALLY (so it scrolls naturally) ====================
+  tally.appendChild(scoreLineContainer);
+  scoreLineContainer.style.display = 'block';
+  scrollScoreToBottom();             // ← NEW
+  scrollScoreToBottom();             // extra safety for the line animation
+
+  function animateScoreLine() {
+  return new Promise(resolve => {
+    const squiggle = document.getElementById('score-squiggle');
+    const pin = document.getElementById('score-marker');
+    const maxScore = 200;
+    const normalized = Math.min(Math.max(total, 0), maxScore) / maxScore;
+    const duration = 2200;
+
+    squiggle.style.clipPath = 'inset(0 100% 0 0)';
+    pin.style.transition = 'none';
+    pin.style.left = '0%';
+    void squiggle.offsetHeight;
+
+    let clickInterval = setInterval(() => playSound('selectbutton'), 75);
+    let startTime = Date.now();
+
+    const milestones = [0, 25, 50, 75, 100, 125, 150, 175, 200];
+    const numberDivs = document.querySelectorAll('#score-line .score-numbers > div');
+
+    function animate() {
+      const elapsed = Date.now() - startTime;
+      let progress = Math.min(elapsed / duration, 1);
+      const eased = progress * progress * (3 - 2 * progress);
+
+      const currentLeftPercent = eased * normalized * 100;
+      const currentScore = Math.round(total * eased);
+
+      // === UPDATED WIGGLE: half the rotation, 1/4 the speed ===
+      const wiggle = Math.sin(progress * Math.PI * 3.5) * 5.5;
+
+      pin.style.left = `${currentLeftPercent}%`;
+      pin.style.transform = `translate(-50%, -50%) rotate(${wiggle}deg)`;
+
+      squiggle.style.clipPath = `inset(0 ${100 - currentLeftPercent}% 0 0)`;
+
+      finalTotalBubble.textContent = currentScore;
+
+      numberDivs.forEach((numDiv, i) => {
+        if (currentScore >= milestones[i]) numDiv.classList.add('lit');
+      });
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        clearInterval(clickInterval);
+        // Final gentle settle
+        pin.style.transition = 'transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
+        pin.style.transform = `translate(-50%, -50%) rotate(0deg)`;
+
+        finalTotalBubble.style.transition = 'transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
+        finalTotalBubble.style.transform = 'scale(1.15)';
+        setTimeout(() => {
+          finalTotalBubble.style.transform = 'scale(1)';
+          resolve();
+        }, 300);
+      }
+    }
+    animate();
+  });
+}
+
+animateScoreLine();
+  // Wait for the score pin animation + final bubble pop to finish completely
+  await animateScoreLine();
+
+  // Now show the assessment message
+  showAssessmentMessage(total);
+
+  console.log("✅ Score animation complete – score line is now inside scrollable tally area");
+}
+  
+
+function showAssessmentMessage(totalScore) {
+  const tally = document.getElementById('score-tally');
+  if (!tally) return;
+
+  // Determine which message to show (0–8)
+  let msgIndex = 0;
+  if (totalScore <= 24) msgIndex = 0;
+  else if (totalScore <= 49) msgIndex = 1;
+  else if (totalScore <= 74) msgIndex = 2;
+  else if (totalScore <= 99) msgIndex = 3;
+  else if (totalScore <= 124) msgIndex = 4;
+  else if (totalScore <= 149) msgIndex = 5;
+  else if (totalScore <= 174) msgIndex = 6;
+  else if (totalScore <= 199) msgIndex = 7;
+  else msgIndex = 8;
+
+  const messageText = assessmentMessages[msgIndex];
+
+  // Create the assessment box (no header anymore)
+  const assessmentDiv = document.createElement('div');
+  assessmentDiv.style.marginTop = '18px';           // slightly tighter than before
+  assessmentDiv.style.padding = '4.5cqi 5.5cqi';
+  assessmentDiv.style.background = '#ccecf8';
+  assessmentDiv.style.borderRadius = '3.2cqi';
+  assessmentDiv.style.boxShadow = '0 1.1cqi 4.2cqi rgba(0,0,0,0.12)';
+  assessmentDiv.style.fontFamily = "'Fira Sans', sans-serif";
+  assessmentDiv.style.fontSize = '4.5cqi';
+  assessmentDiv.style.lineHeight = '1.55';
+
+  tally.appendChild(assessmentDiv);
+
+  // Type the clean message directly
+  typeAssessmentMessage(
+    messageText,
+    () => {
+      scrollScoreToBottom();
+      console.log(`✅ Assessment message displayed`);
+    },
+    assessmentDiv
+  );
+}
+    
     document.getElementById('score-score-btn').onclick = () => {
       playSound('score');
       document.getElementById('score-tweak-prompt').style.display = 'none';
@@ -7862,8 +8540,7 @@ function makeCanvasGrayscale(canvas) {
       runScoringAnimation();
     };
 
-    console.log("✅ SCORE SHEET button wired successfully with full animation!");
-    document.getElementById('score-new-scan-btn').onclick = () => {
+document.getElementById('score-new-scan-btn').onclick = () => {
       const tally = document.getElementById('score-tally');
       tally.style.display = 'none';
       tally.innerHTML = '';
@@ -8402,6 +9079,9 @@ function makeCanvasGrayscale(canvas) {
     });
 
     updateMissionDetailButton();
+
+
+    
   </script>
 </body>
 
