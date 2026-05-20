@@ -188,54 +188,78 @@
       cursor: pointer;
     }
 
-.doodle-checkbox {
-  position: absolute;
-  width: 15cqi;
-  height: 15cqi;
-  opacity: 0;
-  transition: opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1);
-  pointer-events: auto;
-  z-index: 20;
-  cursor: pointer;
-}
+    .doodle-checkbox {
+      position: absolute;
+      width: 15cqi;
+      height: 15cqi;
+      opacity: 0;
+      transition: opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1);
+      pointer-events: auto;
+      z-index: 20;
+      cursor: pointer;
+    }
 
-.checkbox-bg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}.check-svg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
+    .checkbox-bg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
 
-.check-path {
-  stroke-dasharray: 120;
-  stroke-dashoffset: 120;
-  transition: stroke-dashoffset 420ms cubic-bezier(0.4, 0, 0.2, 1);
-}
+    .check-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
 
-.doodle-checkbox.checked .check-path {
-  stroke-dashoffset: 0;
-}
+    .check-path {
+      stroke-dasharray: 120;
+      stroke-dashoffset: 120;
+      transition: stroke-dashoffset 420ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-/* LEFT COLUMN (your current values) */
-#cb-l1 { top: 38%; right: 62cqi; }
-#cb-l2 { top: 50%; right: 62cqi; }
-#cb-l3 { top: 62%; right: 62cqi; }
+    .doodle-checkbox.checked .check-path {
+      stroke-dashoffset: 0;
+    }
 
-/* RIGHT COLUMN (your current values) */
-#cb-r1 { top: 38%; left: 62cqi; }
-#cb-r2 { top: 50%; left: 62cqi; }
-#cb-r3 { top: 62%; left: 62cqi; }
+    /* LEFT COLUMN (your current values) */
+    #cb-l1 {
+      top: 38%;
+      right: 62cqi;
+    }
 
-/* Fade-in class */
-.doodle-checkbox.visible {
-  opacity: 1;
-}
+    #cb-l2 {
+      top: 50%;
+      right: 62cqi;
+    }
+
+    #cb-l3 {
+      top: 62%;
+      right: 62cqi;
+    }
+
+    /* RIGHT COLUMN (your current values) */
+    #cb-r1 {
+      top: 38%;
+      left: 62cqi;
+    }
+
+    #cb-r2 {
+      top: 50%;
+      left: 62cqi;
+    }
+
+    #cb-r3 {
+      top: 62%;
+      left: 62cqi;
+    }
+
+    /* Fade-in class */
+    .doodle-checkbox.visible {
+      opacity: 1;
+    }
 
     /* ==================== BUTTONS & NAV ==================== */
     button {
@@ -983,7 +1007,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.4s ease;
-      z-index: 300;
+      z-index: 99999;
       white-space: nowrap;
       max-width: 80cqi;
       text-align: center;
@@ -1608,6 +1632,7 @@
     .adjustment-header .title-small {
       font-family: 'Fira Sans', sans-serif;
       font-size: 4.5cqi;
+      text-align: left;
       color: #222;
       margin-bottom: 1cqi;
     }
@@ -1724,7 +1749,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding-top: 15cqi;
+      padding-top: 24cqi;
       gap: 4cqi;
       z-index: 50;
       container-type: inline-size;
@@ -1745,7 +1770,7 @@
     .menu-btn {
       font-family: 'Covered By Your Grace', cursive;
       font-size: 7cqi;
-      padding: 2cqi 8cqi;
+      padding: 3cqi 8cqi;
       border-radius: 9999px;
       background: #4dbde5;
       color: white;
@@ -1756,8 +1781,51 @@
       text-align: center;
     }
 
+    /* ==================== MAIN MENU BUTTON COLORS ==================== */
+
+    /* Resume - special / important button */
+    #resume-btn {
+      background: #d0ebf5;
+      color: #000000;
+    }
+
+    /* Getting Started - friendly learning button */
+    #getting-started-btn {
+      background: #5fbae9;
+      color: #ffffff;
+    }
+
+    /* Arcade - classic fun mode */
+    #arcade-btn {
+      background: #fbb065;
+      color: #000000;
+    }
+
+    /* Campaign - premium / special mode */
+    #campaign-btn {
+      background: #7f2a8f;
+      color: #ffffff;
+    }
+
+    /* ==================== MENU BUTTON HOVER — ROCKING ANIMATION ==================== */
+    .menu-btn {
+      transition: transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
     .menu-btn:hover {
-      transform: scale(1.05);
+      animation: menuRock 600ms ease-in-out infinite;
+    }
+
+    @keyframes menuRock {
+
+      0%,
+      100% {
+        rotate: -2deg;
+      }
+
+      50% {
+        rotate: 2deg;
+      }
     }
 
     .menu-btn.disabled {
@@ -1767,8 +1835,9 @@
 
     #arcade-play-btn,
     #mission-play-btn {
-      background: #7f2a8f;
-      color: #ffffff;
+      background: #fbb065;
+      color: #000000;
+      margin-top: 4cqi;
     }
 
     #logo-container {
@@ -1809,7 +1878,7 @@
     #arcade-text {
       font-family: 'Fira Sans', sans-serif;
       font-size: 5cqi;
-      text-align: center;
+      text-align: left;
       width: 80cqi;
       color: #222;
     }
@@ -1988,6 +2057,27 @@
 
     .mission-btn:hover {
       transform: scale(1.05);
+    }
+
+    /* ==================== GETTING STARTED MISSION HEADER BUTTONS ==================== */
+    .mission-header-btn {
+      width: 78cqi;
+      /* feels balanced in the menu */
+      max-width: 85cqi;
+      height: auto;
+      display: block;
+      margin: 3cqi auto 2.5cqi;
+      cursor: pointer;
+      transition: transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+      border-radius: 3cqi;
+    }
+
+    .mission-header-btn:hover {
+      transform: scale(1.06);
+    }
+
+    .mission-header-btn:active {
+      transform: scale(0.96);
     }
 
     #getting-started-desc {
@@ -2203,6 +2293,19 @@
       transform: translateY(150%);
     }
 
+    /* ====================== TUTORIAL SLIDE ANIMATIONS ====================== */
+    #tutorial-overlay {
+      transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+
+    #tutorial-overlay.slide-out {
+      transform: translateY(120%) !important;
+    }
+
+    #tutorial-overlay.slide-in {
+      transform: translateY(0) !important;
+    }
+
     .offscreen-top {
       transform: translateY(-100%);
     }
@@ -2210,6 +2313,8 @@
     .offscreen-bottom {
       transform: translateY(100%);
     }
+
+
 
     .slide-in {
       transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
@@ -2322,6 +2427,18 @@
       z-index: 20000 !important;
     }
   </style>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- iOS Safari support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Doodle Bash">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<!-- Theme color -->
+<meta name="theme-color" content="#4dbde5">
 
 </head>
 
@@ -2659,6 +2776,34 @@
 
       #buy-campaign-btn {
         margin-top: 12cqi;
+        background: #fbb065;
+        color: black;
+      }
+
+      /* ==================== SUB-MENU TITLES ==================== */
+      .submenu-title {
+        font-family: 'Covered By Your Grace', cursive;
+        font-size: 9cqi;
+        font-weight: 400;
+        color: #222;
+        text-align: center;
+        margin-bottom: 1cqi;
+        padding: 0 4cqi;
+        line-height: 1.1;
+      }
+
+      /* Individual colors (matching the menu button theme) */
+      .arcade-title {
+        color: #7f2a8f;
+      }
+
+      .getting-started-title {
+        margin-bottom: 6cqi;
+        color: #5fbae9;
+      }
+
+      .campaign-title {
+        color: #7f2a8f;
       }
 
       #score-guide-rectangle {
@@ -2831,6 +2976,12 @@
         margin-bottom: 75cqw;
       }
 
+      /* Force steps 2 and 19 to slide COMPLETELY off-screen when pressing Menu */
+      #tutorial-overlay.slide-out.step2,
+      #tutorial-overlay.slide-out.step19 {
+        transform: translateY(200%) !important;
+      }
+
       /* ====================== TUTORIAL STEP 7 POSITIONING ====================== */
       #tutorial-overlay.step7,
       #tutorial-overlay.step8 {
@@ -2933,7 +3084,8 @@
         height: auto;
         transform: translate(-50%, -50%);
         z-index: 3;
-        transform-origin: bottom center;   /* ← THIS IS THE KEY LINE */
+        transform-origin: bottom center;
+        /* ← THIS IS THE KEY LINE */
       }
 
       #score-numberline {
@@ -3009,61 +3161,67 @@
       <img id="learn-btn" src="images/learnbutton.png" class="nav-btn" alt="Learn">
     </div>
     <div id="shuffle-zone">
-  <!-- LEFT COLUMN DOODLES -->
-  <div id="doodle-l1"></div>
-  <div id="doodle-l2"></div>
-  <div id="doodle-l3"></div>
+      <!-- LEFT COLUMN DOODLES -->
+      <div id="doodle-l1"></div>
+      <div id="doodle-l2"></div>
+      <div id="doodle-l3"></div>
 
-  <!-- RIGHT COLUMN DOODLES -->
-  <div id="doodle-r1"></div>
-  <div id="doodle-r2"></div>
-  <div id="doodle-r3"></div>
-<!-- CHECKBOXES WITH ANIMATED CIRCLE -->
-<!-- LEFT COLUMN -->
-<div id="cb-l1" class="doodle-checkbox">
-  <img src="images/checkboxleft.png" class="checkbox-bg" alt="">
-  <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none" stroke-linecap="round"/>
-  </svg>
-</div>
-<div id="cb-l2" class="doodle-checkbox">
-  <img src="images/checkboxleft.png" class="checkbox-bg" alt="">
-  <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none" stroke-linecap="round"/>
-  </svg>
-</div>
-<div id="cb-l3" class="doodle-checkbox">
-  <img src="images/checkboxleft.png" class="checkbox-bg" alt="">
-  <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none" stroke-linecap="round"/>
-  </svg>
-</div>
+      <!-- RIGHT COLUMN DOODLES -->
+      <div id="doodle-r1"></div>
+      <div id="doodle-r2"></div>
+      <div id="doodle-r3"></div>
+      <!-- CHECKBOXES WITH ANIMATED CIRCLE -->
+      <!-- LEFT COLUMN -->
+      <div id="cb-l1" class="doodle-checkbox">
+        <img src="images/checkboxleft.png" class="checkbox-bg" alt="">
+        <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none"
+            stroke-linecap="round" />
+        </svg>
+      </div>
+      <div id="cb-l2" class="doodle-checkbox">
+        <img src="images/checkboxleft.png" class="checkbox-bg" alt="">
+        <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none"
+            stroke-linecap="round" />
+        </svg>
+      </div>
+      <div id="cb-l3" class="doodle-checkbox">
+        <img src="images/checkboxleft.png" class="checkbox-bg" alt="">
+        <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none"
+            stroke-linecap="round" />
+        </svg>
+      </div>
 
-<!-- RIGHT COLUMN -->
-<div id="cb-r1" class="doodle-checkbox">
-  <img src="images/checkboxright.png" class="checkbox-bg" alt="">
-  <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none" stroke-linecap="round"/>
-  </svg>
-</div>
-<div id="cb-r2" class="doodle-checkbox">
-  <img src="images/checkboxright.png" class="checkbox-bg" alt="">
-  <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none" stroke-linecap="round"/>
-  </svg>
-</div>
-<div id="cb-r3" class="doodle-checkbox">
-  <img src="images/checkboxright.png" class="checkbox-bg" alt="">
-  <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none" stroke-linecap="round"/>
-  </svg>
-</div>
-  <!-- SHUFFLE BUTTON -->
-  <div id="shuffle-container">
-    <img id="shuffle-main" src="images/shufflebutton.png" alt="Shuffle">
-    <img id="shuffle-outline" src="images/shufflebuttonoutline.png" alt="">
-  </div>
-</div>
+      <!-- RIGHT COLUMN -->
+      <div id="cb-r1" class="doodle-checkbox">
+        <img src="images/checkboxright.png" class="checkbox-bg" alt="">
+        <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none"
+            stroke-linecap="round" />
+        </svg>
+      </div>
+      <div id="cb-r2" class="doodle-checkbox">
+        <img src="images/checkboxright.png" class="checkbox-bg" alt="">
+        <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none"
+            stroke-linecap="round" />
+        </svg>
+      </div>
+      <div id="cb-r3" class="doodle-checkbox">
+        <img src="images/checkboxright.png" class="checkbox-bg" alt="">
+        <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle class="check-path" cx="50" cy="50" r="7" stroke="#46b8e9" stroke-width="13" fill="none"
+            stroke-linecap="round" />
+        </svg>
+      </div>
+      <!-- SHUFFLE BUTTON -->
+      <div id="shuffle-container">
+        <img id="shuffle-main" src="images/shufflebutton.png" alt="Shuffle">
+        <img id="shuffle-outline" src="images/shufflebuttonoutline.png" alt="">
+      </div>
+    </div>
     <div id="footer">
       <img id="portfolio-btn" src="images/portfoliobutton.png" class="nav-btn" alt="Portfolio">
 
@@ -3084,7 +3242,10 @@
     <!-- Arcade Sub-Menu -->
     <div id="arcade-sub-menu" class="menu-panel">
       <img id="arcade-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
-      <div id="arcade-text">Start a new game of Doodle Bash:</div>
+
+      <div class="submenu-title arcade-title">Arcade Mode</div>
+
+      <div id="arcade-text">Start a new game of Doodle Bash with all doodles unlocked and no special rules.</div>
       <button class="menu-btn" id="arcade-play-btn">Play</button>
     </div>
 
@@ -3137,6 +3298,7 @@
     <!-- CAMPAIGN MENU (secret for now) -->
     <div id="campaign-menu" class="menu-panel" style="display: none;">
       <img id="campaign-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
+      <div class="submenu-title campaign-title">Campaign</div>
       <div id="campaign-text">Enter a campaign mission code:</div>
       <input type="text" id="campaign-code-input" autocomplete="off" maxlength="30">
       <button id="campaign-launch-btn" class="menu-btn">Launch Mission</button>
@@ -3147,7 +3309,8 @@
       <div
         style="padding:0 10cqi;font-family:'Fira Sans',sans-serif;font-size:4.3cqi;line-height:1.55;color:#333;text-align:left;">
         Each Doodle Bash campaign includes 5 missions with unique rulesets to draw out your artistic potential!
-        To play a campaign, you'll need to purchase and print off a campaign sheet from clearlysharp.com/games
+        To play a campaign, you'll need to purchase and print off a campaign sheet from clearlysharp.com/games (coming
+        soon!)
       </div>
       <button id="buy-campaign-btn" class="menu-btn">Buy Campaigns</button>
     </div>
@@ -3269,8 +3432,9 @@
         <div class="debug" id="score-debug-info">8.0 • Clean scoring mode</div>
         <div id="score-debug-cells" class="debug-cells"></div>
         <div id="score-console-log" class="console-log">Waiting for photo...</div>
-        <div id="score-tweak-prompt" class="tweak-prompt">Scan your game sheet by lining up the grids with your two
-          Notebook pages. Ensure each doodle is in its own grid cell, then press SNAP.</div>
+        <div id="score-tweak-prompt" class="tweak-prompt" style="display: none;">
+          Make sure your doodles have been identified correctly. Tap misplaced doodles to correct them.
+        </div>
         <div id="score-detected-grid"></div>
         <div id="score-review-container"></div>
 
@@ -3345,6 +3509,11 @@
       dot: 2,
       line: 2
     };
+
+    let shuffleCount = 0;        // ← NEW: tracks how many times shuffle has been pressed this game
+
+    let savedCheckboxTransforms = {};   // ← NEW: remembers exact final position of each checkbox
+
     const allPossibleDoodles = [
       "circle", "square", "triangle", "line", "dot",
       "lens", "halfcircle", "drop", "teeth", "cylinder",
@@ -3394,7 +3563,7 @@
       cube: "{cube} is an intermediate shape that can merge to create {chest} or {present}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} PER <i><b>set</b></i> of {cube}{cylinder}{pyramid}.",
       cylinder: "{cylinder} is an intermediate shape that can merge to create {mug} or {toiletpaper}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} PER <i><b>set</b></i> of {cube}{cylinder}{pyramid}.",
       diamond: "{diamond} scores {4pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {chest}.",
-      die: "{die} copies the value of a <i><b>surrounding</b></i> doodle.",
+      die: "{die} copies the value of a <i><b>surrounding</b></i> doodle (it can't copy another {die}.)",
       flower: "{flower} scores {2pt} + {2pt} if {heart} is <i><b>directly above</b></i>.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {butterfly}.",
       heart: "{heart} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {flower}, {letter}, and {music}.",
       house: "{house} scores {1pt} + {1pt} PER <i><b>surrounding</b></i> {smiley}/{wireless}.",
@@ -3576,7 +3745,7 @@
 
       '<div class="note-heading">{note1} {lens} and {teeth} are intermediate doodles.</div><p class="note-paragraph">They don\'t score points, but are necessary stepping stones for learning more advanced doodles.</p><div class="note-heading">{note2} Take advantage of point multipliers. {piano}{rocket}</div><p class="note-paragraph">The new <i>Piano</i> and <i>Rocket</i> doodles are massive point multipliers. Try going <i><b>BIG</b></i> on one of these doodles.</p>', // Mission 2
 
-      '<div class="note-heading">{note1} Fill a {chest} with any type of treasure!</div><p class="note-paragraph">It scores for surrounding {coin}{diamond} and {crown}.</p><div class="note-heading">{note2} The {die} doodle has unique scoring.</div><p class="note-paragraph">The <i>die</i> doodle copies the point value of a surrounding doodle.<br><br>Multiple {die} can copy the same doodle and {die} can copy the value of another {die}.<br><br>A {die} cannot copy {cylinder}/{cube}/{pyramid} for their group value.</p>', // Mission 3
+      '<div class="note-heading">{note1} Fill a {chest} with any type of treasure!</div><p class="note-paragraph">It scores for surrounding {coin}{diamond} and {crown}.</p><div class="note-heading">{note2} The {die} doodle has unique scoring.</div><p class="note-paragraph">The <i>die</i> doodle copies the point value of a surrounding doodle.<br><br>Multiple {die} can copy the same doodle but a  {die} cannot copy the value of another {die}.<br><br>A {die} cannot copy {cylinder}/{cube}/{pyramid} for their group value.</p>', // Mission 3
 
       '<div class="note-heading">{note1} {butterfly} scores your largest <i>group</i> of adjacent {flower}</div><p class="note-paragraph">To be considered a “group” of {flower} for {butterfly}scoring, the {flower} must be orthogonally adjacent (diagonal doesn’t count).</p><div class="note-heading">{note2} {cloud} and {umbrella} can both score the same {drop}</div><p class="note-paragraph">Do with that information what you will.</p>', // Mission 4
 
@@ -3919,18 +4088,18 @@
       },
     ];
 
-// ====================== ASSESSMENT MESSAGES ======================
-const assessmentMessages = [
-  "Um... the important thing is that you drew SOMETHING... Not sure what it is... but it's really pretty!",
-  "Wow... that's um... really nice! Why don't you uh... hang it on the fridge or something?",
-  "Okay... a decent effort!: You're starting to get the hang of this!",
-  "Hey now! Look who's learning how to draw! I can tell you put some work into this.",
-  "This is actually quite good.  You could probably sell a few of these at a local craft market!",
-  "A stunning composition! You’ve got a keen eye for detail and a steady doodling hand. Let’s get this in an art gallery ASAP!",
-  "You’re like a modern day Picasso! or... another one of those old art dudes. Rembrant?  I think that’s another one...",
-  "*speechless applause*",
-  "I mean... you probably cheated... let’s be real. If you didn't, that's awesome! ... But people are saying you cheated."
-];
+    // ====================== ASSESSMENT MESSAGES ======================
+    const assessmentMessages = [
+      "Um... the important thing is that you drew SOMETHING... Not sure what it is... but it's really pretty!",
+      "Wow... that's um... really nice! Why don't you uh... hang it on the fridge or something?",
+      "Okay... a decent effort! You're starting to get the hang of this!",
+      "Hey now! Look who's learning how to draw! I can tell you put some work into this.",
+      "This is actually quite good.  You could probably sell a few of these at a local craft market!",
+      "A stunning composition! You’ve got a keen eye for detail and a steady doodling hand. Let’s get this in an art gallery ASAP!",
+      "You’re like a modern day Picasso! or... another one of those old art dudes. Rembrandt?  I think that’s another one...",
+      "*speechless applause*",
+      "I mean... you probably cheated... let’s be real. If you didn't, that's awesome! ... But people are saying you cheated."
+    ];
 
     // ====================== TUTORIAL CLICK WHITELIST ======================
     // Only these elements can be clicked during each step (menu/audio/close always allowed)
@@ -3964,6 +4133,7 @@ const assessmentMessages = [
     let isTypingTutorial = false;
     let firstTutorialShuffleDone = false;
     let tutorialInProgress = false;   // ← NEW
+    let tutorialCompleted = false;   // ← NEW
     let playWithTutorial = true;   // ← NEW: controls tutorial for First Scribbles
     let currentSkipHandler = null;
 
@@ -4161,6 +4331,8 @@ const assessmentMessages = [
 
       overlay.classList.add('active');
     }
+
+
     function disableUIForTutorial() {
       // Everything is clickable during tutorial by default
       // (we can add selective restrictions later if needed)
@@ -4176,23 +4348,107 @@ const assessmentMessages = [
       tutorialRestricted = false;
       tutorialInProgress = false;       // ← NEW
       tutorialStep = 0;
+      tutorialCompleted = true;
       const overlay = document.getElementById('tutorial-overlay');
       overlay.classList.remove('active');
       const toast = document.getElementById('toast');
       toast.textContent = "Doodle Away!";
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 2200);
+      saveGameState();
     }
 
     function resumeTutorial() {
-      if (!tutorialInProgress || tutorialStep === 0) return;
+      if (!tutorialInProgress || tutorialStep <= 0) {
+        console.log('✅ Tutorial is already completed (or not active) — skipping resume');
+        return;
+      }
 
       const overlay = document.getElementById('tutorial-overlay');
       if (!overlay) return;
 
-      // Just make sure it's visible again — no re-typing, no step change
-      overlay.classList.add('active');
-      console.log(`✅ Resumed tutorial at step ${tutorialStep} (no re-typing)`);
+      console.log(`✅ Resuming tutorial at step ${tutorialStep}`);
+
+      // Reset any previous slide-out state
+      overlay.classList.remove('slide-out', 'slide-in', 'active');
+      overlay.style.transition = 'none';
+      overlay.style.transform = 'translateY(120%)';
+      void overlay.offsetHeight; // force reflow
+
+      // Re-render the exact step (this triggers the typewriter again!)
+      showTutorialStep(tutorialStep);
+
+      // Now do the nice slide-in animation
+      overlay.style.transition = 'transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
+      overlay.classList.add('slide-in', 'active');
+
+      console.log('✅ Tutorial message + typewriter restored');
+    }
+    function fadeInCheckboxesOnResume() {
+      const doodleIds = ['doodle-l1', 'doodle-l2', 'doodle-l3', 'doodle-r1', 'doodle-r2', 'doodle-r3'];
+      const checkboxIds = ['cb-l1', 'cb-l2', 'cb-l3', 'cb-r1', 'cb-r2', 'cb-r3'];
+
+      document.querySelectorAll('.doodle-checkbox').forEach((cb, i) => {
+        const doodleEl = document.getElementById(doodleIds[i]);
+        const hasDoodle = doodleEl && (doodleEl.style.backgroundImage || doodleEl.dataset.doodle);
+
+        if (hasDoodle) {
+          const wasChecked = cb.classList.contains('checked');   // remember BEFORE any changes
+
+          cb.style.transition = 'none';
+          cb.style.opacity = '0';
+          void cb.offsetHeight;
+
+          cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
+          cb.style.opacity = '1';
+
+          if (wasChecked) cb.classList.add('checked');
+        } else {
+          cb.style.transition = 'opacity 300ms ease';
+          cb.style.opacity = '0';
+          cb.classList.remove('checked');
+        }
+      });
+
+      updateColumnLock();
+      console.log('%c✅ fadeInCheckboxesOnResume() — checked states preserved', 'color:#0f0; font-weight:bold');
+    }
+    function restoreCheckboxTransforms() {
+      const saved = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}').checkboxTransforms || {};
+
+      document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+        cb.style.transition = 'none';
+        cb.style.opacity = '0';
+
+        // Restore the exact same transform that was saved (or fall back to a nice random one)
+        if (saved[cb.id]) {
+          cb.style.transform = saved[cb.id];
+        } else {
+          // fallback for very old saves
+          const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi';
+          const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi';
+          const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg';
+          cb.style.transform = `translate(${rx}, ${ry}) rotate(${rr}) translateY(-50%)`;
+        }
+
+        void cb.offsetHeight; // force apply
+
+        // Now do the nice fade-in
+        cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
+        cb.style.opacity = '1';
+      });
+
+      updateColumnLock();
+      console.log('%c✅ restoreCheckboxTransforms() — checkboxes perfectly restored', 'color:#0f0; font-weight:bold');
+    }
+
+    // FIXED: Instant opacity drop only — matches the exact pattern used by resume fade-in
+    function hideCheckboxesInstantly() {
+      document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+        cb.style.transition = 'none';      // kill any current animation
+        cb.style.opacity = '0';
+        void cb.offsetHeight;               // ← critical: forces browser to apply opacity NOW
+      });
     }
 
     function setupStep8TriangleInteraction() {
@@ -4477,86 +4733,86 @@ const assessmentMessages = [
         currentSkipHandler = null;
       }
     }
-    
-// ====================== TYPEWRITER FOR ASSESSMENT MESSAGES ONLY (exact copy of tutorial) ======================
 
-async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetElement = null) {
-  const textEl = targetElement || document.getElementById('tutorial-text');
-  if (!textEl) return;
+    // ====================== TYPEWRITER FOR ASSESSMENT MESSAGES ONLY (exact copy of tutorial) ======================
 
-  textEl.innerHTML = '';
-  textEl.style.opacity = '1';
-  textEl.style.visibility = 'visible';
-  textEl.style.color = '#222';
+    async function typeAssessmentMessage(htmlContent, onComplete = () => { }, targetElement = null) {
+      const textEl = targetElement || document.getElementById('tutorial-text');
+      if (!textEl) return;
 
-  const temp = document.createElement('div');
-  temp.innerHTML = htmlContent;
-  const segments = [];
+      textEl.innerHTML = '';
+      textEl.style.opacity = '1';
+      textEl.style.visibility = 'visible';
+      textEl.style.color = '#222';
 
-  function parseNode(node) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      const text = node.textContent;
-      if (text.length > 0) segments.push({ type: 'text', content: text });
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      if (node.tagName === 'IMG') {
-        segments.push({ type: 'image', src: node.src, alt: node.alt || '', className: node.className });
-      } else {
-        node.childNodes.forEach(parseNode);
+      const temp = document.createElement('div');
+      temp.innerHTML = htmlContent;
+      const segments = [];
+
+      function parseNode(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent;
+          if (text.length > 0) segments.push({ type: 'text', content: text });
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          if (node.tagName === 'IMG') {
+            segments.push({ type: 'image', src: node.src, alt: node.alt || '', className: node.className });
+          } else {
+            node.childNodes.forEach(parseNode);
+          }
+        }
       }
-    }
-  }
-  temp.childNodes.forEach(parseNode);
+      temp.childNodes.forEach(parseNode);
 
-  let i = 0;
+      let i = 0;
 
-  function typeNext() {
-    if (i >= segments.length) {
-      onComplete();
-      return;
-    }
+      function typeNext() {
+        if (i >= segments.length) {
+          onComplete();
+          return;
+        }
 
-    const seg = segments[i];
+        const seg = segments[i];
 
-    if (seg.type === 'image') {
-      const img = document.createElement('img');
-      img.src = seg.src;
-      img.alt = seg.alt;
-      img.className = seg.className || 'inline-doodle';
-      textEl.appendChild(img);
-      i++;
-      scrollScoreToBottom();           // ← live scroll on images
+        if (seg.type === 'image') {
+          const img = document.createElement('img');
+          img.src = seg.src;
+          img.alt = seg.alt;
+          img.className = seg.className || 'inline-doodle';
+          textEl.appendChild(img);
+          i++;
+          scrollScoreToBottom();           // ← live scroll on images
+          typeNext();
+          return;
+        }
+
+        const span = document.createElement('span');
+        textEl.appendChild(span);
+
+        let charIndex = 0;
+
+        function typeChar() {
+          if (charIndex < seg.content.length) {
+            span.appendChild(document.createTextNode(seg.content[charIndex]));
+            if (charIndex % 3 === 0) playSound('flap');
+
+            charIndex++;
+
+            // === LIVE SCROLL: call every character (very smooth) ===
+            scrollScoreToBottom();
+
+            const delay = ',.!'.includes(seg.content[charIndex - 1]) ? 280 : 20;
+            setTimeout(typeChar, delay);
+          } else {
+            i++;
+            scrollScoreToBottom();           // ← also scroll after each full word/sentence
+            typeNext();
+          }
+        }
+        typeChar();
+      }
+
       typeNext();
-      return;
     }
-
-    const span = document.createElement('span');
-    textEl.appendChild(span);
-
-    let charIndex = 0;
-
-    function typeChar() {
-      if (charIndex < seg.content.length) {
-        span.appendChild(document.createTextNode(seg.content[charIndex]));
-        if (charIndex % 3 === 0) playSound('flap');
-
-        charIndex++;
-
-        // === LIVE SCROLL: call every character (very smooth) ===
-        scrollScoreToBottom();
-
-        const delay = ',.!'.includes(seg.content[charIndex - 1]) ? 280 : 20;
-        setTimeout(typeChar, delay);
-      } else {
-        i++;
-        scrollScoreToBottom();           // ← also scroll after each full word/sentence
-        typeNext();
-      }
-    }
-    typeChar();
-  }
-
-  typeNext();
-}
     function animateTutorialOut(callback) {
       const panel = document.getElementById('tutorial-panel');
       panel.classList.remove('animate-in');
@@ -4576,7 +4832,7 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
       "loveanimals": {
         code: "loveanimals",
         title: "Animal Lover",
-        description: "In this mission, {cat}, {fish}, and {butterfly} each score <b>1 extra point</b>.",
+        description: "All animal doodles score {1pt} extra: {cat}{fish}{butterfly}",
         modifiers: {
           extraPoints: { cat: 1, fish: 1, butterfly: 1 }
         }
@@ -4587,8 +4843,8 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
         description: "Doodles can be drawn orthogonally adjacent to other doodles, even if there are no supporting doodles underneath them.",
         modifiers: {}
       },
-      "essentials12": {
-        code: "essentials12",
+      "start12": {
+        code: "start12",
         title: "Drawing Essentials",
         description: "Your starting portfolio includes: {circle}{square}{triangle}{line}{dot}{lens}{halfcircle}{drop}{teeth}{cylinder}{cube}{pyramid}.",
         modifiers: {
@@ -4620,7 +4876,39 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
         description: "Before your game, learn one of these doodles:",
         specialDoodles: ["cat", "diamond", "rocket", "flower", "piano"],   // ← the 5 choices
         modifiers: {}   // no other rules – the selection adds the doodle manually
-      }
+      },
+      "square2x2": {
+        title: "Be Square",
+        code: "square2x2",
+        description: "Each 2x2 arrangement of four matching doodles scores {4pt}. Each doodle can only be part of a single 2x2 arrangement."
+      },
+      "centerx2": {
+        code: "centerx2",
+        title: "Focal Points",
+        description: "On each page, the doodle in the exact center scores double.",
+        modifiers: {}
+      },
+
+      "hungry3": {
+        code: "hungry3",
+        title: "Feeling Hungry",
+        description: "Food/drink doodles score {1pt} extra: {mug}{pizza}{icecream}",
+        modifiers: {
+          extraPoints: { mug: 1, pizza: 1, icecream: 1 }
+        }
+      },
+      "speedy1": {
+        code: "speedy1",
+        title: "Fast Learner",
+        description: "Every other shuffle, a random doodle is added to your portfolio (not basic shapes).",
+        modifiers: {}
+      },
+      "atleast7": {
+        code: "atleast7",
+        title: "Balancing Act",
+        description: "Score {7pt} for each doodle type that you have 7 or more of.",
+        modifiers: {}
+      },
     };
 
     // ====================== MISSION DETAIL TOOLTIP CONTENT (EDIT THESE) ======================
@@ -4666,21 +4954,21 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
     <div style="font-family:'Covered By Your Grace',cursive; font-size:6.5cqi; color:#7f2a8f; text-align:center; margin-bottom:3cqi;">
       Animal Lover
     </div>
-    <p>{cat}, {fish}, and {butterfly} each score <b>1 extra point</b> in this mission.</p>
+    <p>All animal doodles score {1pt} extra: {cat}{fish}{butterfly}</p>
   `,
 
       sticky95: `
     <div style="font-family:'Covered By Your Grace',cursive; font-size:6.5cqi; color:#7f2a8f; text-align:center; margin-bottom:3cqi;">
       Sticky Doodles
     </div>
-    <p>Doodles can be drawn orthogonally adjacent even without supporting doodles underneath.</p>
+    <p>Doodles can be drawn orthogonally adjacent to other doodles, even if there are no supporting doodles underneath them.</p>
   `,
 
-      essentials12: `
+      start12: `
     <div style="font-family:'Covered By Your Grace',cursive; font-size:6.5cqi; color:#7f2a8f; text-align:center; margin-bottom:3cqi;">
       Drawing Essentials
     </div>
-    <p>Your starting portfolio already includes the 12 essential doodles.</p>
+    <p>Your starting portfolio includes: {circle}{square}{triangle}{line}{dot}{lens}{halfcircle}{drop}{teeth}{cylinder}{cube}{pyramid}. <b>Now go score as many points as you can!</b></p>
   `,
 
       repetition5: `
@@ -4690,12 +4978,46 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
     <p>You score <b>{5pt}</b> for each full row of five matching doodles.</p>
   `,
 
+      centerx2: `
+    <div style="font-family:'Covered By Your Grace',cursive; font-size:6.5cqi; color:#7f2a8f; text-align:center; margin-bottom:3cqi;">
+      Focal Points
+    </div>
+    <p>On each page, the doodle in the <b>exact center</b> scores <b>double points</b>.</p>
+  `,
+
       art101: `
     <div style="font-family:'Covered By Your Grace',cursive; font-size:6.5cqi; color:#7f2a8f; text-align:center; margin-bottom:3cqi;">
       Art Class
     </div>
     <p>You started this mission with the <b>{art101SelectedDoodle}</b> doodle already in your portfolio. <b>Now go score as many points as you can!</b></p>
-  `
+  `,
+      square2x2: `
+    <div style="font-family:'Covered By Your Grace',cursive; font-size:6.5cqi; color:#7f2a8f; text-align:center; margin-bottom:3cqi;">
+      Be Square
+    </div>
+    <p>Each 2x2 arrangement of four matching doodles scores {4pt}. Each doodle can only be part of a single 2x2 arrangement.</p>
+  `,
+
+      hungry3: `
+    <div style="font-family:'Covered By Your Grace',cursive; font-size:6.5cqi; color:#7f2a8f; text-align:center; margin-bottom:3cqi;">
+      Feeling Hungry
+    </div>
+    <p>Food/drink doodles score {1pt} extra: {mug}{pizza}{icecream}</p>
+  `,
+
+      speedy1: `
+    <div style="font-family:'Covered By Your Grace',cursive; font-size:6.5cqi; color:#7f2a8f; text-align:center; margin-bottom:3cqi;">
+      Fast Learner
+    </div>
+    <p>Every other shuffle, a random doodle is added to your portfolio (not basic shapes).</p>
+  `,
+
+      atleast7: `
+    <div style="font-family:'Covered By Your Grace',cursive; font-size:6.5cqi; color:#7f2a8f; text-align:center; margin-bottom:3cqi;">
+      Balancing Act
+    </div>
+    <p>Score {7pt} for each doodle type that you have 7 or more of.</p>
+  `,
     };
 
     const baseDoodles = ['circle', 'square', 'triangle', 'dot', 'line'];
@@ -4715,19 +5037,18 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
 
     function renderMenuButtons() {
       const menu = document.getElementById('main-menu');
-      menu.innerHTML = ''; // Reset fully (no static logo)
+      menu.innerHTML = ''; // Reset fully
 
       const buttons = [
         { text: 'Resume', id: 'resume-btn', disabled: !(hasGameInProgress || tutorialInProgress) },
         { text: 'Getting Started', id: 'getting-started-btn', disabled: false },
-        { text: 'Arcade', id: 'arcade-btn', disabled: false },
-        { text: 'Campaign', id: 'campaign-btn', disabled: true }, // ← greyed out (secret triple-tap only)
-        { text: 'Multiplayer', id: 'multiplayer-btn', disabled: true },
-        { text: 'Options', id: 'options-btn', disabled: true }
+        { text: 'Arcade Mode', id: 'arcade-btn', disabled: false },
+        { text: 'Campaign', id: 'campaign-btn', disabled: false }   // ← now always enabled
       ];
 
       buttons.forEach(btnInfo => {
         if (btnInfo.text === 'Resume' && !hasGameInProgress && !tutorialInProgress) return;
+
         const btn = document.createElement('button');
         btn.className = 'menu-btn';
         btn.id = btnInfo.id;
@@ -4748,142 +5069,15 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
       // Wire normal buttons
       document.getElementById('arcade-btn').addEventListener('click', showArcadeSubMenu);
       const resumeBtn = document.getElementById('resume-btn');
-      if (resumeBtn) resumeBtn.addEventListener('click', startGame);
+      if (resumeBtn) {
+        resumeBtn.addEventListener('click', () => startGame(true));  // ← pass true for resume
+      }
       document.getElementById('getting-started-btn').addEventListener('click', showGettingStartedSubMenu);
-
-      // === TRIPLE-TAP SETUP ===
-      setupCampaignTripleTap();     // ← your existing campaign triple-tap
-      setupMultiplayerTestTap();    // ← NEW: secret triple-tap for instant score screen
+      document.getElementById('campaign-btn').addEventListener('click', showCampaignMenu); // ← normal click now
     }
+
     let campaignTapCount = 0;
     let campaignLastTap = 0;
-
-    function setupCampaignTripleTap() {
-      const btn = document.getElementById('campaign-btn');
-      if (!btn) return;
-
-      btn.addEventListener('click', () => {
-        const now = Date.now();
-        if (now - campaignLastTap < 500) {
-          campaignTapCount++;
-        } else {
-          campaignTapCount = 1;
-        }
-        campaignLastTap = now;
-
-        if (campaignTapCount >= 3) {
-          campaignTapCount = 0;
-          playSound('button');
-          showCampaignMenu();
-        }
-      });
-    }
-
-    // === SECRET TRIPLE-TAP ON MULTIPLAYER FOR FAST TESTING ===
-    function setupMultiplayerTestTap() {
-      const multiplayerBtn = document.getElementById('multiplayer-btn');
-      if (!multiplayerBtn) return;
-
-      let tapCount = 0;
-      let lastTap = 0;
-
-      multiplayerBtn.addEventListener('click', () => {
-        const now = Date.now();
-        if (now - lastTap < 500) {
-          tapCount++;
-        } else {
-          tapCount = 1;
-        }
-        lastTap = now;
-
-        if (tapCount >= 3) {
-          tapCount = 0;
-          playSound('button');
-          console.log("🚀 SECRET: Jumping straight to score screen for testing");
-          instantTestScoreScreen();
-        }
-      });
-    }
-
-    function instantTestScoreScreen() {
-      console.log("🚀 SECRET TEST: Jumping directly to FINISHED scoring screen");
-
-      // === ONLY hide menu panels — NEVER touch the score modal ===
-      const menuPanels = [
-        'main-menu', 'arcade-sub-menu', 'abandon-prompt',
-        'getting-started-sub-menu', 'mission-detail',
-        'campaign-menu', 'campaign-intro', 'tutorial-choice-prompt'
-      ];
-      menuPanels.forEach(id => {
-        const panel = document.getElementById(id);
-        if (panel) {
-          panel.style.display = 'none';
-          panel.classList.remove('active', 'hiding', 'menu-panel');
-        }
-      });
-
-      // 1. Full clean reset of the score system
-      resetScoreModal();
-
-      // 2. Fake completed game data — diamonds + dots only
-      currentMission = null;
-      activeCampaign = null;
-      scoreDetectedDoodles = [];
-      scoreConfidences = [];
-      scoreCellCanvases = [];
-
-      const numDiamonds = Math.floor(Math.random() * 70) + 1; // 1 to 70 diamonds
-      const totalCells = 77;
-
-      console.log(`🔢 Test run: ${numDiamonds} diamonds + ${totalCells - numDiamonds} dots`);
-
-      for (let i = 0; i < totalCells; i++) {
-        const doodle = (i < numDiamonds) ? 'diamond' : 'dot';
-        scoreDetectedDoodles.push(doodle);
-        scoreConfidences.push(0.94);
-
-        // Simple canvas for the grid (still required)
-        const c = document.createElement('canvas');
-        c.width = 224; c.height = 224;
-        scoreCellCanvases.push(c);
-      }
-
-      scoreBuildBoard();
-
-      // 3. Open the score modal
-      openModal('score-modal');
-
-      // 4. Force final scoring layout after modal slide-in
-      setTimeout(() => {
-        // Hide transitional UI
-        document.querySelector('.camera-container').style.display = 'none';
-        document.getElementById('score-adjustment-mode').style.display = 'none';
-        document.getElementById('score-camera-instructions').style.display = 'none';
-        document.getElementById('score-confirm-warp-btn').style.display = 'none';
-        document.getElementById('score-snap-btn').style.display = 'none';
-        document.getElementById('score-tweak-prompt').style.display = 'none';
-        document.getElementById('loading-container').style.display = 'none';
-
-        // Show final elements
-        document.getElementById('score-detected-grid').style.display = 'grid';
-        document.getElementById('score-review-container').style.display = 'none';
-        document.getElementById('score-buttons-container').style.display = 'none';
-
-        scoreRenderDetectedGrid();
-
-        const tally = document.getElementById('score-tally');
-        tally.style.display = 'block';
-        tally.innerHTML = '';
-
-        const scoreLine = document.getElementById('score-line');
-        scoreLine.style.display = 'block';
-
-        // Run the scoring animation (now very fast)
-        runScoringAnimation();
-
-        console.log("✅ Clean finished scoring state loaded with diamonds + dots only");
-      }, 420);
-    }
 
     function showArcadeSubMenu() {
       if (hasGameInProgress || tutorialInProgress) {
@@ -4921,17 +5115,29 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
       // Then hide visibility (elements now hidden but with offscreen transforms applied)
 
 
-      // Staggered fall-in for menu buttons (unchanged)
+      // Staggered fall-in for menu buttons — toned-down random offset + rotation
       const menu = document.getElementById('main-menu');
       const buttons = menu.querySelectorAll('.menu-btn');
+
       buttons.forEach((btn, i) => {
         btn.style.transition = 'none';
+
+        // Milder starting offset + spin
+        const startX = (Math.random() * 28 - 14).toFixed(1) + 'cqi';
+        const startRot = (Math.random() * 220 - 110).toFixed(0) + 'deg';
+
         btn.style.opacity = '0';
-        btn.style.transform = 'translateY(-100vh)';
+        btn.style.transform = `translateY(-100vh) translateX(${startX}) rotate(${startRot})`;
+
         void btn.offsetHeight;
+
+        // Milder final landed position
+        const finalX = (Math.random() * 7 - 3.5).toFixed(1) + 'cqi';
+        const finalRot = (Math.random() * 5 - 2.5).toFixed(1) + 'deg';
+
         setTimeout(() => {
           btn.style.transition = 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease-out';
-          btn.style.transform = 'translateY(0)';
+          btn.style.transform = `translateY(0) translateX(${finalX}) rotate(${finalRot})`;
           btn.style.opacity = '1';
         }, (buttons.length - 1 - i) * 100);
       });
@@ -4961,37 +5167,40 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
         showMainMenu();
       });
 
+      // Inside showGettingStartedSubMenu(), after adding the close button:
+      const title = document.createElement('div');
+      title.className = 'submenu-title getting-started-title';
+      title.textContent = 'Getting Started';
+      subMenu.appendChild(title);
+
       // Description
       const desc = document.createElement('div');
       desc.id = 'getting-started-desc';
       desc.innerHTML = "These 5 missions are designed to slowly acquaint you with the many doodles in <i>Doodle Bash</i>. Start from the top, and get ready to learn how to draw!";
       subMenu.appendChild(desc);
 
-      const missions = [
-        '1) First Scribbles',
-        '2) Blasting Off',
-        '3) Buried Treasure',
-        '4) Oodles of Doodles',
-        '5) The Big Leagues'
-      ];
+      // === NEW: Mission Header Images as Buttons ===
+      for (let i = 1; i <= 5; i++) {
+        const headerImg = document.createElement('img');
+        headerImg.src = `images/mission${i}header.png`;
+        headerImg.className = 'mission-header-btn';
+        headerImg.alt = `Mission ${i}`;
+        headerImg.dataset.mission = i;
 
-      missions.forEach((title, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'mission-btn';
-        btn.textContent = title;
-
-        if (idx === 0) {  // ← First Scribbles gets the new choice screen
-          btn.addEventListener('click', () => showTutorialChoicePrompt(1));
+        // Click handler — exact same logic as before
+        if (i === 1) {
+          // First Scribbles still triggers the tutorial choice prompt
+          headerImg.addEventListener('click', () => showTutorialChoicePrompt(1));
         } else {
-          btn.addEventListener('click', () => selectMission(idx + 1));
+          headerImg.addEventListener('click', () => selectMission(i));
         }
-        subMenu.appendChild(btn);
-      });
+
+        subMenu.appendChild(headerImg);
+      }
 
       showMenuPanel('getting-started-sub-menu', { silent: true });
       currentMode = 'getting-started-sub';
     }
-
     function showTutorialChoicePrompt(missionNum) {
       playSound('button');
 
@@ -5052,6 +5261,8 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
         setTimeout(() => toast.classList.remove('show'), 2000);
         return;
       }
+
+
 
       hideMenuPanel('campaign-menu');
       showCampaignIntro(mission);
@@ -5124,6 +5335,7 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
         hideMenuPanel('campaign-intro');
         activeCampaign = mission;
         currentMission = null;
+        clearSavedGameState();
 
         // Remember the chosen doodle for Art101 tooltip
         if (mission.code === "art101" && selectedDoodle) {
@@ -5138,10 +5350,17 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
     }
 
     function getCampaignBonus(doodleType) {
-      if (!activeCampaign || !activeCampaign.modifiers.extraPoints) return 0;
+      if (!activeCampaign) return 0;
+
+      // Be Square mission gives NO individual doodle bonuses (this is the fix)
+      if (activeCampaign.code === "square2x2") {
+        return 0;
+      }
+
+      // Your original logic for all other campaigns
+      if (!activeCampaign.modifiers || !activeCampaign.modifiers.extraPoints) return 0;
       return activeCampaign.modifiers.extraPoints[doodleType] || 0;
     }
-
     // ====================== GET MISSION DETAIL TOOLTIP (FINAL) ======================
     function getMissionDetailTooltipContent() {
       let html = '';
@@ -5189,11 +5408,22 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
       // Only apply overrides in active campaign mode
       if (activeCampaign && activeCampaign.code === "loveanimals") {
         if (doodle === "fish") {
-          desc = desc.replace("{1pt}", "{2pt}");           // base 1pt → 2pt
+          desc = desc.replace("{1pt}", "{2pt}");
         } else if (doodle === "cat") {
-          desc = desc.replace("{3pt}", "{4pt}");           // base 3pt → 4pt
+          desc = desc.replace("{3pt}", "{4pt}");
         } else if (doodle === "butterfly") {
-          desc = desc.replace("{2pt}", "{3pt}");           // base 2pt → 3pt
+          desc = desc.replace("{2pt}", "{3pt}");
+        }
+      }
+
+      // === FEELING HUNGRY (hungry3) — exact same pattern as Animal Lover ===
+      else if (activeCampaign && activeCampaign.code === "hungry3") {
+        if (doodle === "mug") {
+          desc = desc.replace("{2pt}", "{3pt}");   // base 2pt → 3pt
+        } else if (doodle === "pizza") {
+          desc = desc.replace("{3pt}", "{4pt}");   // base 3pt → 4pt
+        } else if (doodle === "icecream") {
+          desc = desc.replace("{4pt}", "{5pt}");   // base 4pt → 5pt
         }
       }
 
@@ -5286,15 +5516,49 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
       }, 800); // Matches anim duration
     }
 
-    function startGame() {
+    function startGame(isResume = false) {
       if (menuAdjustedTimeout) clearTimeout(menuAdjustedTimeout);
-      resetShuffleZone();
 
-      // NEW: Tutorial resume handling — just restore visibility (no re-typing)
-      if (tutorialInProgress && tutorialStep > 0) {
+      // ← ONLY reset on a fresh new game. On Resume we keep the current doodles.
+      if (!isResume) {
+        resetShuffleZone();
+        clearSavedGameState();
+      } else {
+        console.log('%c✅ RESUME: preserving current 6 doodles + checkboxes', 'color:#0f0; font-weight:bold');
+
+        // This fixes cold-start Resume (page reload)
+        restoreCurrentVisualState();
+      }
+
+      // ... rest of the function stays exactly the same
+
+      if (isResume || (tutorialInProgress && tutorialStep > 0)) {
+        // Force ALL checkboxes invisible immediately on resume
+        document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+          cb.style.transition = 'none';
+          cb.style.opacity = '0';
+          void cb.offsetHeight;
+        });
+
         setTimeout(() => {
-          resumeTutorial();
-        }, 1400); // matches slide-in timing
+          // ONLY show checkboxes if there are actual doodles on screen
+          const doodleIds = ['doodle-l1', 'doodle-l2', 'doodle-l3', 'doodle-r1', 'doodle-r2', 'doodle-r3'];
+          let hasAnyDoodle = false;
+
+          doodleIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.dataset.doodle && el.dataset.doodle.trim() !== '') {
+              hasAnyDoodle = true;
+            }
+          });
+
+          if (hasAnyDoodle) {
+            console.log('✅ Resume: doodles present → fading in checkboxes');
+            fadeInCheckboxesOnResume();   // your existing function (or the improved one from before)
+          } else {
+            console.log('✅ Resume: NO doodles yet → keeping checkboxes hidden');
+          }
+        }, 1200);
       }
 
       const headerBg = document.getElementById('header-bg');
@@ -5321,32 +5585,40 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
         header.classList.remove('slide-out');
         shuffleZone.classList.remove('slide-out');
         footer.classList.remove('slide-out');
+
         // Force reflow after reset
         void header.offsetHeight;
         void shuffleZone.offsetHeight;
         void footer.offsetHeight;
+
         // Make visible (now resets to off-screen via slide-in prep)
         header.style.visibility = 'visible';
         shuffleZone.style.visibility = 'visible';
         footer.style.visibility = 'visible';
-        // Force reflow after visibility change (ensures offscreen transforms are painted/ready)
+
         void document.body.offsetHeight;
-        // Function to trigger slide-in with proper timing (add transition, reflow, then active)
+
+        // Function to trigger slide-in...
         function triggerSlideIn(element, delay) {
           setTimeout(() => {
-            element.classList.add('slide-in'); // Add transition
-            // Force reflow to lock in current (offscreen) transform with new transition
+            element.classList.add('slide-in');
             void element.offsetHeight;
-            // Next frame: add active to transition to translateY(0)
             requestAnimationFrame(() => {
               element.classList.add('active');
             });
           }, delay);
         }
-        // Staggered slide-ins: header first, then shuffle-zone, then footer
+
+        // === STAGGERED SLIDE-INS + TUTORIAL SYNC ===
         triggerSlideIn(shuffleZone, 0);
         triggerSlideIn(header, 0);
         triggerSlideIn(footer, 0);
+
+        // NEW: Resume tutorial AT THE SAME TIME as the rest of the UI
+        if (tutorialInProgress && tutorialStep > 0) {
+          resumeTutorial();
+        }
+
         currentMode = 'game';
         // Reset rigged shuffle flag for First Scribbles
         if (currentMission === 1) {
@@ -5358,18 +5630,24 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
           });
 
           if (currentMission === 1) {
-            if (playWithTutorial) {
+            // ← NEW GUARD: Do NOT restart tutorial if we're resuming
+            if (tutorialInProgress && tutorialStep > 0) {
+              console.log(`✅ Resume detected — skipping first-scribbles tutorial restart`);
+              // (resumeTutorial() will be called later in the slide-in block)
+            } else if (playWithTutorial && !tutorialCompleted) {
               tutorialInProgress = true;
               setTimeout(() => {
                 startFirstScribblesTutorial();
               }, 800);
             } else {
-              tutorialInProgress = false; // ensure no tutorial runs
+              tutorialInProgress = false;
             }
           }
         }
         if (!hasGameInProgress) {
           deck = { ...defaultDeck };
+          deck = { ...defaultDeck };
+          shuffleCount = 0;
         }
 
         // === NEW: CAMPAIGN STARTING DECK OVERRIDE ===
@@ -5401,6 +5679,7 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
       playSound('button');
       currentMission = null;
       activeCampaign = null;           // ← THIS WAS MISSING
+      clearSavedGameState();
       startGame();
       hideMenuPanel('arcade-sub-menu');
     });
@@ -5421,6 +5700,7 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
       tutorialInProgress = false;
       tutorialRestricted = false;
       tutorialStep = 0;
+      clearSavedGameState();
 
       // FULL CLEANUP: hide the tutorial overlay immediately
       const overlay = document.getElementById('tutorial-overlay');
@@ -5448,6 +5728,10 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
         startGame();
         hideMenuPanel('mission-detail');
       }
+      // ←←← NEW: Campaign support
+      else if (pendingNewGameAction === 'campaign') {
+        showCampaignMenu();
+      }
       pendingNewGameAction = null;
     });
     document.getElementById('mission-play-btn').addEventListener('click', () => {
@@ -5459,6 +5743,7 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
         hasGameInProgress = false; // New mission starts fresh
         deck = { ...defaultDeck }; // Reset deck
         resetShuffleZone();
+        clearSavedGameState();
         startGame(); // Launch game with currentMission set
         hideMenuPanel('mission-detail'); // ← Replaced style.display = 'none'
       }
@@ -5912,18 +6197,18 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
       hideTooltip(); openModal('score-modal'); initScoreScanner();
     });
 
+
     document.getElementById('menu-btn').addEventListener('click', () => {
       playSound('button');
+      hideCheckboxesInstantly();
 
-      // NEW: If tutorial is active, just pause it and go to menu (no reset)
-      // NEW: If tutorial is active, just pause it and go to menu (no reset)
       if (tutorialInProgress) {
         const headerBg = document.getElementById('header-bg');
         const footerBg = document.getElementById('footer-bg');
         headerBg.classList.add('adjusted');
         footerBg.classList.add('adjusted');
 
-        // Slide game out
+        // Slide game UI out
         const header = document.getElementById('header');
         const shuffleZone = document.getElementById('shuffle-zone');
         const footer = document.getElementById('footer');
@@ -5931,13 +6216,22 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
         shuffleZone.classList.add('slide-out');
         footer.classList.add('slide-out');
 
+        // Slide tutorial overlay out
+        const tutorialOverlay = document.getElementById('tutorial-overlay');
+        if (tutorialOverlay && tutorialOverlay.classList.contains('active')) {
+          tutorialOverlay.classList.remove('slide-in');   // clean previous state
+          tutorialOverlay.classList.add('slide-out');
+        }
 
         setTimeout(() => {
           showMainMenu({ fromGame: true });
         }, 0);
 
-        return; // ← important: skip the rest of the old logic
+        return;
       }
+
+
+
       // Normal (non-tutorial) menu behavior
       const headerBg = document.getElementById('header-bg');
       const footerBg = document.getElementById('footer-bg');
@@ -6016,201 +6310,211 @@ async function typeAssessmentMessage(htmlContent, onComplete = () => {}, targetE
       showMainMenu(); // Back to main menu (or adjust to arcade-sub if needed)
     });
 
-    
-const shuffleContainer = document.getElementById('shuffle-container');
 
-shuffleContainer.addEventListener('click', () => {
-  playSound('shuffle');
-  playSound('button');
-  // Clear all checkbox lines when shuffle is pressed
-document.querySelectorAll('.doodle-checkbox').forEach(cb => {
-  cb.classList.remove('checked');
-  // NEW: Reset column locking on shuffle
-updateColumnLock();
-});
+    const shuffleContainer = document.getElementById('shuffle-container');
 
-// === RIGHT AFTER playSound('button');  (fade OUT at the start of shuffle) ===
-document.querySelectorAll('.doodle-checkbox').forEach(cb => {
-  cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
-  cb.style.opacity = '0';
-});
+    shuffleContainer.addEventListener('click', async () => {   // ← made async so we can await
 
-  shuffleContainer.classList.add('spinning');
+      playSound('button');
 
-  const headerBg = document.getElementById('header-bg');
-  const footerBg = document.getElementById('footer-bg');
-  headerBg.classList.add('shifting');
-  footerBg.classList.add('shifting');
+      shuffleCount++;   // ← NEW: increment counter
 
-  setTimeout(() => {
-    shuffleContainer.classList.remove('spinning');
-    headerBg.classList.remove('shifting');
-    footerBg.classList.remove('shifting');
-  }, 1350);
+      hasGameInProgress = true;
+      // === FAST LEARNER MISSION (speedy1) — every even shuffle ===
+      if (activeCampaign && activeCampaign.code === "speedy1" && shuffleCount % 2 === 0) {
+        await performFastLearn();             // shuffle sound will now play inside here
+      } else {
+        playSound('shuffle');                 // normal shuffles still play sound immediately
+      }
 
-  // Unselect any selected doodle and hide tooltip
-  mainDoodleContainers.forEach(div => div.classList.remove('selected'));
-  hideTooltip();
+      // Clear checkboxes (unchanged)
+      document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+        cb.classList.remove('checked');
+        updateColumnLock();
+      });
 
-  // === Original draw logic (unchanged) ===
-  let drawn = drawSix();
-  if (!drawn || drawn.length < 6) return;
+      // === NORMAL SHUFFLE ANIMATION (unchanged from here down) ===
+      document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+        cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
+        cb.style.opacity = '0';
+      });
 
-  // Rigging for tutorial (unchanged)
-  if (currentMission === 1 && !firstTutorialShuffleDone) {
-    firstTutorialShuffleDone = true;
-    drawn[1] = 'circle';
-    drawn[3] = 'triangle';
-    drawn[5] = 'line';
-  }
-  if (tutorialStep === 19 || window.nextShuffleRiggedLeft) {
-    drawn[0] = 'dot';
-    drawn[2] = 'dot';
-    drawn[4] = 'drop';
-    window.nextShuffleRiggedLeft = false;
-  }
+      shuffleContainer.classList.add('spinning');
 
-  const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
+      const headerBg = document.getElementById('header-bg');
+      const footerBg = document.getElementById('footer-bg');
+      headerBg.classList.add('shifting');
+      footerBg.classList.add('shifting');
 
-  // Outgoing doodles
-  order.forEach((id, i) => {
-    const div = document.getElementById(id);
-    if (div && div.style.backgroundImage) {
       setTimeout(() => {
-        const spreadX = (Math.random() * 24 - 12).toFixed(2) + 'cqi';
-        div.style.transition = 'transform 0.33s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
-        div.style.transform = `translate(${spreadX}, 120dvh) rotate(-720deg)`;
-      }, i * 5);
-    }
-  });
+        shuffleContainer.classList.remove('spinning');
+        headerBg.classList.remove('shifting');
+        footerBg.classList.remove('shifting');
+      }, 1350);
 
-  // Incoming doodles + checkboxes that follow them
-setTimeout(() => {
-  order.forEach((id, i) => {
-    const div = document.getElementById(id);
-    if (!div) return;
+      mainDoodleContainers.forEach(div => div.classList.remove('selected'));
+      hideTooltip();
 
-    // === DOODLE SETUP (unchanged) ===
-    div.style.transition = 'none';
-    const startSpreadX = (Math.random() * 36 - 18).toFixed(2) + 'cqi';
-    div.style.transform = `translate(${startSpreadX}, 100dvh) rotate(720deg)`;
-    div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
-    div.dataset.doodle = drawn[i];
+      let drawn = drawSix();
+      if (!drawn || drawn.length < 6) return;
 
-    void div.offsetWidth;
+      // Rigging for tutorial (unchanged)
+      if (currentMission === 1 && !firstTutorialShuffleDone) {
+        firstTutorialShuffleDone = true;
+        drawn[1] = 'circle';
+        drawn[3] = 'triangle';
+        drawn[5] = 'line';
+      }
+      if (tutorialStep === 19 || window.nextShuffleRiggedLeft) {
+        drawn[0] = 'dot';
+        drawn[2] = 'dot';
+        drawn[4] = 'drop';
+        window.nextShuffleRiggedLeft = false;
+      }
 
-    const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi';
-    const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi';
-    const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg';
+      const order = ['doodle-l1', 'doodle-r1', 'doodle-l2', 'doodle-r2', 'doodle-l3', 'doodle-r3'];
 
-    // Final settle for doodle
-    setTimeout(() => {
-      div.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-      div.style.transform = `translate(${rx}, ${ry}) rotate(${rr})`;
-    }, i * 50);
-// === NEW: Apply the EXACT SAME final transform to the matching checkbox ===
-const checkboxId = id.replace('doodle-', 'cb-');
-const cb = document.getElementById(checkboxId);
-if (cb) {
-  setTimeout(() => {
-    cb.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-    cb.style.transform = `translate(${rx}, ${ry}) rotate(${rr}) translateY(-50%)`;
-  }, i * 50);
-}
-  });
+      // Outgoing doodles
+      order.forEach((id, i) => {
+        const div = document.getElementById(id);
+        if (div && div.style.backgroundImage) {
+          setTimeout(() => {
+            const spreadX = (Math.random() * 24 - 12).toFixed(2) + 'cqi';
+            div.style.transition = 'transform 0.33s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
+            div.style.transform = `translate(${spreadX}, 120dvh) rotate(-720deg)`;
+          }, i * 5);
+        }
+      });
 
-// === INSIDE the incoming doodle setTimeout (fade IN after doodles settle) ===
-setTimeout(() => {
-  document.querySelectorAll('.doodle-checkbox').forEach(cb => {
-    cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
-    cb.style.opacity = '1';
-  });
-}, 720);   // 720ms gives a nice, intentional pause after the doodles land
+      // Incoming doodles + checkboxes that follow them
+      setTimeout(() => {
+        order.forEach((id, i) => {
+          const div = document.getElementById(id);
+          if (!div) return;
 
-}, 350);
+          // === DOODLE SETUP (unchanged) ===
+          div.style.transition = 'none';
+          const startSpreadX = (Math.random() * 36 - 18).toFixed(2) + 'cqi';
+          div.style.transform = `translate(${startSpreadX}, 100dvh) rotate(720deg)`;
+          div.style.backgroundImage = `url('images/${drawn[i]}.png')`;
+          div.dataset.doodle = drawn[i];
 
-  // Tutorial advancement (unchanged)
-  if (tutorialStep === 2) {
-    tutorialStep = 3;
-    animateTutorialOut(() => setTimeout(() => showTutorialStep(3), 1250));
-  }
-  if (tutorialStep === 19) {
-    animateTutorialOut(() => setTimeout(() => showTutorialStep(20), 1400));
-  }
-});
+          void div.offsetWidth;
 
-const mainDoodleContainers = document.querySelectorAll('#shuffle-zone > div[id^="doodle-"]');
+          const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi';
+          const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi';
+          const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg';
 
-mainDoodleContainers.forEach(div => {
-  div.style.cursor = 'pointer';
-  div.addEventListener('click', (e) => {
-    // NEW: Completely ignore any click that started on a checkbox
-    if (e.target.closest('.doodle-checkbox')) {
-      return;
-    }
+          // Final settle for doodle
+          setTimeout(() => {
+            div.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            div.style.transform = `translate(${rx}, ${ry}) rotate(${rr})`;
+          }, i * 50);
+          // === NEW: Apply the EXACT SAME final transform to the matching checkbox ===
+          const checkboxId = id.replace('doodle-', 'cb-');
+          const cb = document.getElementById(checkboxId);
+          if (cb) {
+            setTimeout(() => {
+              cb.style.transition = 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+              cb.style.transform = `translate(${rx}, ${ry}) rotate(${rr}) translateY(-50%)`;
+            }, i * 50);
+          }
+        });
 
-    playSound('button');
-    mainDoodleContainers.forEach(d => d.classList.remove('selected'));
-    div.classList.add('selected');
-    const currentTransform = div.style.transform || 'translate(0, 0) rotate(0deg)';
-    div.style.setProperty('--base-transform', currentTransform);
-    hideTooltip();
-    renderGuide(div.dataset.doodle);
-    openModal('guide-modal');
-  });
-});
+        // === INSIDE the incoming doodle setTimeout (fade IN after doodles settle) ===
+        setTimeout(() => {
+          document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+            cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
+            cb.style.opacity = '1';
+          });
+        }, 720);   // 720ms gives a nice, intentional pause after the doodles land
 
-// === CHECKBOX CLICK HANDLERS (animated circle + smart column locking) ===
-document.querySelectorAll('.doodle-checkbox').forEach(checkbox => {
-  checkbox.addEventListener('click', (e) => {
-    e.stopPropagation();
-    playSound('circle');
+      }, 350);
 
-    checkbox.classList.toggle('checked');
-
-    // FORCE immediate restart of the transition on uncheck
-    void checkbox.offsetHeight;
-
-    // Update column locking
-    updateColumnLock();
-  });
-});
-
-// === SMART COLUMN LOCKING - FIXED VERSION ===
-function updateColumnLock() {
-  const leftCbs = document.querySelectorAll('#cb-l1, #cb-l2, #cb-l3');
-  const rightCbs = document.querySelectorAll('#cb-r1, #cb-r2, #cb-r3');
-
-  const anyLeftChecked = Array.from(leftCbs).some(cb => cb.classList.contains('checked'));
-  const anyRightChecked = Array.from(rightCbs).some(cb => cb.classList.contains('checked'));
-
-  // Reset ALL checkboxes to fully visible first
-  leftCbs.forEach(cb => {
-    cb.style.transition = 'opacity 320ms ease';
-    cb.style.opacity = '1';
-    cb.style.pointerEvents = 'auto';
-  });
-  rightCbs.forEach(cb => {
-    cb.style.transition = 'opacity 320ms ease';
-    cb.style.opacity = '1';
-    cb.style.pointerEvents = 'auto';
-  });
-
-  // Now lock the opposite column only if one side is active
-  if (anyLeftChecked && !anyRightChecked) {
-    rightCbs.forEach(cb => {
-      cb.style.opacity = '0';
-      cb.style.pointerEvents = 'none';
+      // Tutorial advancement (unchanged)
+      if (tutorialStep === 2) {
+        tutorialStep = 3;
+        animateTutorialOut(() => setTimeout(() => showTutorialStep(3), 1250));
+      }
+      saveGameState();
+      if (tutorialStep === 19) {
+        animateTutorialOut(() => setTimeout(() => showTutorialStep(20), 1400));
+      }
     });
-  } else if (anyRightChecked && !anyLeftChecked) {
-    leftCbs.forEach(cb => {
-      cb.style.opacity = '0';
-      cb.style.pointerEvents = 'none';
+
+    const mainDoodleContainers = document.querySelectorAll('#shuffle-zone > div[id^="doodle-"]');
+
+    mainDoodleContainers.forEach(div => {
+      div.style.cursor = 'pointer';
+      div.addEventListener('click', (e) => {
+        // NEW: Completely ignore any click that started on a checkbox
+        if (e.target.closest('.doodle-checkbox')) {
+          return;
+        }
+
+        playSound('button');
+        mainDoodleContainers.forEach(d => d.classList.remove('selected'));
+        div.classList.add('selected');
+        const currentTransform = div.style.transform || 'translate(0, 0) rotate(0deg)';
+        div.style.setProperty('--base-transform', currentTransform);
+        hideTooltip();
+        renderGuide(div.dataset.doodle);
+        openModal('guide-modal');
+      });
     });
-  }
-  // If no checkboxes are checked at all → both columns stay visible (already reset above)
-}
-// Replace the existing function populateLearnGrid() { ... } in <script> with this updated version (adds new badge for mission 2-5 new doodles)
+
+    // === CHECKBOX CLICK HANDLERS (animated circle + smart column locking) ===
+    document.querySelectorAll('.doodle-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('click', (e) => {
+        e.stopPropagation();
+        playSound('circle');
+
+        checkbox.classList.toggle('checked');
+
+        // FORCE immediate restart of the transition on uncheck
+        void checkbox.offsetHeight;
+
+        // Update column locking
+        updateColumnLock();
+        saveGameState();
+      });
+    });
+
+    // === SMART COLUMN LOCKING - FIXED VERSION ===
+    function updateColumnLock() {
+      const leftCbs = document.querySelectorAll('#cb-l1, #cb-l2, #cb-l3');
+      const rightCbs = document.querySelectorAll('#cb-r1, #cb-r2, #cb-r3');
+
+      const anyLeftChecked = Array.from(leftCbs).some(cb => cb.classList.contains('checked'));
+      const anyRightChecked = Array.from(rightCbs).some(cb => cb.classList.contains('checked'));
+
+      // Reset ALL checkboxes to fully visible first
+      leftCbs.forEach(cb => {
+        cb.style.transition = 'opacity 320ms ease';
+        cb.style.opacity = '1';
+        cb.style.pointerEvents = 'auto';
+      });
+      rightCbs.forEach(cb => {
+        cb.style.transition = 'opacity 320ms ease';
+        cb.style.opacity = '1';
+        cb.style.pointerEvents = 'auto';
+      });
+
+      // Now lock the opposite column only if one side is active
+      if (anyLeftChecked && !anyRightChecked) {
+        rightCbs.forEach(cb => {
+          cb.style.opacity = '0';
+          cb.style.pointerEvents = 'none';
+        });
+      } else if (anyRightChecked && !anyLeftChecked) {
+        leftCbs.forEach(cb => {
+          cb.style.opacity = '0';
+          cb.style.pointerEvents = 'none';
+        });
+      }
+      // If no checkboxes are checked at all → both columns stay visible (already reset above)
+    }
+    // Replace the existing function populateLearnGrid() { ... } in <script> with this updated version (adds new badge for mission 2-5 new doodles)
     function populateLearnGrid() {
       const grid = document.getElementById('learn-grid');
       grid.innerHTML = '';
@@ -6293,6 +6597,39 @@ function updateColumnLock() {
       await new Promise(r => setTimeout(r, 350));
     }
 
+    async function performFastLearn() {
+      console.log("%c🚀 Fast Learner: Adding random non-basic doodle", "color:#0f0;font-weight:bold");
+
+      const nonBasic = allPossibleDoodles.filter(d =>
+        !['circle', 'square', 'triangle', 'dot', 'line'].includes(d)
+      );
+
+      const randomDoodle = nonBasic[Math.floor(Math.random() * nonBasic.length)];
+
+      // Open portfolio — plays normal modalslide sound
+      populatePortfolioGrid();
+      openModal('portfolio-modal');           // ← normal open (with sound)
+
+      await new Promise(r => setTimeout(r, 420));
+
+      deck[randomDoodle] = (deck[randomDoodle] || 0) + 1;
+      hasGameInProgress = true;
+
+      populatePortfolioGrid();
+      const cells = document.querySelectorAll('#portfolio-grid .doodle-cell');
+      const newCell = Array.from(cells).find(c => c.dataset.doodle === randomDoodle);
+      if (newCell) newCell.classList.add('animate-add');
+
+      await new Promise(r => setTimeout(r, 1200));
+
+      // Close portfolio — NO sound for this specific automatic close
+      closeModal('portfolio-modal', { silent: true });
+
+      // Shuffle sound plays right after the silent close
+      playSound('shuffle');
+
+      console.log(`✅ Fast Learner added: ${randomDoodle}`);
+    }
     function toggleSelection(cell, grid, modalType) {
       // Clean up tutorial highlight before normal selection logic runs
       grid.querySelectorAll('.doodle-cell.tutorial-highlight').forEach(c => {
@@ -6418,6 +6755,7 @@ function updateColumnLock() {
         const doodle = selected.dataset.doodle;
         deck[doodle] = (deck[doodle] || 0) + 1;
         hasGameInProgress = true;
+        saveGameState();
         selected.classList.add('animate-learn');
         setTimeout(() => {
           // NEW: Play modalslide manually once for the whole switch
@@ -6472,6 +6810,7 @@ function updateColumnLock() {
           deck[doodle]--;
           // In modal-remove-btn click handler: Add this line RIGHT AFTER deck[doodle]--;
           hasGameInProgress = Object.entries(deck).some(([k, v]) => v !== defaultDeck[k]);
+          saveGameState();
           selected.classList.add('animate-remove');
           setTimeout(() => {
             selected.style.opacity = '0';
@@ -6761,12 +7100,37 @@ function updateColumnLock() {
     document.getElementById('score-confirm-warp-btn').onclick = async () => {
       playSound('button');
       console.log("=== CONTINUE TO SCORE CLICKED ===");
+
       const continueBtn = document.getElementById('score-confirm-warp-btn');
       const loading = document.getElementById('loading-container');
+      const adjustmentMode = document.getElementById('score-adjustment-mode');
+      const cameraContainer = document.querySelector('.camera-container');
+      const oldInstructions = document.getElementById('score-camera-instructions');
 
-      continueBtn.style.display = 'none';
-      loading.style.display = 'flex';
-      document.getElementById('score-adjustment-mode').style.display = 'none';
+      // 1. Hide EVERYTHING else first (critical for repeat scans)
+      if (continueBtn) continueBtn.style.display = 'none';
+      if (adjustmentMode) adjustmentMode.style.display = 'none';
+      if (cameraContainer) cameraContainer.style.display = 'none';
+      if (oldInstructions) oldInstructions.style.display = 'none';
+
+      // 2. Aggressively force loading screen to be visible and painted
+      if (loading) {
+        loading.style.display = 'flex';
+        loading.style.opacity = '1';
+        loading.style.visibility = 'visible';
+        loading.style.zIndex = '99999';
+        void loading.offsetHeight;           // force reflow
+        console.log("✅ Loading screen forced visible + reflow");
+      }
+
+      // 3. Extra paint guarantee before heavy work starts
+      await new Promise(resolve => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            resolve();
+          });
+        });
+      });
 
       try {
         if (!scoreModel) {
@@ -6775,23 +7139,36 @@ function updateColumnLock() {
         }
 
         const warpedCanvas = document.getElementById('score-warped-preview');
+
+        const startTime = Date.now();
         await scoreDetectFromCropped(warpedCanvas);
 
-        // This now forces the message to appear on the review screen
-        const tweakPrompt = document.getElementById('score-tweak-prompt');
-        tweakPrompt.textContent = "Make sure your doodles have been identified correctly. Tap misplaced doodles to correct them.";
-        tweakPrompt.style.setProperty('display', 'block', 'important');
+        const elapsed = Date.now() - startTime;
+        const MIN_LOADING_TIME = 1850;
 
-        // Show the review screen
+        if (elapsed < MIN_LOADING_TIME) {
+          console.log(`⏳ Extra wait: ${MIN_LOADING_TIME - elapsed}ms to show loading`);
+          await new Promise(r => setTimeout(r, MIN_LOADING_TIME - elapsed));
+        }
+
+        console.log("✅ Detection complete — showing review screen");
+
+        const tweakPrompt = document.getElementById('score-tweak-prompt');
+        if (tweakPrompt) {
+          tweakPrompt.textContent = "Make sure your doodles have been identified correctly. Tap misplaced doodles to correct them.";
+          tweakPrompt.style.display = 'block';
+        }
+
         document.getElementById('score-review-container').style.display = 'flex';
         document.getElementById('score-buttons-container').style.display = 'flex';
 
-        console.log("✅ Review screen loaded with correction message!");
       } catch (err) {
         console.error("=== REVIEW ERROR ===", err);
-        continueBtn.style.display = 'block';
       } finally {
-        loading.style.display = 'none';
+        if (loading) {
+          loading.style.display = 'none';
+          console.log("✅ Loading screen hidden");
+        }
       }
     };
     // ====================== NEW NOTEBOOK DIMENSIONS (from your Adobe Illustrator file) ======================
@@ -7125,6 +7502,14 @@ function updateColumnLock() {
     }
 
     async function scoreDetectFromCropped(cropped) {
+      console.log("🔍 scoreDetectFromCropped started — warped canvas size:", cropped.width, "×", cropped.height);
+
+      // Extra safety: ensure gray mat exists
+      if (!scoreWarpedGrayMat) {
+        console.warn("⚠️ scoreWarpedGrayMat missing — recreating from warped preview");
+        scoreWarpedGrayMat = cv.imread(cropped);
+        cv.cvtColor(scoreWarpedGrayMat, scoreWarpedGrayMat, cv.COLOR_RGBA2GRAY);
+      }
       await tf.setBackend('webgl');
       await tf.ready();
 
@@ -7198,7 +7583,7 @@ function updateColumnLock() {
       scoreBuildBoard();
 
       // === STRONG VISIBILITY FORCING (fixes missing buttons) ===
-      document.getElementById('loading-container').style.display = 'none';
+      // DO NOT hide loading here — let the outer handler control it
       document.getElementById('score-review-container').style.display = 'flex';
       document.getElementById('score-buttons-container').style.display = 'flex';
       document.getElementById('score-export-btn').style.display = 'block';
@@ -7258,8 +7643,7 @@ function updateColumnLock() {
       }
     }
 
-    /* Replace the existing function scoreRenderDetectedGrid() { ... } in <script> with this full version (adds doodle-inner wrapper) */
-    function scoreRenderDetectedGrid() {
+    function scoreRenderDetectedGrid(interactive = true) {
       const grid = document.getElementById('score-detected-grid');
       grid.innerHTML = '';
       grid.style.display = 'grid';
@@ -7271,17 +7655,25 @@ function updateColumnLock() {
           cell.className = 'grid-cell';
           if (c !== 5) {
             const d = scoreDetectedDoodles[flat];
-            const confidence = scoreConfidences[flat];
             cell.dataset.index = flat;
             cell.dataset.doodle = d;
-            // NEW: Wrap background in inner div
+
             const inner = document.createElement('div');
             inner.className = 'doodle-inner';
             if (d !== 'unknown') {
               inner.style.backgroundImage = `url('images/raw${d}.png')`;
             }
             cell.appendChild(inner);
-            cell.addEventListener('click', () => scoreShowDoodlePopup(flat));
+
+            // ONLY make interactive in review phase
+            if (interactive) {
+              cell.addEventListener('click', () => scoreShowDoodlePopup(flat));
+              cell.style.cursor = 'pointer';
+            } else {
+              cell.style.cursor = 'default';
+              cell.style.pointerEvents = 'none';   // prevents all clicks + hover effects
+            }
+
             flat++;
           }
           grid.appendChild(cell);
@@ -7388,6 +7780,8 @@ function updateColumnLock() {
         // NEW: Start live detection overlay
         startLiveSquareDetection();
       };
+      const loading = document.getElementById('loading-container');
+      if (loading) loading.style.display = 'none';
     }
 
     let liveOverlayCanvas = null;
@@ -7463,35 +7857,68 @@ function updateColumnLock() {
     }
 
     function resetScoreModal() {
-      // 1. Stop camera stream completely
+      console.log('%c🔄 [resetScoreModal] FULL DEEP CLEANUP — ready for next scan', 'color:#0f0; font-weight:bold');
+
+      // 1. Stop camera + live detection
       if (scoreStream) {
         scoreStream.getTracks().forEach(track => track.stop());
         scoreStream = null;
       }
       stopLiveSquareDetection();
+
       const video = document.getElementById('score-camera-preview');
-      if (video) {
-        video.srcObject = null;
-        video.style.display = 'block';
+      if (video) video.srcObject = null;
+
+      // 2. Delete OpenCV Mats
+      if (scoreCapturedMat) { scoreCapturedMat.delete(); scoreCapturedMat = null; }
+      if (scoreWarpedGrayMat) { scoreWarpedGrayMat.delete(); scoreWarpedGrayMat = null; }
+
+      // 3. Reset ALL scoring state
+      scoreDetectedDoodles = [];
+      scoreConfidences = [];
+      scoreCellCanvases = [];
+      scoreBoard = Array(7).fill().map(() => Array(11).fill(null));
+      scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
+      scoreGridCells = [];
+      scoreCornerPoints = [];
+      scoreCurrentCellIndex = -1;
+      latestDetectedCorners = null;
+
+      // 4. CRITICAL: Clear ALL dynamic results content (this was the main cause of second-scan crash)
+      const tally = document.getElementById('score-tally');
+      if (tally) {
+        tally.style.display = 'none';
+        tally.innerHTML = '';
       }
 
-      // 2. Reset all UI states to "fresh open" (single-camera flow)
-      document.querySelector('.camera-container').style.display = 'block';           // Show live camera
-      document.getElementById('score-adjustment-mode').style.display = 'none';       // Hide warp UI
-      document.getElementById('score-review-container').style.display = 'none';
-      document.getElementById('score-detected-grid').style.display = 'none';
-      document.getElementById('score-tally').style.display = 'none';
+      const scoreLine = document.getElementById('score-line');
+      if (scoreLine) scoreLine.style.display = 'none';
+
+      const review = document.getElementById('score-review-container');
+      if (review) {
+        review.style.display = 'none';
+        review.innerHTML = '';
+      }
+
+      const grid = document.getElementById('score-detected-grid');
+      if (grid) {
+        grid.style.display = 'none';
+        grid.innerHTML = '';
+      }
+
+      // 5. Reset UI back to fresh camera state
+      document.querySelector('.camera-container').style.display = 'block';
+      document.getElementById('score-adjustment-mode').style.display = 'none';
       document.getElementById('score-buttons-container').style.display = 'none';
-      document.getElementById('score-export-btn').style.display = 'none';
-      document.getElementById('score-score-btn').style.display = 'none';
-      document.getElementById('score-new-scan-btn').style.display = 'none';
       document.getElementById('score-final-total').style.display = 'none';
-      // Show new camera instructions
+
       const cameraInstructions = document.getElementById('score-camera-instructions');
       if (cameraInstructions) cameraInstructions.style.display = 'block';
 
+      const tweakPrompt = document.getElementById('score-tweak-prompt');
+      if (tweakPrompt) tweakPrompt.style.display = 'none';
 
-      // 3. Button swap back to SNAP PHOTO
+      // Buttons
       const snapBtn = document.getElementById('score-snap-btn');
       const continueBtn = document.getElementById('score-confirm-warp-btn');
       if (snapBtn) {
@@ -7501,71 +7928,223 @@ function updateColumnLock() {
       }
       if (continueBtn) continueBtn.style.display = 'none';
 
-      // 4. Clear canvases
-      const capturedCanvas = document.getElementById('score-captured-canvas');
-      const warpedCanvas = document.getElementById('score-warped-preview');
-      if (capturedCanvas) capturedCanvas.getContext('2d').clearRect(0, 0, capturedCanvas.width, capturedCanvas.height);
-      if (warpedCanvas) warpedCanvas.getContext('2d').clearRect(0, 0, warpedCanvas.width, warpedCanvas.height);
+      // Clear canvases and stray overlays
+      ['score-captured-canvas', 'score-warped-preview', 'score-live-overlay'].forEach(id => {
+        const c = document.getElementById(id);
+        if (c && c.getContext) c.getContext('2d').clearRect(0, 0, c.width, c.height);
+      });
 
-      // 5. Hide corner handles
       document.querySelectorAll('.corner-handle').forEach(h => h.style.display = 'none');
 
-      // 6. Reset text / status
-      document.getElementById('score-tweak-prompt').textContent = "Scan your game sheet by lining up the grids with your two Notebook pages. Ensure each doodle is in its own grid cell, then press SNAP.";
-      document.getElementById('score-tweak-prompt').style.display = 'block';
-      document.getElementById('score-status').textContent = "Waiting for photo...";
-      document.getElementById('score-console-log').textContent = "";
+      const quad = document.getElementById('score-quad-overlay');
+      if (quad) quad.remove();
+      quadOverlayCanvas = null;
 
-      // 7. Clear data arrays
-      scoreDetectedDoodles = [];
-      scoreConfidences = [];
-      scoreCellCanvases = [];
-      scoreBoard = Array(7).fill().map(() => Array(11).fill(null));
-      scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
-      scoreGridCells = [];
-      scoreCapturedMat = null;
-      scoreCornerPoints = [];
-
-      // 8. Hide any leftover popup
       const popup = document.getElementById('score-doodle-popup');
       if (popup) popup.style.display = 'none';
-
-      document.getElementById('score-tweak-prompt').style.display = 'none';
-
-      console.log('✅ Score modal fully reset – ready for next scan');
+      const tweakEl = document.getElementById('score-tweak-prompt');
+      if (tweakEl) tweakEl.style.display = 'none';
+      console.log('%c✅ Score modal is now completely clean', 'color:lime');
     }
-    
     function resetShuffleZone() {
-  const doodleIds = ['doodle-l1','doodle-l2','doodle-l3','doodle-r1','doodle-r2','doodle-r3'];
-  doodleIds.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.style.backgroundImage = '';      // clear image
-      el.dataset.doodle = '';             // clear data
-      el.classList.remove('selected');
-      el.style.transition = 'none';
-      el.style.transform = 'translateY(100dvh) rotate(0deg)'; // initial off-screen state
-      void el.offsetHeight;               // force reflow
+      const doodleIds = ['doodle-l1', 'doodle-l2', 'doodle-l3', 'doodle-r1', 'doodle-r2', 'doodle-r3'];
+      doodleIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.backgroundImage = '';      // clear image
+          el.dataset.doodle = '';             // clear data
+          el.classList.remove('selected');
+          el.style.transition = 'none';
+          el.style.transform = 'translateY(100dvh) rotate(0deg)'; // initial off-screen state
+          void el.offsetHeight;               // force reflow
+        }
+      });
+
+      // Reset checkboxes too
+      document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+        cb.classList.remove('checked');
+        cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
+        cb.style.opacity = '0';
+      });
+
+      console.log('✅ Shuffle zone fully reset for new game');
     }
-  });
 
-  // Reset checkboxes too
-  document.querySelectorAll('.doodle-checkbox').forEach(cb => {
-    cb.classList.remove('checked');
-    cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
-    cb.style.opacity = '0';
-  });
+    // ====================== PERSISTENT SAVE / LOAD ======================
+    const SAVE_KEY = 'doodleBashSaveState';
 
-  console.log('✅ Shuffle zone fully reset for new game');
-}
+    function saveGameState() {
+      const state = {
+        deck: { ...deck },
+        hasGameInProgress: hasGameInProgress,
+        currentMission: currentMission,
+        activeCampaignCode: activeCampaign ? activeCampaign.code : null,
+        art101SelectedDoodle: art101SelectedDoodle,
+        shuffleCount: shuffleCount,
+        tutorialStep: tutorialStep,                    // ← ADD
+        tutorialInProgress: tutorialInProgress,        // ← ADD
+        tutorialCompleted: tutorialCompleted,
+        playWithTutorial: playWithTutorial,            // ← ADD (for First Scribbles)
+        // Save the exact current 6 doodles + checkbox states
+        currentDoodles: {},
+        checkedCheckboxes: {}
+
+      };
+
+      // Save current doodles
+      const doodleIds = ['doodle-l1', 'doodle-l2', 'doodle-l3', 'doodle-r1', 'doodle-r2', 'doodle-r3'];
+      doodleIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.dataset.doodle) {
+          state.currentDoodles[id] = el.dataset.doodle;
+        }
+      });
+
+      // Save which checkboxes are checked
+      document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+        if (cb.classList.contains('checked')) {
+          state.checkedCheckboxes[cb.id] = true;
+        }
+      });
+
+      state.checkboxTransforms = {};
+      document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+        if (cb.style.transform) {
+          state.checkboxTransforms[cb.id] = cb.style.transform;
+        }
+      });
+
+
+
+      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+      console.log('💾 Game state saved');
+    }
+
+    function loadGameState() {
+      const saved = localStorage.getItem(SAVE_KEY);
+      if (!saved) return false;
+
+      try {
+        const state = JSON.parse(saved);
+
+        deck = state.deck || { ...defaultDeck };
+        hasGameInProgress = state.hasGameInProgress || false;
+        currentMission = state.currentMission || null;
+        shuffleCount = state.shuffleCount || 0;
+
+        // Restore campaign
+        if (state.activeCampaignCode) {
+          activeCampaign = campaignMissions[state.activeCampaignCode] || null;
+        } else {
+          activeCampaign = null;
+        }
+        art101SelectedDoodle = state.art101SelectedDoodle || null;
+
+        // === NEW: Restore tutorial state ===
+        if (state.tutorialStep !== undefined) {
+          tutorialStep = state.tutorialStep;
+          tutorialInProgress = state.tutorialInProgress || false;
+          tutorialCompleted = state.tutorialCompleted || false;
+          playWithTutorial = state.playWithTutorial !== undefined ? state.playWithTutorial : true;
+          console.log(`✅ Tutorial restored — step ${tutorialStep}, inProgress: ${tutorialInProgress}`);
+        }
+
+
+        console.log('✅ Game state loaded from localStorage');
+
+        // If we have saved doodles, restore them immediately for Resume
+        if (Object.keys(state.currentDoodles).length > 0) {
+          const doodleIds = ['doodle-l1', 'doodle-l2', 'doodle-l3', 'doodle-r1', 'doodle-r2', 'doodle-r3'];
+          doodleIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && state.currentDoodles[id]) {
+              el.style.backgroundImage = `url('images/${state.currentDoodles[id]}.png')`;
+              el.dataset.doodle = state.currentDoodles[id];
+            }
+          });
+
+          // Restore checkbox states
+          document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+            if (state.checkedCheckboxes[cb.id]) {
+              cb.classList.add('checked');
+            }
+          });
+        }
+
+        return true;
+      } catch (e) {
+        console.error('Failed to load saved game:', e);
+        return false;
+      }
+    }
+
+    function restoreCurrentVisualState() {
+      const saved = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
+      console.log('🔄 restoreCurrentVisualState — saved checkedCheckboxes:', saved.checkedCheckboxes);
+
+      const doodleIds = ['doodle-l1', 'doodle-l2', 'doodle-l3', 'doodle-r1', 'doodle-r2', 'doodle-r3'];
+      const checkboxIds = ['cb-l1', 'cb-l2', 'cb-l3', 'cb-r1', 'cb-r2', 'cb-r3'];
+
+      for (let i = 0; i < 6; i++) {
+        const doodleEl = document.getElementById(doodleIds[i]);
+        const cbEl = document.getElementById(checkboxIds[i]);
+
+        if (!doodleEl) continue;
+
+        // Restore doodle
+        if (doodleEl.dataset.doodle) {
+          doodleEl.style.backgroundImage = `url('images/${doodleEl.dataset.doodle}.png')`;
+        }
+
+        // Restore doodle transform
+        const rx = (Math.random() * 2.4 - 1.2).toFixed(2) + 'cqi';
+        const ry = (Math.random() * 1.6 - 0.8).toFixed(2) + 'cqi';
+        const rr = (Math.random() * 4 - 2).toFixed(1) + 'deg';
+        const doodleTransform = `translate(${rx}, ${ry}) rotate(${rr})`;
+
+        doodleEl.style.transition = 'none';
+        doodleEl.style.transform = doodleTransform;
+        void doodleEl.offsetWidth;
+
+        // Restore checkbox
+        if (cbEl) {
+          cbEl.style.transition = 'none';
+          cbEl.style.opacity = '0';
+          cbEl.style.transform = `${doodleTransform} translateY(-50%)`;
+
+          // Restore checked state
+          const shouldBeChecked = !!(saved.checkedCheckboxes && saved.checkedCheckboxes[cbEl.id]);
+          if (shouldBeChecked) {
+            cbEl.classList.add('checked');
+            console.log(`   ✅ Restored checked: ${cbEl.id}`);
+          } else {
+            cbEl.classList.remove('checked');
+            console.log(`   ✅ Restored unchecked: ${cbEl.id}`);
+          }
+
+          void cbEl.offsetWidth;
+
+          cbEl.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
+          cbEl.style.opacity = '1';
+        }
+      }
+
+      updateColumnLock();
+      console.log('%c✅ restoreCurrentVisualState() complete — checked states restored', 'color:#0f0; font-weight:bold');
+    }
+    // Clear save when starting a brand-new game
+    function clearSavedGameState() {
+      localStorage.removeItem(SAVE_KEY);
+      console.log('🗑️ Saved game cleared');
+    }
 
     populateLearnGrid();
     // ====================== FULL SCORING ANIMATION ======================
     const scoringRules = [
       { type: 'turd', base: -2 }, { type: 'music', calc: calculateMusic }, { type: 'planet', base: 1 },
       { type: 'star', calc: calculateStar }, { type: 'flower', calc: calculateFlower }, { type: 'coin', base: 2 },
-      { type: 'heart', base: 2 }, { type: 'pizza', base: 3 }, { type: 'diamond', base: 4 },
-      { type: 'icecream', base: 4 }, { type: 'sword', calc: calculateSword }, { type: 'present', calc: calculatePresent },
+      { type: 'heart', base: 2 }, { type: 'pizza', calc: calculatePizza }, { type: 'diamond', base: 4 },
+      { type: 'icecream', calc: calculateIcecream }, { type: 'sword', calc: calculateSword }, { type: 'present', calc: calculatePresent },
       { type: '3dset', calc: calculate3DSet }, { type: 'chest', calc: calculateChest },
       { type: 'rocket', calc: calculateRocket }, { type: 'cat', calc: calculateCat },
       { type: 'cloud', calc: calculateCloud }, { type: 'umbrella', calc: calculateUmbrella },
@@ -7697,7 +8276,7 @@ function updateColumnLock() {
         if (scoreBoard[r][c] === 'cat') {
           let count = getSurrounding(r, c).filter(s => ['fish', 'turd', 'butterfly'].includes(s.doodle)).length;
           let pts = 3 + count * 2;
-          pts += getCampaignBonus('cat');           // ← Animal Lover campaign bonus
+          pts += getCampaignBonus('cat');           // now safe
           total += pts;
           perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
@@ -7705,7 +8284,7 @@ function updateColumnLock() {
       }
       return { total, perCellList };
     }
-    /* Replace the existing function calculateCloud() in <script> with this (counts drops below on same page, any column) */
+
     function calculateCloud() {
       let total = 0, perCellList = [];
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
@@ -7753,6 +8332,7 @@ function updateColumnLock() {
         if (scoreBoard[r][c] === 'mug') {
           let hasDropAbove = (r > 0 && scoreBoard[r - 1][c] === 'drop');
           let pts = 2 + (hasDropAbove ? 2 : 0);
+          pts += getCampaignBonus('mug');           // ← Hungry3 boost
           total += pts;
           perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
@@ -7760,6 +8340,7 @@ function updateColumnLock() {
       }
       return { total, perCellList };
     }
+
     function calculateToiletpaper() {
       let total = 0, perCellList = [];
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
@@ -7921,6 +8502,34 @@ function updateColumnLock() {
       return { total, perCellList };
     }
 
+    function calculatePizza() {
+      let total = 0, perCellList = [];
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+        if (scoreBoard[r][c] === 'pizza') {
+          let pts = 3;
+          pts += getCampaignBonus('pizza');           // ← Hungry3 boost
+          total += pts;
+          perCellList.push({ r, c, pts });
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return { total, perCellList };
+    }
+
+    function calculateIcecream() {
+      let total = 0, perCellList = [];
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+        if (scoreBoard[r][c] === 'icecream') {
+          let pts = 4;
+          pts += getCampaignBonus('icecream');           // ← Hungry3 boost
+          total += pts;
+          perCellList.push({ r, c, pts });
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return { total, perCellList };
+    }
+
     function calculatePiano() {
       let columnsWithMusic = new Set();
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
@@ -7962,7 +8571,7 @@ function updateColumnLock() {
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'butterfly') {
           let pts = 2 + maxSize * 1;
-          pts += getCampaignBonus('butterfly');      // ← Animal Lover campaign bonus
+          pts += getCampaignBonus('butterfly');      // now safe
           total += pts;
           perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
@@ -7976,8 +8585,8 @@ function updateColumnLock() {
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'fish') {
           let count = getSurrounding(r, c).filter(s => s.doodle === 'fish').length;
-          let pts = 1 + (count * 1);           // Original: 1 base + 1 per surrounding fish
-          pts += getCampaignBonus('fish');     // +1 from Animal Lover campaign → total base 2pt
+          let pts = 1 + (count * 1);
+          pts += getCampaignBonus('fish');           // now safe
           total += pts;
           perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
@@ -8040,26 +8649,138 @@ function updateColumnLock() {
       return total;
     }
 
-    function calculateDie() {
-      let total = 0, perCellList = [];
-      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-        if (scoreBoard[r][c] === 'die') {
-          let neighbors = getSurrounding(r, c);
-          let maxNeighbor = 0;
-          for (let n of neighbors) {
-            // Skip 3D doodles (no individual value)
-            if (['cube', 'cylinder', 'pyramid'].includes(n.doodle)) continue;
-            maxNeighbor = Math.max(maxNeighbor, scorePerCellScore[n.r][n.c]);
+    function calculateBeSquareBonus() {
+      console.log("%c🔍 [BeSquare] Starting calculation...", "color:#0f0;font-weight:bold");
+      let total = 0;
+      let perCellList = [];
+      let used = Array(7).fill().map(() => Array(11).fill(false));
+
+      const pages = [[0, 1, 2, 3, 4], [6, 7, 8, 9, 10]];
+
+      try {
+        for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
+          const pageCols = pages[pageIndex];
+          console.log(`   Page ${pageIndex} (cols ${pageCols})`);
+
+          for (let r = 0; r <= 5; r++) {
+            for (let i = 0; i < pageCols.length - 1; i++) {
+              const c = pageCols[i];
+
+              if (used[r][c] || used[r][c + 1] || used[r + 1][c] || used[r + 1][c + 1]) continue;
+
+              const d1 = scoreBoard[r][c];
+              const d2 = scoreBoard[r][c + 1];
+              const d3 = scoreBoard[r + 1][c];
+              const d4 = scoreBoard[r + 1][c + 1];
+
+              if (d1 && d1 !== 'unknown' && d1 === d2 && d1 === d3 && d1 === d4) {
+                total += 4;
+                used[r][c] = used[r][c + 1] = used[r + 1][c] = used[r + 1][c + 1] = true;
+                perCellList.push({ r, c, pts: 4 });
+                console.log(`   ✅ Found 2x2 ${d1} at row ${r}, col ${c} → +4`);
+              }
+            }
           }
-          let pts = maxNeighbor;
-          total += pts;
-          perCellList.push({ r, c, pts });
-          scorePerCellScore[r][c] += pts;
+        }
+        console.log(`✅ [BeSquare] Finished — total = ${total}`);
+        return { total, perCellList };
+      } catch (err) {
+        console.error("🚨 [BeSquare] CRASHED:", err);
+        return { total: 0, perCellList: [] };
+      }
+    }
+
+    function calculateAtLeast7Bonus() {
+      const counts = {};
+      // Count only the doodles that actually appear on the scanned sheet
+      scoreDetectedDoodles.forEach(doodle => {
+        if (doodle && doodle !== 'unknown') {
+          counts[doodle] = (counts[doodle] || 0) + 1;
+        }
+      });
+
+      let qualifyingTypes = 0;
+      for (let count of Object.values(counts)) {
+        if (count >= 7) qualifyingTypes++;
+      }
+
+      return qualifyingTypes * 7;
+    }
+
+    function calculateHungryBonus() {
+      let total = 0;
+      let perCellList = [];
+      const foodItems = ['mug', 'pizza', 'icecream'];
+
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 11; c++) {
+          if (foodItems.includes(scoreBoard[r][c])) {
+            const pts = 1;
+            total += pts;
+            perCellList.push({ r, c, pts });
+            scorePerCellScore[r][c] += pts;
+          }
         }
       }
       return { total, perCellList };
     }
 
+    function calculateFocalPointsBonus() {
+      if (!activeCampaign || activeCampaign.code !== "centerx2") return { total: 0, perCellList: [] };
+
+      console.log("%c🔍 [FocalPoints] Doubling center doodles in place...", "color:#0f0;font-weight:bold");
+
+      const centers = [
+        { r: 3, c: 2 },
+        { r: 3, c: 8 }
+      ];
+
+      let totalExtra = 0;
+      let perCellList = [];
+
+      for (let center of centers) {
+        const r = center.r;
+        const c = center.c;
+        if (scoreBoard[r] && scoreBoard[r][c] && scoreBoard[r][c] !== 'unknown') {
+          const original = scorePerCellScore[r][c];
+          const extra = original;
+          scorePerCellScore[r][c] = original * 2;   // double for total + die
+
+          totalExtra += extra;
+          perCellList.push({ r, c, pts: extra });
+
+          console.log(`   ✅ Doubled center [${r},${c}] (${scoreBoard[r][c]}) ${original} → ${original * 2}`);
+        }
+      }
+      return { total: totalExtra, perCellList };
+    }
+
+    function calculateDie() {
+      let total = 0, perCellList = [];
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 11; c++) {
+          if (scoreBoard[r][c] === 'die') {
+            let neighbors = getSurrounding(r, c);
+            let maxNeighbor = 0;
+
+            for (let n of neighbors) {
+              // NEW RULE: Dice can ONLY copy non-die doodles
+              if (n.doodle === 'die') continue;
+              // Still skip 3D doodles (they have no individual value)
+              if (['cube', 'cylinder', 'pyramid'].includes(n.doodle)) continue;
+
+              maxNeighbor = Math.max(maxNeighbor, scorePerCellScore[n.r][n.c]);
+            }
+
+            let pts = maxNeighbor;
+            total += pts;
+            perCellList.push({ r, c, pts });
+            scorePerCellScore[r][c] += pts;
+          }
+        }
+      }
+      return { total, perCellList };
+    }
     /* Replace the existing async function animateCell(cell, pts) { ... } in <script> with this (adds playSound at bubble creation) */
     async function animateCell(cell, pts) {
       cell.classList.add('scoring');
@@ -8142,379 +8863,545 @@ function updateColumnLock() {
       tally.appendChild(row);
     }
 
-    function scrollScoreToBottom() {
-  const content = document.getElementById('score-content');
-  if (!content) return;
-
-  // Double requestAnimationFrame = guaranteed after current frame + after next paint
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      // Force full layout recalculation
-      void content.offsetHeight;
-      void content.scrollHeight;
-
-      // Primary method — most reliable
-      content.scrollTop = content.scrollHeight;
-
-      // Backup: scroll the last child of tally (or content) into view
+    function addMissionBonusRow(points) {
       const tally = document.getElementById('score-tally');
-      const lastChild = tally && tally.lastElementChild 
-                        ? tally.lastElementChild 
-                        : content.lastElementChild;
-
-      if (lastChild) {
-        lastChild.scrollIntoView({ 
-          behavior: 'instant',   // instant = no lag
-          block: 'end'
-        });
-      }
-
-      console.log('✅ Scrolled to bottom (scrollHeight now:', content.scrollHeight, ')');
-    });
-  });
-}
-
-// ====================== TYPEWRITER FOR ASSESSMENT (reuses tutorial logic) ======================
-function typeScoreMessage(targetEl, htmlContent, onComplete = () => {}) {
-  targetEl.innerHTML = '';
-  targetEl.style.opacity = '1';
-  targetEl.style.visibility = 'visible';
-  targetEl.style.color = '#222';
-
-  const temp = document.createElement('div');
-  temp.innerHTML = htmlContent;
-  const segments = [];
-  function parseNode(node) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      const text = node.textContent;
-      if (text.length > 0) segments.push({ type: 'text', content: text });
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      if (node.tagName === 'IMG') {
-        segments.push({ type: 'image', src: node.src, alt: node.alt || '', className: node.className });
-      } else {
-        node.childNodes.forEach(parseNode);
-      }
-    }
-  }
-  temp.childNodes.forEach(parseNode);
-
-  let i = 0;
-  function typeNext() {
-    if (i >= segments.length) {
-      onComplete();
-      return;
-    }
-    const seg = segments[i];
-    if (seg.type === 'image') {
-      const img = document.createElement('img');
-      img.src = seg.src;
-      img.alt = seg.alt;
-      img.className = seg.className || 'inline-doodle';
-      targetEl.appendChild(img);
-      i++;
-      typeNext();
-      return;
-    }
-    const span = document.createElement('span');
-    targetEl.appendChild(span);
-    let charIndex = 0;
-    function typeChar() {
-      if (charIndex < seg.content.length) {
-        span.appendChild(document.createTextNode(seg.content[charIndex]));
-        if (charIndex % 3 === 0) playSound('flap');
-        charIndex++;
-        setTimeout(typeChar, 20);
-      } else {
-        i++;
-        typeNext();
-      }
-    }
-    typeChar();
-  }
-  typeNext();
-}
-
-async function runScoringAnimation() {
-  console.log("SCORE SHEET clicked – starting full animation");
-  scoreBuildBoard();
-  scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
-
-  const tally = document.getElementById('score-tally');
-  tally.style.display = 'block';
-  tally.innerHTML = '';
-
-  // Hide score line until the very end
-  const scoreLineContainer = document.getElementById('score-line');
-  scoreLineContainer.style.display = 'none';
-
-  let total = 0;
-  const nonZeroResults = [];
-
-  for (let rule of scoringRules) {
-    let result = rule.base !== undefined ? calculateBase(rule.type, rule.base) : rule.calc();
-    let subtotal = result.total || 0;
-    if (subtotal !== 0) nonZeroResults.push({ rule, result, subtotal });
-    total += subtotal;
-  }
-
-  let uniqueScoringTypes = nonZeroResults.length;
-  let bonus = (uniqueScoringTypes >= 1 && uniqueScoringTypes <= 5) ? -10 :
-    uniqueScoringTypes === 6 ? 1 : uniqueScoringTypes === 7 ? 5 :
-      uniqueScoringTypes === 8 ? 10 : uniqueScoringTypes === 9 ? 16 :
-        uniqueScoringTypes === 10 ? 23 : uniqueScoringTypes === 11 ? 31 :
-          uniqueScoringTypes >= 12 ? 40 : 0;
-  if (currentMission === null || currentMission >= 5) total += bonus;
-
-  // === Animate individual doodle rows ===
-  for (let entry of nonZeroResults) {
-    const { rule, result, subtotal } = entry;
-    const bubbleItems = result.perCellList || result.positions || [];
-    const highlightItems = (rule.type === '3dset' && result.allPositions) ? result.allPositions : bubbleItems;
-
-    if (highlightItems.length === 0) continue;
-
-    scoreGridCells.forEach(gridCell => gridCell.classList.add('low-opacity', 'non-scoring'));
-    highlightItems.forEach(item => {
-      const cell = scoreGridCells[item.r * 11 + item.c];
-      if (cell) cell.classList.remove('low-opacity', 'non-scoring');
-    });
-
-    await new Promise(r => setTimeout(r, 400));
-
-    let soundCount = 0;
-    const maxSounds = 4;
-    const animationPromises = [];
-    for (let i = 0; i < bubbleItems.length; i++) {
-      const item = bubbleItems[i];
-      const cell = scoreGridCells[item.r * 11 + item.c];
-      if (cell) {
-        setTimeout(() => {
-          if (soundCount < maxSounds && item.pts !== null && item.pts !== 0) {
-            playSound('pointbubble');
-            soundCount++;
-          }
-          animationPromises.push(animateCell(cell, item.pts !== undefined ? item.pts : null));
-        }, i * 12);
-      }
-    }
-        await Promise.all(animationPromises);
-
-    if (rule.type === '3dset') {
-      const row = document.createElement('div'); 
+      const row = document.createElement('div');
       row.className = 'tally-row';
-      ['cylinder', 'cube', 'pyramid'].forEach(d => {
-        const img = document.createElement('img');
-        img.src = `images/${d}.png`;
-        img.style.width = '10cqi';
-        img.style.height = '10cqi';
-        row.appendChild(img);
-      });
-      const line = document.createElement('div'); 
+
+      const img = document.createElement('img');
+      img.src = 'images/missionbonus.png';
+      img.style.width = '10cqi';
+      img.style.height = '10cqi';
+      img.style.objectFit = 'contain';
+
+      const line = document.createElement('div');
       line.className = 'tally-line';
-      const scoreBox = document.createElement('div'); 
+
+      const scoreBox = document.createElement('div');
       scoreBox.className = 'score-box';
       scoreBox.style.backgroundImage = "url('images/purplepointbubble.png')";
-      scoreBox.textContent = `${Math.abs(subtotal)}`;
-      row.append(line, scoreBox);
+      scoreBox.style.backgroundSize = 'contain';
+      scoreBox.style.backgroundRepeat = 'no-repeat';
+      scoreBox.style.backgroundPosition = 'center';
+      scoreBox.style.display = 'flex';
+      scoreBox.style.alignItems = 'center';
+      scoreBox.style.justifyContent = 'center';
+      scoreBox.style.color = '#fff';
+      scoreBox.style.textShadow = '0 1px 2px #000';
+      scoreBox.textContent = `${points > 0 ? '+' : ''}${points}`;
+
+      row.append(img, line, scoreBox);
       tally.appendChild(row);
-    } else {
-      addTallyRow(rule.type, subtotal);
     }
 
-    scrollScoreToBottom();           // ← keeps modal pinned to bottom
-    await new Promise(r => setTimeout(r, 2800));
-  }
+    function scrollScoreToBottom() {
+      const content = document.getElementById('score-content');
+      if (!content) return;
 
-  // Variety & campaign bonuses
-  if ((currentMission === null || currentMission >= 5) && bonus !== 0) {
-    addTallyRow('variety', bonus, { unique: uniqueScoringTypes });
-    scrollScoreToBottom();
-    await new Promise(r => setTimeout(r, 600));
-  }
-  if (activeCampaign && activeCampaign.code === "repetition5") {
-    const repBonus = calculateRepetitionBonus();
-    if (repBonus > 0) {
-      total += repBonus;
-      const row = document.createElement('div'); row.className = 'tally-row';
-      const label = document.createElement('div');
-      label.style.fontFamily = "'Fira Sans', sans-serif";
-      label.style.fontSize = '5cqi';
-      label.style.color = '#222';
-      label.style.paddingRight = '8cqi';
-      label.style.whiteSpace = 'nowrap';
-      label.textContent = 'Mission Bonus';
-      const line = document.createElement('div'); line.className = 'tally-line';
-      const scoreBox = document.createElement('div'); scoreBox.className = 'score-box';
-      scoreBox.style.backgroundImage = "url('images/purplepointbubble.png')";
-      scoreBox.textContent = `${repBonus}`;
-      row.append(label, line, scoreBox);
-      tally.appendChild(row);
-      scrollScoreToBottom();
-      await new Promise(r => setTimeout(r, 900));
-    }
-  }
+      // Double requestAnimationFrame = guaranteed after current frame + after next paint
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // Force full layout recalculation
+          void content.offsetHeight;
+          void content.scrollHeight;
 
-  // Restore normal grid
-  scoreGridCells.forEach(gridCell => gridCell.classList.remove('low-opacity', 'non-scoring'));
+          // Primary method — most reliable
+          content.scrollTop = content.scrollHeight;
 
-  // ==================== FINAL TOTAL BUBBLE (appears first) ====================
-  const finalTotalContainer = document.createElement('div');
-  finalTotalContainer.style.textAlign = 'center';
-  finalTotalContainer.style.marginTop = '25px';
+          // Backup: scroll the last child of tally (or content) into view
+          const tally = document.getElementById('score-tally');
+          const lastChild = tally && tally.lastElementChild
+            ? tally.lastElementChild
+            : content.lastElementChild;
 
-  const finalTotalText = document.createElement('div');
-  finalTotalText.style.fontFamily = "'Covered By Your Grace', cursive";
-  finalTotalText.style.fontSize = '7.5cqi';
-  finalTotalText.style.fontWeight = '400';
-  finalTotalText.style.color = '#000000';
-  finalTotalText.textContent = 'Total Score:';
-  finalTotalContainer.appendChild(finalTotalText);
+          if (lastChild) {
+            lastChild.scrollIntoView({
+              behavior: 'instant',   // instant = no lag
+              block: 'end'
+            });
+          }
 
-  const finalTotalBubble = document.createElement('div');
-  finalTotalBubble.className = 'score-box';
-  finalTotalBubble.style.backgroundImage = "url('images/purplepointbubble.png')";
-  finalTotalBubble.style.backgroundSize = 'contain';
-  finalTotalBubble.style.backgroundRepeat = 'no-repeat';
-  finalTotalBubble.style.backgroundPosition = 'center';
-  finalTotalBubble.style.display = 'flex';
-  finalTotalBubble.style.alignItems = 'center';
-  finalTotalBubble.style.justifyContent = 'center';
-  finalTotalBubble.style.color = '#fff';
-  finalTotalBubble.style.textShadow = '0 3px 6px #000';
-  finalTotalBubble.style.fontFamily = "'Fira Sans', sans-serif";
-  finalTotalBubble.style.fontSize = '9cqi';
-  finalTotalBubble.style.fontWeight = 'bold';
-  finalTotalBubble.style.width = '30cqi';
-  finalTotalBubble.style.height = '30cqi';
-  finalTotalBubble.style.margin = '2cqi auto 0';
-  finalTotalBubble.textContent = '0';
-  finalTotalContainer.appendChild(finalTotalBubble);
-
-  tally.appendChild(finalTotalContainer);
-  scrollScoreToBottom();
-
-  // ==================== MOVE SCORE LINE INTO TALLY (so it scrolls naturally) ====================
-  tally.appendChild(scoreLineContainer);
-  scoreLineContainer.style.display = 'block';
-  scrollScoreToBottom();             // ← NEW
-  scrollScoreToBottom();             // extra safety for the line animation
-
-  function animateScoreLine() {
-  return new Promise(resolve => {
-    const squiggle = document.getElementById('score-squiggle');
-    const pin = document.getElementById('score-marker');
-    const maxScore = 200;
-    const normalized = Math.min(Math.max(total, 0), maxScore) / maxScore;
-    const duration = 2200;
-
-    squiggle.style.clipPath = 'inset(0 100% 0 0)';
-    pin.style.transition = 'none';
-    pin.style.left = '0%';
-    void squiggle.offsetHeight;
-
-    let clickInterval = setInterval(() => playSound('selectbutton'), 75);
-    let startTime = Date.now();
-
-    const milestones = [0, 25, 50, 75, 100, 125, 150, 175, 200];
-    const numberDivs = document.querySelectorAll('#score-line .score-numbers > div');
-
-    function animate() {
-      const elapsed = Date.now() - startTime;
-      let progress = Math.min(elapsed / duration, 1);
-      const eased = progress * progress * (3 - 2 * progress);
-
-      const currentLeftPercent = eased * normalized * 100;
-      const currentScore = Math.round(total * eased);
-
-      // === UPDATED WIGGLE: half the rotation, 1/4 the speed ===
-      const wiggle = Math.sin(progress * Math.PI * 3.5) * 5.5;
-
-      pin.style.left = `${currentLeftPercent}%`;
-      pin.style.transform = `translate(-50%, -50%) rotate(${wiggle}deg)`;
-
-      squiggle.style.clipPath = `inset(0 ${100 - currentLeftPercent}% 0 0)`;
-
-      finalTotalBubble.textContent = currentScore;
-
-      numberDivs.forEach((numDiv, i) => {
-        if (currentScore >= milestones[i]) numDiv.classList.add('lit');
+          console.log('✅ Scrolled to bottom (scrollHeight now:', content.scrollHeight, ')');
+        });
       });
+    }
 
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        clearInterval(clickInterval);
-        // Final gentle settle
-        pin.style.transition = 'transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
-        pin.style.transform = `translate(-50%, -50%) rotate(0deg)`;
+    // ====================== TYPEWRITER FOR ASSESSMENT (reuses tutorial logic) ======================
+    function typeScoreMessage(targetEl, htmlContent, onComplete = () => { }) {
+      targetEl.innerHTML = '';
+      targetEl.style.opacity = '1';
+      targetEl.style.visibility = 'visible';
+      targetEl.style.color = '#222';
 
-        finalTotalBubble.style.transition = 'transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
-        finalTotalBubble.style.transform = 'scale(1.15)';
-        setTimeout(() => {
-          finalTotalBubble.style.transform = 'scale(1)';
-          resolve();
-        }, 300);
+      const temp = document.createElement('div');
+      temp.innerHTML = htmlContent;
+      const segments = [];
+      function parseNode(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent;
+          if (text.length > 0) segments.push({ type: 'text', content: text });
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          if (node.tagName === 'IMG') {
+            segments.push({ type: 'image', src: node.src, alt: node.alt || '', className: node.className });
+          } else {
+            node.childNodes.forEach(parseNode);
+          }
+        }
+      }
+      temp.childNodes.forEach(parseNode);
+
+      let i = 0;
+      function typeNext() {
+        if (i >= segments.length) {
+          onComplete();
+          return;
+        }
+        const seg = segments[i];
+        if (seg.type === 'image') {
+          const img = document.createElement('img');
+          img.src = seg.src;
+          img.alt = seg.alt;
+          img.className = seg.className || 'inline-doodle';
+          targetEl.appendChild(img);
+          i++;
+          typeNext();
+          return;
+        }
+        const span = document.createElement('span');
+        targetEl.appendChild(span);
+        let charIndex = 0;
+        function typeChar() {
+          if (charIndex < seg.content.length) {
+            span.appendChild(document.createTextNode(seg.content[charIndex]));
+            if (charIndex % 3 === 0) playSound('flap');
+            charIndex++;
+            setTimeout(typeChar, 20);
+          } else {
+            i++;
+            typeNext();
+          }
+        }
+        typeChar();
+      }
+      typeNext();
+    }
+
+    async function runScoringAnimation() {
+      console.log("%c🚀 runScoringAnimation STARTED (2nd+ scan test)", "color:orange; font-weight:bold; font-size:16px");
+
+      try {
+        // === FORCE CLEAN STATE EVERY RUN ===
+        scoreBuildBoard();
+        scorePerCellScore = Array(7).fill().map(() => Array(11).fill(0));
+        scoreGridCells = [];
+
+        scoreRenderDetectedGrid(false);
+
+        console.log(`Grid ready: ${scoreGridCells.length} cells | Detected doodles: ${scoreDetectedDoodles.length}`);
+
+        if (scoreGridCells.length === 0 || scoreDetectedDoodles.length === 0) {
+          console.error("❌ Cannot run scoring — grid or doodles empty on second scan");
+          throw new Error("scoreGridCells or scoreDetectedDoodles not populated");
+        }
+
+        console.log("✅ scoreBuildBoard complete");
+
+        // === ADDED DETAILED LOGGING TO FIND THE CRASH ===
+        console.log("→ About to set up tally and score line...");
+
+        const tally = document.getElementById('score-tally');
+        console.log("   tally element found?", !!tally);
+
+        if (tally) {
+          tally.style.display = 'block';
+          tally.innerHTML = '';
+          console.log("   tally reset successfully");
+        } else {
+          console.error("❌ tally element is MISSING!");
+        }
+
+        const scoreLineContainer = document.getElementById('score-line');
+        console.log("   score-line element found?", !!scoreLineContainer);
+        if (scoreLineContainer) scoreLineContainer.style.display = 'none';
+
+        console.log(`🔄 Starting main scoring loop — ${scoringRules.length} rules`);
+
+        let total = 0;
+        const nonZeroResults = [];
+
+        // === MAIN SCORING LOOP WITH PER-RULE LOGGING ===
+        for (let i = 0; i < scoringRules.length; i++) {
+          const rule = scoringRules[i];
+          const ruleName = rule.type || 'unknown-rule';
+          console.log(`→ Running rule ${i + 1}/${scoringRules.length}: ${ruleName}`);
+
+          let result;
+          try {
+            result = rule.base !== undefined
+              ? calculateBase(rule.type, rule.base)
+              : rule.calc();
+            console.log(`  ✓ ${ruleName} completed (subtotal: ${result.total || 0})`);
+          } catch (ruleErr) {
+            console.error(`🚨 CRASH in rule ${ruleName}:`, ruleErr);
+            console.error(ruleErr.stack);
+            continue;
+          }
+
+          let subtotal = result.total || 0;
+          if (subtotal !== 0) {
+            nonZeroResults.push({ rule, result, subtotal });
+          }
+          total += subtotal;
+        }
+
+        console.log(`✅ Main scoring loop FINISHED. Non-zero rules: ${nonZeroResults.length}`);
+
+        // Variety bonus (unchanged)
+        let uniqueScoringTypes = nonZeroResults.length;
+        let bonus = (uniqueScoringTypes <= 5) ? -10 :
+          uniqueScoringTypes === 6 ? 1 :
+            uniqueScoringTypes === 7 ? 5 :
+              uniqueScoringTypes === 8 ? 10 :
+                uniqueScoringTypes === 9 ? 16 :
+                  uniqueScoringTypes === 10 ? 23 :
+                    uniqueScoringTypes === 11 ? 31 :
+                      uniqueScoringTypes >= 12 ? 40 : 0;
+
+        if (currentMission === null || currentMission >= 5) {
+          total += bonus;
+        }
+
+        // ====================== CAMPAIGN MISSION BONUSES — CALCULATE ONLY ======================
+        let missionBonus = 0;
+
+        if (activeCampaign) {
+          if (activeCampaign.code === "repetition5") {
+            missionBonus = calculateRepetitionBonus();
+          }
+          else if (activeCampaign.code === "square2x2") {
+            const squareResult = calculateBeSquareBonus();
+            missionBonus = squareResult.total;
+          }
+          else if (activeCampaign.code === "atleast7") {
+            missionBonus = calculateAtLeast7Bonus();
+          }
+        }
+
+        // === Animate individual doodle rows ===
+        for (let entry of nonZeroResults) {
+          const { rule, result, subtotal } = entry;
+          const bubbleItems = result.perCellList || result.positions || [];
+          const highlightItems = (rule.type === '3dset' && result.allPositions) ? result.allPositions : bubbleItems;
+
+          if (highlightItems.length === 0) continue;
+
+          scoreGridCells.forEach(gridCell => gridCell.classList.add('low-opacity', 'non-scoring'));
+          highlightItems.forEach(item => {
+            const cell = scoreGridCells[item.r * 11 + item.c];
+            if (cell) cell.classList.remove('low-opacity', 'non-scoring');
+          });
+
+          await new Promise(r => setTimeout(r, 400));
+
+          let soundCount = 0;
+          const maxSounds = 4;
+          const animationPromises = [];
+          for (let i = 0; i < bubbleItems.length; i++) {
+            const item = bubbleItems[i];
+            const cell = scoreGridCells[item.r * 11 + item.c];
+            if (cell) {
+              setTimeout(() => {
+                if (soundCount < maxSounds && item.pts !== null && item.pts !== 0) {
+                  playSound('pointbubble');
+                  soundCount++;
+                }
+                animationPromises.push(animateCell(cell, item.pts !== undefined ? item.pts : null));
+              }, i * 12);
+            }
+          }
+          await Promise.all(animationPromises);
+
+          if (rule.type === '3dset') {
+            const row = document.createElement('div');
+            row.className = 'tally-row';
+            ['cylinder', 'cube', 'pyramid'].forEach(d => {
+              const img = document.createElement('img');
+              img.src = `images/${d}.png`;
+              img.style.width = '10cqi';
+              img.style.height = '10cqi';
+              row.appendChild(img);
+            });
+            const line = document.createElement('div'); line.className = 'tally-line';
+            const scoreBox = document.createElement('div');
+            scoreBox.className = 'score-box';
+            scoreBox.style.backgroundImage = "url('images/purplepointbubble.png')";
+            scoreBox.style.backgroundSize = 'contain';
+            scoreBox.style.backgroundRepeat = 'no-repeat';
+            scoreBox.style.backgroundPosition = 'center';
+            scoreBox.style.display = 'flex';
+            scoreBox.style.alignItems = 'center';
+            scoreBox.style.justifyContent = 'center';
+            scoreBox.style.color = '#fff';
+            scoreBox.style.textShadow = '0 1px 2px #000';
+            scoreBox.textContent = `${Math.abs(subtotal)}`;
+            row.append(line, scoreBox);
+            tally.appendChild(row);
+          } else {
+            addTallyRow(rule.type, subtotal);
+          }
+
+          scrollScoreToBottom();
+          await new Promise(r => setTimeout(r, 1900));
+        }
+
+        // Variety bonus (protected)
+        if ((currentMission === null || currentMission >= 5) && bonus !== 0) {
+          try {
+            addTallyRow('variety', bonus, { unique: uniqueScoringTypes });
+            scrollScoreToBottom();
+            await new Promise(r => setTimeout(r, 600));
+          } catch (e) {
+            console.error("Variety bonus crashed:", e);
+          }
+        }
+
+        // ====================== MISSION BONUS VISUAL (LAST) ======================
+        if (missionBonus > 0) {
+          total += missionBonus;
+          addTallyRow('missionbonus', missionBonus);
+          scrollScoreToBottom();
+          await new Promise(r => setTimeout(r, 900));
+        }
+
+        // Restore normal grid
+        scoreGridCells.forEach(gridCell => gridCell.classList.remove('low-opacity', 'non-scoring'));
+
+        // ==================== FINAL TOTAL BUBBLE + NUMBERLINE + ASSESSMENT ====================
+        console.log(`✅ Starting final phase. Total = ${total}`);
+
+        try {
+          const tally = document.getElementById('score-tally');
+
+          // Final total bubble
+          const finalTotalContainer = document.createElement('div');
+          finalTotalContainer.style.textAlign = 'center';
+          finalTotalContainer.style.marginTop = '25px';
+
+          const finalTotalText = document.createElement('div');
+          finalTotalText.style.fontFamily = "'Covered By Your Grace', cursive";
+          finalTotalText.style.fontSize = '7.5cqi';
+          finalTotalText.style.fontWeight = '400';
+          finalTotalText.style.color = '#000000';
+          finalTotalText.textContent = 'Total Score:';
+          finalTotalContainer.appendChild(finalTotalText);
+
+          const finalTotalBubble = document.createElement('div');
+          finalTotalBubble.className = 'score-box';
+          finalTotalBubble.style.backgroundImage = "url('images/purplepointbubble.png')";
+          finalTotalBubble.style.backgroundSize = 'contain';
+          finalTotalBubble.style.backgroundRepeat = 'no-repeat';
+          finalTotalBubble.style.backgroundPosition = 'center';
+          finalTotalBubble.style.display = 'flex';
+          finalTotalBubble.style.alignItems = 'center';
+          finalTotalBubble.style.justifyContent = 'center';
+          finalTotalBubble.style.color = '#fff';
+          finalTotalBubble.style.textShadow = '0 3px 6px #000';
+          finalTotalBubble.style.fontFamily = "'Fira Sans', sans-serif";
+          finalTotalBubble.style.fontSize = '9cqi';
+          finalTotalBubble.style.fontWeight = 'bold';
+          finalTotalBubble.style.width = '30cqi';
+          finalTotalBubble.style.height = '30cqi';
+          finalTotalBubble.style.margin = '2cqi auto 0';
+          finalTotalBubble.textContent = total.toString();
+          finalTotalContainer.appendChild(finalTotalBubble);
+
+          tally.appendChild(finalTotalContainer);
+          scrollScoreToBottom();
+
+          // Move score line into tally and animate
+          tally.appendChild(scoreLineContainer);
+          scoreLineContainer.style.display = 'block';
+          scrollScoreToBottom();
+          scrollScoreToBottom();
+
+          // Nested numberline animation
+          function animateScoreLine() {
+            return new Promise(resolve => {
+              const squiggle = document.getElementById('score-squiggle');
+              const pin = document.getElementById('score-marker');
+              const maxScore = 200;
+              const normalized = Math.min(Math.max(total, 0), maxScore) / maxScore;
+              const duration = 2200;
+
+              squiggle.style.clipPath = 'inset(0 100% 0 0)';
+              pin.style.transition = 'none';
+              pin.style.left = '0%';
+              void squiggle.offsetHeight;
+
+              let clickInterval = setInterval(() => playSound('selectbutton'), 75);
+              let startTime = Date.now();
+
+              const milestones = [0, 25, 50, 75, 100, 125, 150, 175, 200];
+              const numberDivs = document.querySelectorAll('#score-line .score-numbers > div');
+
+              function animate() {
+                const elapsed = Date.now() - startTime;
+                let progress = Math.min(elapsed / duration, 1);
+                const eased = progress * progress * (3 - 2 * progress);
+
+                const currentLeftPercent = eased * normalized * 100;
+                const currentScore = Math.round(total * eased);
+
+                const wiggle = Math.sin(progress * Math.PI * 3.5) * 5.5;
+
+                pin.style.left = `${currentLeftPercent}%`;
+                pin.style.transform = `translate(-50%, -50%) rotate(${wiggle}deg)`;
+
+                squiggle.style.clipPath = `inset(0 ${100 - currentLeftPercent}% 0 0)`;
+
+                finalTotalBubble.textContent = currentScore;
+
+                numberDivs.forEach((numDiv, i) => {
+                  if (currentScore >= milestones[i]) numDiv.classList.add('lit');
+                });
+
+                if (progress < 1) {
+                  requestAnimationFrame(animate);
+                } else {
+                  clearInterval(clickInterval);
+                  pin.style.transition = 'transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
+                  pin.style.transform = `translate(-50%, -50%) rotate(0deg)`;
+
+                  finalTotalBubble.style.transition = 'transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
+                  finalTotalBubble.style.transform = 'scale(1.15)';
+                  setTimeout(() => {
+                    finalTotalBubble.style.transform = 'scale(1)';
+                    resolve();
+                  }, 300);
+                }
+              }
+              animate();
+            });
+          }
+
+          await animateScoreLine();
+
+          showAssessmentMessage(total);
+
+          console.log("%c✅ Score animation complete", "color:lime; font-weight:bold");
+
+        } catch (finalErr) {
+          console.error("💥 Crash in FINAL PHASE:", finalErr);
+          showAssessmentMessage(total); // fallback
+        }
+
+      } catch (err) {
+        console.error("%c💥 FATAL ERROR in runScoringAnimation:", "color:red; font-size:18px", err);
+        console.error('Stack trace:', err.stack);
+        alert("Scoring crashed — check console (F12) for details");
       }
     }
-    animate();
-  });
-}
 
-animateScoreLine();
-  // Wait for the score pin animation + final bubble pop to finish completely
-  await animateScoreLine();
+    function showAssessmentMessage(totalScore) {
+      const tally = document.getElementById('score-tally');
+      if (!tally) return;
 
-  // Now show the assessment message
-  showAssessmentMessage(total);
+      // Determine which message to show (0–8)
+      let msgIndex = 0;
+      if (totalScore <= 24) msgIndex = 0;
+      else if (totalScore <= 49) msgIndex = 1;
+      else if (totalScore <= 74) msgIndex = 2;
+      else if (totalScore <= 99) msgIndex = 3;
+      else if (totalScore <= 124) msgIndex = 4;
+      else if (totalScore <= 149) msgIndex = 5;
+      else if (totalScore <= 174) msgIndex = 6;
+      else if (totalScore <= 199) msgIndex = 7;
+      else msgIndex = 8;
 
-  console.log("✅ Score animation complete – score line is now inside scrollable tally area");
-}
-  
+      const messageText = assessmentMessages[msgIndex];
 
-function showAssessmentMessage(totalScore) {
-  const tally = document.getElementById('score-tally');
-  if (!tally) return;
+      // Create the assessment box
+      const assessmentDiv = document.createElement('div');
+      assessmentDiv.style.marginTop = '18px';
+      assessmentDiv.style.padding = '4.5cqi 5.5cqi';
+      assessmentDiv.style.background = '#ccecf8';
+      assessmentDiv.style.borderRadius = '3.2cqi';
+      assessmentDiv.style.boxShadow = '0 1.1cqi 4.2cqi rgba(0,0,0,0.12)';
+      assessmentDiv.style.fontFamily = "'Fira Sans', sans-serif";
+      assessmentDiv.style.fontSize = '4.5cqi';
+      assessmentDiv.style.lineHeight = '1.55';
 
-  // Determine which message to show (0–8)
-  let msgIndex = 0;
-  if (totalScore <= 24) msgIndex = 0;
-  else if (totalScore <= 49) msgIndex = 1;
-  else if (totalScore <= 74) msgIndex = 2;
-  else if (totalScore <= 99) msgIndex = 3;
-  else if (totalScore <= 124) msgIndex = 4;
-  else if (totalScore <= 149) msgIndex = 5;
-  else if (totalScore <= 174) msgIndex = 6;
-  else if (totalScore <= 199) msgIndex = 7;
-  else msgIndex = 8;
+      tally.appendChild(assessmentDiv);
 
-  const messageText = assessmentMessages[msgIndex];
+      // Type the message, then show the Main Menu button
+      typeAssessmentMessage(
+        messageText,
+        () => {
+          scrollScoreToBottom();
 
-  // Create the assessment box (no header anymore)
-  const assessmentDiv = document.createElement('div');
-  assessmentDiv.style.marginTop = '18px';           // slightly tighter than before
-  assessmentDiv.style.padding = '4.5cqi 5.5cqi';
-  assessmentDiv.style.background = '#ccecf8';
-  assessmentDiv.style.borderRadius = '3.2cqi';
-  assessmentDiv.style.boxShadow = '0 1.1cqi 4.2cqi rgba(0,0,0,0.12)';
-  assessmentDiv.style.fontFamily = "'Fira Sans', sans-serif";
-  assessmentDiv.style.fontSize = '4.5cqi';
-  assessmentDiv.style.lineHeight = '1.55';
+          // === NEW: MAIN MENU BUTTON (now with full slide-out animation) ===
+          const wrapper = document.createElement('div');
+          wrapper.style.margin = '7cqi 0 4cqi 0';     // breathing room
+          wrapper.style.textAlign = 'center';
 
-  tally.appendChild(assessmentDiv);
+          const mainMenuBtn = document.createElement('button');
+          mainMenuBtn.className = 'menu-btn';
+          mainMenuBtn.textContent = 'Main Menu';
+          mainMenuBtn.style.fontSize = '7cqi';
+          mainMenuBtn.style.padding = '2cqi 8cqi';
+          mainMenuBtn.style.width = '65cqi';
+          mainMenuBtn.style.background = '#1f1f1f';
+          mainMenuBtn.style.color = '#ffffff';
+          mainMenuBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+          mainMenuBtn.style.margin = '0 auto';
 
-  // Type the clean message directly
-  typeAssessmentMessage(
-    messageText,
-    () => {
-      scrollScoreToBottom();
-      console.log(`✅ Assessment message displayed`);
-    },
-    assessmentDiv
-  );
-}
-    
+          mainMenuBtn.onclick = () => {
+            playSound('button');
+            // === GAME IS NOW COMPLETE — CLEAR SAVE STATE ===
+  clearSavedGameState();
+  hasGameInProgress = false;
+  tutorialInProgress = false;
+  tutorialStep = 0;
+            closeModal('score-modal');
+            resetScoreModal();
+
+            // === EXACT SAME SLIDE-OUT as the regular menu button ===
+            const headerBg = document.getElementById('header-bg');
+            const footerBg = document.getElementById('footer-bg');
+            headerBg.classList.add('adjusted');
+            footerBg.classList.add('adjusted');
+
+            const header = document.getElementById('header');
+            const shuffleZone = document.getElementById('shuffle-zone');
+            const footer = document.getElementById('footer');
+
+            header.classList.add('slide-out');
+            shuffleZone.classList.add('slide-out');
+            footer.classList.add('slide-out');
+
+            // Tiny delay so the CSS transition actually starts
+            setTimeout(() => {
+              showMainMenu();
+            }, 10);
+          };
+
+          wrapper.appendChild(mainMenuBtn);
+          tally.appendChild(wrapper);
+
+          scrollScoreToBottom();
+        },
+        assessmentDiv
+      );
+    }
     document.getElementById('score-score-btn').onclick = () => {
       playSound('score');
+      // === GAME IS NOW COMPLETE — CLEAR SAVE STATE ===
+  clearSavedGameState();
+  hasGameInProgress = false;
+  tutorialInProgress = false;        // safety
+  tutorialStep = 0;
+
+  console.log("✅ Game completed via Score Sheet — save state cleared");
       document.getElementById('score-tweak-prompt').style.display = 'none';
       stopLiveSquareDetection();
       console.log("SCORE SHEET clicked — hiding buttons + starting animation");
@@ -8540,7 +9427,7 @@ function showAssessmentMessage(totalScore) {
       runScoringAnimation();
     };
 
-document.getElementById('score-new-scan-btn').onclick = () => {
+    document.getElementById('score-new-scan-btn').onclick = () => {
       const tally = document.getElementById('score-tally');
       tally.style.display = 'none';
       tally.innerHTML = '';
@@ -8809,6 +9696,12 @@ document.getElementById('score-new-scan-btn').onclick = () => {
           await new Promise(resolve => setTimeout(resolve, minTime - elapsed));
         }
 
+        // === NEW: Load any saved game state BEFORE showing the menu ===
+        const hadSavedGame = loadGameState();
+        if (hadSavedGame) {
+          console.log('🎮 Previous game restored — Resume button is now available');
+        }
+
         showMainMenu(); // Load menu behind loading screen (exactly as original)
 
         // Fade out loading screen to reveal menu
@@ -8976,6 +9869,57 @@ document.getElementById('score-new-scan-btn').onclick = () => {
         }
       }, true); // capture phase
     });
+
+    // Auto-save when user closes the browser/tab
+    window.addEventListener('beforeunload', () => {
+      if (hasGameInProgress) {
+        saveGameState();
+      }
+    });
+
+// ====================== PWA INSTALL + UPDATE NOTIFICATION ======================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => {
+        console.log('✅ Service Worker registered');
+
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                showUpdateToast();
+              }
+            });
+          }
+        });
+      })
+      .catch(err => console.log('SW registration failed:', err));
+  });
+}
+
+function showUpdateToast() {
+  const toast = document.getElementById('toast');
+  toast.innerHTML = `
+    New version available!<br>
+    <button onclick="updateApp()" style="margin-top:8px;background:#7f2a8f;color:white;border:none;padding:8px 20px;border-radius:9999px;font-size:4.5cqi;">
+      Update Now
+    </button>
+  `;
+  toast.style.background = '#fbb065';
+  toast.classList.add('show');
+
+  setTimeout(() => {
+    if (toast.classList.contains('show')) toast.classList.remove('show');
+  }, 15000);
+}
+
+window.updateApp = function() {
+  navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+  window.location.reload();
+};
+
     initApp();
 
     const audioControls = document.getElementById('audio-controls');
@@ -9081,7 +10025,7 @@ document.getElementById('score-new-scan-btn').onclick = () => {
     updateMissionDetailButton();
 
 
-    
+
   </script>
 </body>
 
