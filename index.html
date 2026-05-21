@@ -9876,7 +9876,9 @@
         saveGameState();
       }
     });
-    // ====================== PWA + UPDATE NOTIFICATION (matches abandon prompt style) ======================
+
+
+        // ====================== PWA + UPDATE NOTIFICATION (independent panel) ======================
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
@@ -9902,23 +9904,22 @@
     function showUpdateToast() {
       if (updateToastDismissedThisSession) return;
 
-      const prompt = document.getElementById('abandon-prompt');
+      const prompt = document.getElementById('abandon-prompt'); // reuse the element but with full control
 
-      // Temporarily override the abandon prompt content
       prompt.innerHTML = `
         <img id="update-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
 
-        <div id="prompt-text" style="text-align:center; font-size:5.2cqi; line-height:1.55;">
+        <div id="prompt-text" style="text-align:center; font-size:5.2cqi; line-height:1.55; padding:0 4cqi;">
           A new version of <strong>Doodle Bash</strong> is available!
         </div>
 
-        <div id="prompt-buttons" style="margin-top:4cqi;">
-          <button class="prompt-btn" id="update-yes" style="background:#4dbde5; color:white;">Update Now</button>
-          <button class="prompt-btn" id="update-no" style="background:#fbb065; color:#000;">Maybe Later</button>
+        <div id="prompt-buttons" style="margin-top:4cqi; display:flex; gap:4cqi; justify-content:center;">
+          <button class="prompt-btn" id="update-yes" style="background:#4dbde5; color:white; flex:1; max-width:45cqi;">Update Now</button>
+          <button class="prompt-btn" id="update-no" style="background:#fbb065; color:#000; flex:1; max-width:45cqi;">Maybe Later</button>
         </div>
       `;
 
-      // Wire the buttons
+      // Wire fresh listeners
       document.getElementById('update-yes').onclick = () => {
         playSound('selectbutton');
         updateApp();
@@ -9934,15 +9935,14 @@
         dismissUpdateToast();
       };
 
-      // Show it with the same animation as other menus
       showMenuPanel('abandon-prompt');
     }
 
     function dismissUpdateToast() {
       updateToastDismissedThisSession = true;
       hideMenuPanel('abandon-prompt');
-      
-      // Restore the original abandon prompt content for future use
+
+      // Restore the original abandon prompt text so it works correctly next time
       setTimeout(() => {
         const prompt = document.getElementById('abandon-prompt');
         prompt.innerHTML = `
@@ -9953,17 +9953,15 @@
             <button class="prompt-btn" id="prompt-no">No</button>
           </div>
         `;
-        // Re-attach the original listeners (they get lost when we overwrite innerHTML)
-        document.getElementById('prompt-yes').addEventListener('click', () => { /* your existing yes logic */ });
-        document.getElementById('prompt-no').addEventListener('click', () => { /* your existing no logic */ });
-        document.getElementById('abandon-close-btn').addEventListener('click', () => {
-          hideMenuPanel('abandon-prompt');
-        });
+        // Re-attach the original abandon listeners (important!)
+        document.getElementById('prompt-yes').addEventListener('click', () => { /* your existing yes handler */ });
+        document.getElementById('prompt-no').addEventListener('click', () => { /* your existing no handler */ });
+        document.getElementById('abandon-close-btn').addEventListener('click', () => hideMenuPanel('abandon-prompt'));
       }, 800);
     }
 
     window.updateApp = function() {
-      const toast = document.getElementById('toast'); // just in case
+      const toast = document.getElementById('toast');
       if (toast) toast.classList.remove('show');
 
       if (navigator.serviceWorker && navigator.serviceWorker.controller) {
@@ -9971,6 +9969,11 @@
       }
       window.location.reload();
     };
+
+
+
+
+    
 
     initApp();
 
