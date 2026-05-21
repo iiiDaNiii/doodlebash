@@ -3260,17 +3260,17 @@
     </div>
 
 
-    <!-- UPDATE PROMPT (dedicated element with full abandon-prompt styling) -->
+<!-- UPDATE PROMPT (dedicated element with its own unique IDs) -->
 <div id="update-prompt" class="menu-panel" style="display:none;">
   <img id="update-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
 
-  <div id="prompt-text" style="text-align:center; font-size:5.2cqi; line-height:1.55; padding:0 4cqi;">
+  <div id="update-prompt-text" style="text-align:center; font-size:5.2cqi; line-height:1.55; padding:0 4cqi; color:#222;">
     A new version of <strong>Doodle Bash</strong> is available!
   </div>
 
-  <div id="prompt-buttons" style="margin-top:4cqi; display:flex; gap:4cqi; justify-content:center;">
-    <button class="prompt-btn" id="update-yes" style="background:#4dbde5; color:white;">Update Now</button>
-    <button class="prompt-btn" id="update-no" style="background:#fbb065; color:#000;">Maybe Later</button>
+  <div id="update-prompt-buttons" style="margin-top:4cqi; display:flex; gap:4cqi; justify-content:center;">
+    <button class="prompt-btn" id="update-yes" style="background:#4dbde5; color:white; flex:1;">Update Now</button>
+    <button class="prompt-btn" id="update-no" style="background:#fbb065; color:#000; flex:1;">Maybe Later</button>
   </div>
 </div>
 
@@ -9920,19 +9920,18 @@ let updateToastDismissedThisSession = false;
 function showUpdateToast() {
   if (updateToastDismissedThisSession) return;
 
-  // Make sure abandon prompt is fully closed first
+  // Close abandon prompt first to prevent any overlap
   hideMenuPanel('abandon-prompt', { silent: true });
 
   const prompt = document.getElementById('update-prompt');
   if (!prompt) {
-    console.error('❌ #update-prompt element is missing');
+    console.error('❌ #update-prompt element is missing from HTML');
     return;
   }
 
-  // Reuse the exact same showMenuPanel system → full styling + animation
   showMenuPanel('update-prompt', { silent: true });
 
-  // Wire buttons (safe to do every time)
+  // Wire buttons using the new unique IDs
   document.getElementById('update-yes').onclick = () => {
     playSound('selectbutton');
     updateApp();
@@ -9960,9 +9959,6 @@ window.updateApp = function() {
   }
   window.location.reload();
 };
-
-
-
 
 
 
