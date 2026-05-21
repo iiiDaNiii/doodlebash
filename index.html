@@ -9900,50 +9900,52 @@ if ('serviceWorker' in navigator) {
 }
 
 
-// ====================== FIXED UPDATE TOAST (matches demo exactly) ======================
-let updateToastDismissedThisSession = false;
+
+let originalToastHTML = '';   // ← remembers the clean toast state
 
 function showUpdateToast() {
   if (updateToastDismissedThisSession) return;
 
-  console.log('%c🔄 showUpdateToast() — showing white tutorial-style toast', 'color:#4dbde5; font-weight:bold');
-
   const toast = document.getElementById('toast');
-  
+
+  // Save the original clean toast HTML the first time
+  if (!originalToastHTML) {
+    originalToastHTML = toast.innerHTML;
+  }
+
   toast.innerHTML = `
-    <div style="padding:5cqi 6cqi; background:#fff; border-radius:3.2cqi; box-shadow:0 2.6cqi 8cqi rgba(0,0,0,0.27); font-family:'Fira Sans',sans-serif; color:#222; text-align:center; max-width:100%; width:100%;">
-      <div style="font-size:5.2cqi; line-height:1.55; margin-bottom:4cqi; font-weight:400;">
+    <div style="padding:5.5cqi 6cqi; background:#fff; border-radius:3.2cqi; box-shadow:0 2.6cqi 8cqi rgba(0,0,0,0.27); font-family:'Fira Sans',sans-serif; color:#222; text-align:center; max-width:85cqi; width:100%; margin:0 auto; box-sizing:border-box;">
+      <div style="font-size:5.2cqi; line-height:1.55; margin-bottom:4.5cqi; font-weight:400; word-break:break-word; overflow-wrap:break-word; white-space:normal;">
         A new version of Doodle Bash is available!
       </div>
-      <button onclick="updateApp()" 
-              style="font-family:'Covered By Your Grace',cursive; font-size:7cqi; padding:2.5cqi 8cqi; background:#4dbde5; color:white; border:none; border-radius:9999px; width:100%; display:block; margin-bottom:3cqi;">
-        Update Now
-      </button>
-      <button onclick="dismissUpdateToast()" 
-              style="font-family:'Covered By Your Grace',cursive; font-size:7cqi; padding:2.5cqi 8cqi; background:#f0f0f0; color:#222; border:none; border-radius:9999px; width:100%; display:block;">
-        Maybe Later
-      </button>
+      <button onclick="updateApp()" style="font-family:'Covered By Your Grace',cursive; font-size:7cqi; padding:3cqi 8cqi; background:#4dbde5; color:white; border:none; border-radius:9999px; width:100%; display:block; margin-bottom:3cqi; box-sizing:border-box;">Update Now</button>
+      <button onclick="dismissUpdateToast()" style="font-family:'Covered By Your Grace',cursive; font-size:7cqi; padding:3cqi 8cqi; background:#f0f0f0; color:#222; border:none; border-radius:9999px; width:100%; display:block; box-sizing:border-box;">Maybe Later</button>
     </div>
   `;
 
   toast.style.zIndex = '99999';
   toast.style.background = 'transparent';
-  toast.style.padding = '0';
+  toast.style.padding = '4cqi';
   toast.style.pointerEvents = 'auto';
   toast.classList.add('show');
 }
 
 function dismissUpdateToast() {
-  updateToastDismissedThisSession = true;   // ← prevents re-showing this session
-  
+  updateToastDismissedThisSession = true;
   const toast = document.getElementById('toast');
+
   toast.style.transition = 'opacity 0.4s ease';
   toast.style.opacity = '0';
-  
+
   setTimeout(() => {
+    // Restore the original clean toast completely
+    toast.innerHTML = originalToastHTML || '';
     toast.classList.remove('show');
     toast.style.opacity = '1';
     toast.style.transition = '';
+    toast.style.padding = '';
+    toast.style.background = '';
+    toast.style.zIndex = '';
   }, 400);
 }
 
