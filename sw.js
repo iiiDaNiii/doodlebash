@@ -1,4 +1,4 @@
-const CACHE_NAME = 'doodle-bash-v3.23';   // ← Increase this number (v2, v3…) every time you update the app
+const CACHE_NAME = 'doodle-bash-v3.24';   // ← Increase this number (v2, v3…) every time you update the app
 
 self.addEventListener('install', event => {
   event.waitUntil(
