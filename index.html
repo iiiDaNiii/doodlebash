@@ -9876,151 +9876,148 @@
         saveGameState();
       }
     });
-
 // ====================== PWA INSTALL + UPDATE NOTIFICATION ======================
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => {
-        console.log('✅ Service Worker registered');
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => {
+            console.log('✅ Service Worker registered');
 
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                showUpdateToast();
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    showUpdateToast();
+                  }
+                });
               }
             });
-          }
-        });
-      })
-      .catch(err => console.log('SW registration failed:', err));
-  });
-}
+          })
+          .catch(err => console.log('SW registration failed:', err));
+      });
+    }
 
+    // ←←← ADD THIS LINE (critical!)
+    let updateToastDismissedThisSession = false;
+    let originalToastHTML = '';
 
-let originalToastHTML = '';
+    function showUpdateToast() {
+      if (updateToastDismissedThisSession) return;
 
-function showUpdateToast() {
-  if (updateToastDismissedThisSession) return;
+      const toast = document.getElementById('toast');
 
-  const toast = document.getElementById('toast');
+      if (!originalToastHTML) {
+        originalToastHTML = toast.innerHTML;
+      }
 
-  // Remember the clean original toast (only once)
-  if (!originalToastHTML) {
-    originalToastHTML = toast.innerHTML;
-  }
+      toast.innerHTML = `
+        <div style="
+          padding: 5.5cqi 6cqi;
+          background: #fff;
+          border-radius: 3.2cqi;
+          box-shadow: 0 2.6cqi 8cqi rgba(0,0,0,0.27);
+          font-family: 'Fira Sans', sans-serif;
+          color: #222;
+          text-align: center;
+          width: 100%;
+          max-width: 82cqi;
+          margin: 0 auto;
+          box-sizing: border-box;
+          white-space: normal;
+          word-break: break-word;
+          overflow-wrap: break-word;
+        ">
+          <div style="
+            font-size: 5.2cqi;
+            line-height: 1.55;
+            margin-bottom: 4.5cqi;
+            font-weight: 400;
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: break-word;
+          ">
+            A new version of Doodle Bash is available!
+          </div>
 
-  toast.innerHTML = `
-    <div style="
-      padding: 5.5cqi 6cqi;
-      background: #fff;
-      border-radius: 3.2cqi;
-      box-shadow: 0 2.6cqi 8cqi rgba(0,0,0,0.27);
-      font-family: 'Fira Sans', sans-serif;
-      color: #222;
-      text-align: center;
-      width: 100%;
-      max-width: 82cqi;
-      margin: 0 auto;
-      box-sizing: border-box;
-      white-space: normal;
-      word-break: break-word;
-      overflow-wrap: break-word;
-    ">
-      <div style="
-        font-size: 5.2cqi;
-        line-height: 1.55;
-        margin-bottom: 4.5cqi;
-        font-weight: 400;
-        white-space: normal;
-        word-break: break-word;
-        overflow-wrap: break-word;
-      ">
-        A new version of Doodle Bash is available!
-      </div>
+          <button onclick="updateApp(event)" 
+                  style="
+                    font-family: 'Covered By Your Grace', cursive;
+                    font-size: 7cqi;
+                    padding: 3cqi 8cqi;
+                    background: #4dbde5;
+                    color: white;
+                    border: none;
+                    border-radius: 9999px;
+                    width: 100%;
+                    display: block;
+                    margin-bottom: 3cqi;
+                    box-sizing: border-box;
+                  ">
+            Update Now
+          </button>
 
-      <button onclick="updateApp(event)" 
-              style="
-                font-family: 'Covered By Your Grace', cursive;
-                font-size: 7cqi;
-                padding: 3cqi 8cqi;
-                background: #4dbde5;
-                color: white;
-                border: none;
-                border-radius: 9999px;
-                width: 100%;
-                display: block;
-                margin-bottom: 3cqi;
-                box-sizing: border-box;
-              ">
-        Update Now
-      </button>
+          <button onclick="dismissUpdateToast(event)" 
+                  style="
+                    font-family: 'Covered By Your Grace', cursive;
+                    font-size: 7cqi;
+                    padding: 3cqi 8cqi;
+                    background: #f0f0f0;
+                    color: #222;
+                    border: none;
+                    border-radius: 9999px;
+                    width: 100%;
+                    display: block;
+                    box-sizing: border-box;
+                  ">
+            Maybe Later
+          </button>
+        </div>
+      `;
 
-      <button onclick="dismissUpdateToast(event)" 
-              style="
-                font-family: 'Covered By Your Grace', cursive;
-                font-size: 7cqi;
-                padding: 3cqi 8cqi;
-                background: #f0f0f0;
-                color: #222;
-                border: none;
-                border-radius: 9999px;
-                width: 100%;
-                display: block;
-                box-sizing: border-box;
-              ">
-        Maybe Later
-      </button>
-    </div>
-  `;
+      toast.style.cssText = `
+        z-index: 99999;
+        background: transparent;
+        padding: 4cqi;
+        pointer-events: auto;
+        max-width: none !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+      `;
 
-  // Force override the base #toast styles that were causing overflow
-  toast.style.cssText = `
-    z-index: 99999;
-    background: transparent;
-    padding: 4cqi;
-    pointer-events: auto;
-    max-width: none !important;
-    white-space: normal !important;
-    word-break: break-word !important;
-  `;
+      toast.classList.add('show');
+    }
 
-  toast.classList.add('show');
-}
+    function dismissUpdateToast(e) {
+      if (e) e.stopImmediatePropagation();
 
-function dismissUpdateToast(e) {
-  if (e) e.stopImmediatePropagation();
+      updateToastDismissedThisSession = true;
+      const toast = document.getElementById('toast');
 
-  updateToastDismissedThisSession = true;
-  const toast = document.getElementById('toast');
+      toast.style.transition = 'opacity 0.4s ease';
+      toast.style.opacity = '0';
 
-  toast.style.transition = 'opacity 0.4s ease';
-  toast.style.opacity = '0';
+      setTimeout(() => {
+        toast.innerHTML = originalToastHTML || '';
+        toast.style.cssText = '';
+        toast.classList.remove('show');
+        toast.style.opacity = '1';
+        toast.style.transition = '';
+      }, 400);
+    }
 
-  setTimeout(() => {
-    // Restore the original clean toast completely
-    toast.innerHTML = originalToastHTML || '';
-    toast.style.cssText = '';           // clear our overrides
-    toast.classList.remove('show');
-    toast.style.opacity = '1';
-    toast.style.transition = '';
-  }, 400);
-}
+    window.updateApp = function(e) {
+      if (e) e.stopImmediatePropagation();
+      
+      const toast = document.getElementById('toast');
+      toast.classList.remove('show');
 
-window.updateApp = function(e) {
-  if (e) e.stopImmediatePropagation();
-  
-  const toast = document.getElementById('toast');
-  toast.classList.remove('show');
-
-  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
-  }
-  
-  window.location.reload();
-};
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+      }
+      
+      window.location.reload();
+    };
 
     initApp();
 
