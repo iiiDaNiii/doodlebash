@@ -9898,18 +9898,22 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.log('SW registration failed:', err));
   });
 }
-
-// ====================== IMPROVED UPDATE TOAST ======================
-// ====================== IMPROVED UPDATE TOAST (white + tutorial style) ======================
+// ====================== NEW UPDATE TOAST (white tutorial style) ======================
 function showUpdateToast() {
   const toast = document.getElementById('toast');
   
   toast.innerHTML = `
     <div style="padding:5cqi 6cqi; background:#fff; border-radius:3.2cqi; box-shadow:0 2.6cqi 8cqi rgba(0,0,0,0.27); font-family:'Fira Sans',sans-serif; color:#222; text-align:center;">
-      <div style="font-size:5.2cqi; margin-bottom:4cqi;">A new version of Doodle Bash is available!</div>
+      <div class="message" style="font-size:5.2cqi; line-height:1.55; margin-bottom:4cqi; font-weight:400;">
+        A new version of Doodle Bash is available!
+      </div>
       <button onclick="updateApp()" 
               style="font-family:'Covered By Your Grace',cursive; font-size:7cqi; padding:2.5cqi 8cqi; background:#4dbde5; color:white; border:none; border-radius:9999px; width:65cqi;">
         Update Now
+      </button>
+      <button onclick="dismissUpdateToast()" 
+              style="font-family:'Covered By Your Grace',cursive; font-size:7cqi; padding:2.5cqi 8cqi; background:#f0f0f0; color:#222; border:none; border-radius:9999px; width:65cqi; margin-top:3cqi;">
+        Maybe Later
       </button>
     </div>
   `;
@@ -9920,9 +9924,21 @@ function showUpdateToast() {
   toast.style.pointerEvents = 'auto';
   toast.classList.add('show');
 
+  // Auto-hide after 20 seconds if ignored
   setTimeout(() => {
-    if (toast.classList.contains('show')) toast.classList.remove('show');
+    if (toast.classList.contains('show')) dismissUpdateToast();
   }, 20000);
+}
+
+function dismissUpdateToast() {
+  const toast = document.getElementById('toast');
+  toast.style.transition = 'opacity 0.4s ease';
+  toast.style.opacity = '0';
+  setTimeout(() => {
+    toast.classList.remove('show');
+    toast.style.opacity = '1';
+    toast.style.transition = '';
+  }, 400);
 }
 
 window.updateApp = function(e) {
