@@ -9900,6 +9900,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // ====================== IMPROVED UPDATE TOAST ======================
+// ====================== IMPROVED UPDATE TOAST (white + tutorial style) ======================
 function showUpdateToast() {
   const toast = document.getElementById('toast');
   
@@ -9913,18 +9914,14 @@ function showUpdateToast() {
     </div>
   `;
 
-  // Make sure toast is on top and blocks clicks
   toast.style.zIndex = '99999';
   toast.style.background = 'transparent';
   toast.style.padding = '0';
   toast.style.pointerEvents = 'auto';
   toast.classList.add('show');
 
-  // Auto-hide after 20 seconds if ignored
   setTimeout(() => {
-    if (toast.classList.contains('show')) {
-      toast.classList.remove('show');
-    }
+    if (toast.classList.contains('show')) toast.classList.remove('show');
   }, 20000);
 }
 
@@ -9934,12 +9931,10 @@ window.updateApp = function(e) {
   const toast = document.getElementById('toast');
   toast.classList.remove('show');
 
-  // Tell service worker to activate new version immediately
   if (navigator.serviceWorker && navigator.serviceWorker.controller) {
     navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
   }
   
-  // Force reload
   window.location.reload();
 };
 
