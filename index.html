@@ -1939,6 +1939,39 @@
       transform: scale(1.05);
     }
 
+    /* ====================== UPDATE PROMPT STYLES (exact copy of abandon prompt) ====================== */
+#update-prompt {
+  position: absolute;
+  inset: 10cqi;
+  background: rgba(255, 255, 255, 0.9);
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4cqi;
+  z-index: 70;
+  border-radius: 4cqi;
+  box-shadow: 0 2cqi 8cqi rgba(0, 0, 0, 0.2);
+  container-type: inline-size;
+}
+
+#update-prompt.active {
+  display: flex;
+}
+
+#update-prompt-text {
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 4.5cqi;
+  text-align: center;
+  width: 80cqi;
+  color: #222;
+}
+
+#update-prompt-buttons {
+  display: flex;
+  gap: 4cqi;
+}
+
     /* ==================== TUTORIAL CHOICE PROMPT ==================== */
     #tutorial-choice-prompt {
       position: absolute;
@@ -3260,7 +3293,7 @@
     </div>
 
 
-<!-- UPDATE PROMPT (dedicated element with its own unique IDs) -->
+<!-- UPDATE PROMPT (completely unique IDs + exact styling match to abandon prompt) -->
 <div id="update-prompt" class="menu-panel" style="display:none;">
   <img id="update-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
 
@@ -3269,8 +3302,8 @@
   </div>
 
   <div id="update-prompt-buttons" style="margin-top:4cqi; display:flex; gap:4cqi; justify-content:center;">
-    <button class="prompt-btn" id="update-yes" style="background:#4dbde5; color:white; flex:1;">Update Now</button>
-    <button class="prompt-btn" id="update-no" style="background:#fbb065; color:#000; flex:1;">Maybe Later</button>
+    <button class="prompt-btn" id="update-yes" style="background:#4dbde5; color:white; flex:1;">Update</button>
+    <button class="prompt-btn" id="update-no" style="background:#fbb065; color:#000; flex:1;">Later</button>
   </div>
 </div>
 
@@ -9729,6 +9762,7 @@
         console.error('Preload error:', e);
         document.getElementById('loading-screen').textContent = 'Error loading assets – please refresh';
       }
+      
     }
 
     // Campaign close buttons
@@ -9915,33 +9949,29 @@
     }
 
 
+
+
 let updateToastDismissedThisSession = false;
 
 function showUpdateToast() {
   if (updateToastDismissedThisSession) return;
 
-  // Close abandon prompt first to prevent any overlap
   hideMenuPanel('abandon-prompt', { silent: true });
 
   const prompt = document.getElementById('update-prompt');
-  if (!prompt) {
-    console.error('❌ #update-prompt element is missing from HTML');
-    return;
-  }
+  if (!prompt) return console.error('❌ #update-prompt missing');
 
   showMenuPanel('update-prompt', { silent: true });
 
-  // Wire buttons using the new unique IDs
+  // Wire buttons with the new unique IDs
   document.getElementById('update-yes').onclick = () => {
     playSound('selectbutton');
     updateApp();
   };
-
   document.getElementById('update-no').onclick = () => {
     playSound('selectbutton');
     dismissUpdateToast();
   };
-
   document.getElementById('update-close-btn').onclick = () => {
     playSound('selectbutton');
     dismissUpdateToast();
@@ -9959,6 +9989,7 @@ window.updateApp = function() {
   }
   window.location.reload();
 };
+
 
 
 
