@@ -6993,19 +6993,28 @@
     const LOW_CONFIDENCE_THRESHOLD = 0.75;
     const playableCols = [0, 1, 2, 3, 4, 6, 7, 8, 9, 10];
     function scoreLog(text) { document.getElementById('score-console-log').textContent += text + "\n"; }
+    
     async function scoreLoadModel() {
-      scoreLog("Loading ML model...");
-      try {
-        scoreModel = await tf.loadLayersModel('models/doodle/model.json');
-        const metadata = await fetch('models/doodle/metadata.json');
-        const meta = await metadata.json();
-        scoreClassNames = meta.labels || meta.classNames || [];
-        scoreLog(`Model loaded! ${scoreClassNames.length} classes`);
-      } catch (e) {
-        scoreLog("ERROR loading model: " + e.message);
-      }
-    }
-
+  scoreLog("Loading ML model...");
+  try {
+    // Try to load from cache first (works offline)
+    scoreModel = await tf.loadLayersModel('models/doodle/model.json');
+    const metadata = await fetch('models/doodle/metadata.json');
+    const meta = await metadata.json();
+    scoreClassNames = meta.labels || meta.classNames || [];
+    scoreLog(`✅ Model loaded! ${scoreClassNames.length} classes`);
+    return true;
+  } catch (e) {
+    scoreLog("❌ Model failed to load: " + e.message);
+    console.error("Model load error:", e);
+    // Optional: show a user-friendly message
+    const toast = document.getElementById('toast');
+    toast.textContent = "Working offline — some scoring features limited";
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+    return false;
+  }
+}
     function addWarpedGridOverlay() {
       const warpedImg = document.getElementById('score-warped-preview');
       let overlay = document.getElementById('score-warped-grid-overlay');
@@ -9984,10 +9993,16 @@ function dismissUpdateToast() {
 }
 
 window.updateApp = function() {
+  console.log("🔄 Update Now clicked — sending SKIP_WAITING to service worker");
+  
   if (navigator.serviceWorker && navigator.serviceWorker.controller) {
     navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
   }
-  window.location.reload();
+  
+  // Force a clean reload
+  setTimeout(() => {
+    window.location.reload(true);
+  }, 100);
 };
 
 
