@@ -9903,34 +9903,99 @@ if ('serviceWorker' in navigator) {
 
 let originalToastHTML = '';   // ← remembers the clean toast state
 
+let originalToastHTML = '';
+
 function showUpdateToast() {
   if (updateToastDismissedThisSession) return;
 
   const toast = document.getElementById('toast');
 
-  // Save the original clean toast HTML the first time
+  // Remember the clean original toast (only once)
   if (!originalToastHTML) {
     originalToastHTML = toast.innerHTML;
   }
 
   toast.innerHTML = `
-    <div style="padding:5.5cqi 6cqi; background:#fff; border-radius:3.2cqi; box-shadow:0 2.6cqi 8cqi rgba(0,0,0,0.27); font-family:'Fira Sans',sans-serif; color:#222; text-align:center; max-width:85cqi; width:100%; margin:0 auto; box-sizing:border-box;">
-      <div style="font-size:5.2cqi; line-height:1.55; margin-bottom:4.5cqi; font-weight:400; word-break:break-word; overflow-wrap:break-word; white-space:normal;">
+    <div style="
+      padding: 5.5cqi 6cqi;
+      background: #fff;
+      border-radius: 3.2cqi;
+      box-shadow: 0 2.6cqi 8cqi rgba(0,0,0,0.27);
+      font-family: 'Fira Sans', sans-serif;
+      color: #222;
+      text-align: center;
+      width: 100%;
+      max-width: 82cqi;
+      margin: 0 auto;
+      box-sizing: border-box;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    ">
+      <div style="
+        font-size: 5.2cqi;
+        line-height: 1.55;
+        margin-bottom: 4.5cqi;
+        font-weight: 400;
+        white-space: normal;
+        word-break: break-word;
+        overflow-wrap: break-word;
+      ">
         A new version of Doodle Bash is available!
       </div>
-      <button onclick="updateApp()" style="font-family:'Covered By Your Grace',cursive; font-size:7cqi; padding:3cqi 8cqi; background:#4dbde5; color:white; border:none; border-radius:9999px; width:100%; display:block; margin-bottom:3cqi; box-sizing:border-box;">Update Now</button>
-      <button onclick="dismissUpdateToast()" style="font-family:'Covered By Your Grace',cursive; font-size:7cqi; padding:3cqi 8cqi; background:#f0f0f0; color:#222; border:none; border-radius:9999px; width:100%; display:block; box-sizing:border-box;">Maybe Later</button>
+
+      <button onclick="updateApp(event)" 
+              style="
+                font-family: 'Covered By Your Grace', cursive;
+                font-size: 7cqi;
+                padding: 3cqi 8cqi;
+                background: #4dbde5;
+                color: white;
+                border: none;
+                border-radius: 9999px;
+                width: 100%;
+                display: block;
+                margin-bottom: 3cqi;
+                box-sizing: border-box;
+              ">
+        Update Now
+      </button>
+
+      <button onclick="dismissUpdateToast(event)" 
+              style="
+                font-family: 'Covered By Your Grace', cursive;
+                font-size: 7cqi;
+                padding: 3cqi 8cqi;
+                background: #f0f0f0;
+                color: #222;
+                border: none;
+                border-radius: 9999px;
+                width: 100%;
+                display: block;
+                box-sizing: border-box;
+              ">
+        Maybe Later
+      </button>
     </div>
   `;
 
-  toast.style.zIndex = '99999';
-  toast.style.background = 'transparent';
-  toast.style.padding = '4cqi';
-  toast.style.pointerEvents = 'auto';
+  // Force override the base #toast styles that were causing overflow
+  toast.style.cssText = `
+    z-index: 99999;
+    background: transparent;
+    padding: 4cqi;
+    pointer-events: auto;
+    max-width: none !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+  `;
+
   toast.classList.add('show');
 }
 
-function dismissUpdateToast() {
+function dismissUpdateToast(e) {
+  if (e) e.stopImmediatePropagation();
+
   updateToastDismissedThisSession = true;
   const toast = document.getElementById('toast');
 
@@ -9940,12 +10005,10 @@ function dismissUpdateToast() {
   setTimeout(() => {
     // Restore the original clean toast completely
     toast.innerHTML = originalToastHTML || '';
+    toast.style.cssText = '';           // clear our overrides
     toast.classList.remove('show');
     toast.style.opacity = '1';
     toast.style.transition = '';
-    toast.style.padding = '';
-    toast.style.background = '';
-    toast.style.zIndex = '';
   }, 400);
 }
 
