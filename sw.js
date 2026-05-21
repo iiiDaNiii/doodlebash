@@ -1,5 +1,5 @@
 // ====================== DOODLE BASH SERVICE WORKER ======================
-const CACHE_NAME = 'doodle-bash-v17';   // ← bump this number every time you deploy changes
+const CACHE_NAME = 'doodle-bash-v18';   // ← bump this number every time you deploy changes
 
 const PRECACHE_ASSETS = [
   '/',                              // main HTML
