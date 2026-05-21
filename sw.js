@@ -1,4 +1,4 @@
-const CACHE_NAME = 'doodle-bash-v1.02';   // ← bump this version number when you deploy changes
+const CACHE_NAME = 'doodle-bash-v1.03';   // ← bump this version number when you deploy changes
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();   // ← Important: new SW activates as soon as possible
