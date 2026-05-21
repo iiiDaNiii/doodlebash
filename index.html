@@ -9898,21 +9898,29 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.log('SW registration failed:', err));
   });
 }
-// ====================== NEW UPDATE TOAST (white tutorial style) ======================
+
+
+// ====================== FIXED UPDATE TOAST (matches demo exactly) ======================
+let updateToastDismissedThisSession = false;
+
 function showUpdateToast() {
+  if (updateToastDismissedThisSession) return;
+
+  console.log('%c🔄 showUpdateToast() — showing white tutorial-style toast', 'color:#4dbde5; font-weight:bold');
+
   const toast = document.getElementById('toast');
   
   toast.innerHTML = `
-    <div style="padding:5cqi 6cqi; background:#fff; border-radius:3.2cqi; box-shadow:0 2.6cqi 8cqi rgba(0,0,0,0.27); font-family:'Fira Sans',sans-serif; color:#222; text-align:center;">
-      <div class="message" style="font-size:5.2cqi; line-height:1.55; margin-bottom:4cqi; font-weight:400;">
+    <div style="padding:5cqi 6cqi; background:#fff; border-radius:3.2cqi; box-shadow:0 2.6cqi 8cqi rgba(0,0,0,0.27); font-family:'Fira Sans',sans-serif; color:#222; text-align:center; max-width:100%; width:100%;">
+      <div style="font-size:5.2cqi; line-height:1.55; margin-bottom:4cqi; font-weight:400;">
         A new version of Doodle Bash is available!
       </div>
       <button onclick="updateApp()" 
-              style="font-family:'Covered By Your Grace',cursive; font-size:7cqi; padding:2.5cqi 8cqi; background:#4dbde5; color:white; border:none; border-radius:9999px; width:65cqi;">
+              style="font-family:'Covered By Your Grace',cursive; font-size:7cqi; padding:2.5cqi 8cqi; background:#4dbde5; color:white; border:none; border-radius:9999px; width:100%; display:block; margin-bottom:3cqi;">
         Update Now
       </button>
       <button onclick="dismissUpdateToast()" 
-              style="font-family:'Covered By Your Grace',cursive; font-size:7cqi; padding:2.5cqi 8cqi; background:#f0f0f0; color:#222; border:none; border-radius:9999px; width:65cqi; margin-top:3cqi;">
+              style="font-family:'Covered By Your Grace',cursive; font-size:7cqi; padding:2.5cqi 8cqi; background:#f0f0f0; color:#222; border:none; border-radius:9999px; width:100%; display:block;">
         Maybe Later
       </button>
     </div>
@@ -9923,17 +9931,15 @@ function showUpdateToast() {
   toast.style.padding = '0';
   toast.style.pointerEvents = 'auto';
   toast.classList.add('show');
-
-  // Auto-hide after 20 seconds if ignored
-  setTimeout(() => {
-    if (toast.classList.contains('show')) dismissUpdateToast();
-  }, 20000);
 }
 
 function dismissUpdateToast() {
+  updateToastDismissedThisSession = true;   // ← prevents re-showing this session
+  
   const toast = document.getElementById('toast');
   toast.style.transition = 'opacity 0.4s ease';
   toast.style.opacity = '0';
+  
   setTimeout(() => {
     toast.classList.remove('show');
     toast.style.opacity = '1';
