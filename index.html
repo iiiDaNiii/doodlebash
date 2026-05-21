@@ -3259,17 +3259,18 @@
       </div>
     </div>
 
-    <!-- UPDATE PROMPT (dedicated element - no more conflicts) -->
+
+    <!-- UPDATE PROMPT (dedicated element with full abandon-prompt styling) -->
 <div id="update-prompt" class="menu-panel" style="display:none;">
   <img id="update-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
-  
-  <div style="text-align:center; font-size:5.2cqi; line-height:1.55; padding:0 4cqi; max-width:80cqi;">
+
+  <div id="prompt-text" style="text-align:center; font-size:5.2cqi; line-height:1.55; padding:0 4cqi;">
     A new version of <strong>Doodle Bash</strong> is available!
   </div>
-  
-  <div style="margin-top:4cqi; display:flex; gap:4cqi; justify-content:center; width:70cqi;">
-    <button class="prompt-btn" id="update-yes" style="background:#4dbde5; color:white; flex:1;">Update Now</button>
-    <button class="prompt-btn" id="update-no" style="background:#fbb065; color:#000; flex:1;">Maybe Later</button>
+
+  <div id="prompt-buttons" style="margin-top:4cqi; display:flex; gap:4cqi; justify-content:center;">
+    <button class="prompt-btn" id="update-yes" style="background:#4dbde5; color:white;">Update Now</button>
+    <button class="prompt-btn" id="update-no" style="background:#fbb065; color:#000;">Maybe Later</button>
   </div>
 </div>
 
@@ -9914,26 +9915,24 @@
     }
 
 
-
-
-    let updateToastDismissedThisSession = false;
+let updateToastDismissedThisSession = false;
 
 function showUpdateToast() {
   if (updateToastDismissedThisSession) return;
 
+  // Make sure abandon prompt is fully closed first
+  hideMenuPanel('abandon-prompt', { silent: true });
+
   const prompt = document.getElementById('update-prompt');
   if (!prompt) {
-    console.error('❌ #update-prompt element is missing from HTML');
+    console.error('❌ #update-prompt element is missing');
     return;
   }
 
-  // Make sure the old abandon prompt isn't interfering
-  hideMenuPanel('abandon-prompt', { silent: true });
-
-  // Show the dedicated update prompt
+  // Reuse the exact same showMenuPanel system → full styling + animation
   showMenuPanel('update-prompt', { silent: true });
 
-  // Re-wire buttons every time (safest)
+  // Wire buttons (safe to do every time)
   document.getElementById('update-yes').onclick = () => {
     playSound('selectbutton');
     updateApp();
