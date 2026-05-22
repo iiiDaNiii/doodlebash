@@ -1792,7 +1792,6 @@
     /* Getting Started - friendly learning button */
     #getting-started-btn {
       background: #5fbae9;
-      background: #000000;
       color: #ffffff;
     }
 
@@ -9962,15 +9961,17 @@
           .then(reg => {
             console.log('✅ Service Worker registered');
             reg.addEventListener('updatefound', () => {
-              const newWorker = reg.installing;
-              if (newWorker) {
-                newWorker.addEventListener('statechange', () => {
-                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    showUpdateToast();
-                  }
-                });
-              }
-            });
+  const newWorker = reg.installing;
+  if (newWorker) {
+    console.log('🔄 New service worker found — waiting state');
+    newWorker.addEventListener('statechange', () => {
+      console.log('SW state changed to:', newWorker.state);
+      if (newWorker.state === 'installed') {
+        showUpdateToast();                    // ← removed the controller check
+      }
+    });
+  }
+});
           })
           .catch(err => console.log('SW registration failed:', err));
       });
