@@ -74,6 +74,7 @@ self.addEventListener('install', event => {
       return cache.addAll(PRECACHE_ASSETS);
     })
   );
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
