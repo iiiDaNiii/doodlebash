@@ -1,4 +1,4 @@
-const CACHE_NAME = 'doodle-bash-v40';   // ← we bumped the version
+const CACHE_NAME = 'doodle-bash-v42';   // ← we bumped the version
 
 const PRECACHE_ASSETS = [
   '/', 
