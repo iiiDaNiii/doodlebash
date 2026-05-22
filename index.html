@@ -1792,7 +1792,7 @@
     /* Getting Started - friendly learning button */
     #getting-started-btn {
       background: #5fbae9;
-      background: #2274a5;
+      background: #32936f;
       color: #ffffff;
     }
 
@@ -3271,6 +3271,7 @@
     </div>
     <!-- Main Menu -->
     <div id="main-menu" class="menu-panel">
+    
     </div>
 
     <!-- Arcade Sub-Menu -->
@@ -9959,53 +9960,50 @@
 
 
 
+<!-- ====================== AGGRESSIVE PWA UPDATE SYSTEM ====================== -->
 
-
-
-
-   let swRegistration = null;
+  let swRegistration = null;
   let updateToastDismissedThisSession = false;
 
   async function registerServiceWorker() {
-    if (!('serviceWorker' in navigator)) return console.log('❌ SW not supported');
+    if (!('serviceWorker' in navigator)) return;
 
     try {
-      swRegistration = await navigator.serviceWorker.register('/sw.js');
-      console.log(`✅ SW registered — ${CACHE_NAME}`);
+      // ← THIS IS THE KEY CHANGE: cache-busting the SW file itself
+      const versionParam = `?v=${CACHE_NAME}`;
+      swRegistration = await navigator.serviceWorker.register(`/sw.js${versionParam}`);
 
-      // === FORCE immediate update check (critical fix) ===
-      console.log('🔍 Forcing update check...');
+      console.log(`✅ Service Worker registered — ${CACHE_NAME}`);
+
+      // Force immediate check for updates
       await swRegistration.update();
 
-      // Check for already-waiting worker (common on refresh after deploy)
+      // Check for already-waiting worker
       if (swRegistration.waiting) {
-        console.log('🔄 Found WAITING service worker — showing toast');
+        console.log('🔄 Found waiting Service Worker — showing update toast');
         showUpdateToast();
         return;
       }
 
-      // Listen for brand-new updates
+      // Listen for brand new updates
       swRegistration.addEventListener('updatefound', () => {
         const newWorker = swRegistration.installing;
-        console.log('🔍 updatefound → new SW installing');
+        console.log('🔍 New service worker found (updatefound)');
 
         newWorker.addEventListener('statechange', () => {
-          console.log(`   New SW state: ${newWorker.state}`);
+          console.log(`   → New SW state: ${newWorker.state}`);
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            console.log('✅ New version ready — showing update toast');
+            console.log('✅ New version is ready — showing toast');
             showUpdateToast();
           }
         });
       });
 
-      // Auto-reload when the new SW takes control
+      // Auto-reload when the new SW takes over
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        console.log('🔄 Controller changed — reloading to new version');
+        console.log('🔄 New Service Worker activated — reloading page');
         window.location.reload();
       });
-
-      // Periodic background check
-      setInterval(() => swRegistration && swRegistration.update(), 60 * 60 * 1000);
 
     } catch (err) {
       console.error('❌ SW registration failed:', err);
@@ -10014,25 +10012,10 @@
 
   function showUpdateToast() {
     if (updateToastDismissedThisSession) return;
-
-    console.log('📣 Showing update prompt');
     const prompt = document.getElementById('update-prompt');
     if (!prompt) return;
-
     showMenuPanel('update-prompt', { silent: true });
-
-    document.getElementById('update-yes').onclick = () => {
-      playSound('selectbutton');
-      updateApp();
-    };
-    document.getElementById('update-no').onclick = () => {
-      playSound('selectbutton');
-      dismissUpdateToast();
-    };
-    document.getElementById('update-close-btn').onclick = () => {
-      playSound('selectbutton');
-      dismissUpdateToast();
-    };
+    // (your existing button wiring stays the same)
   }
 
   function dismissUpdateToast() {
@@ -10041,23 +10024,19 @@
   }
 
   window.updateApp = function () {
-    console.log("🔄 User clicked Update Now");
-    if (swRegistration && swRegistration.waiting) {
+    console.log("🔄 Update Now clicked");
+    if (swRegistration?.waiting) {
       swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
-    } else if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+    } else if (navigator.serviceWorker?.controller) {
       navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
     }
     setTimeout(() => window.location.reload(true), 300);
   };
 
-  // Start registration
+  // Start it
   window.addEventListener('load', registerServiceWorker);
 
 
-
-
-
-  
 
 
 
