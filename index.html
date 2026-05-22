@@ -1792,7 +1792,6 @@
     /* Getting Started - friendly learning button */
     #getting-started-btn {
       background: #5fbae9;
-      background: #77A0A9;
       color: #ffffff;
     }
 
@@ -9955,24 +9954,31 @@
     });
 
 
-   
-    <!-- ====================== RELIABLE PWA UPDATE SYSTEM ====================== -->
 
-  let swRegistration = null;
+
+
+
+
+
+
+
+   let swRegistration = null;
+  let updateToastDismissedThisSession = false;
 
   async function registerServiceWorker() {
-    if (!('serviceWorker' in navigator)) {
-      console.log('Service Workers not supported in this browser');
-      return;
-    }
+    if (!('serviceWorker' in navigator)) return console.log('❌ SW not supported');
 
     try {
       swRegistration = await navigator.serviceWorker.register('/sw.js');
-      console.log(`✅ Service Worker registered — ${CACHE_NAME}`);
+      console.log(`✅ SW registered — ${CACHE_NAME}`);
 
-      // Check for already-waiting worker (very common on refresh after update)
+      // === FORCE immediate update check (critical fix) ===
+      console.log('🔍 Forcing update check...');
+      await swRegistration.update();
+
+      // Check for already-waiting worker (common on refresh after deploy)
       if (swRegistration.waiting) {
-        console.log('🔄 Found waiting service worker (ready to activate)');
+        console.log('🔄 Found WAITING service worker — showing toast');
         showUpdateToast();
         return;
       }
@@ -9980,13 +9986,10 @@
       // Listen for brand-new updates
       swRegistration.addEventListener('updatefound', () => {
         const newWorker = swRegistration.installing;
-        if (!newWorker) return;
-
-        console.log('🔍 New service worker found — installing...');
+        console.log('🔍 updatefound → new SW installing');
 
         newWorker.addEventListener('statechange', () => {
-          console.log(`New SW state changed → ${newWorker.state}`);
-
+          console.log(`   New SW state: ${newWorker.state}`);
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
             console.log('✅ New version ready — showing update toast');
             showUpdateToast();
@@ -9994,80 +9997,66 @@
         });
       });
 
-      // Optional: background update check every hour
-      setInterval(() => {
-        if (swRegistration) swRegistration.update();
-      }, 60 * 60 * 1000);
+      // Auto-reload when the new SW takes control
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        console.log('🔄 Controller changed — reloading to new version');
+        window.location.reload();
+      });
+
+      // Periodic background check
+      setInterval(() => swRegistration && swRegistration.update(), 60 * 60 * 1000);
 
     } catch (err) {
-      console.error('❌ Service Worker registration failed:', err);
+      console.error('❌ SW registration failed:', err);
     }
   }
 
-  // Make the Update button more bulletproof
-  window.updateApp = function () {
-    console.log("🔄 User clicked 'Update Now'");
+  function showUpdateToast() {
+    if (updateToastDismissedThisSession) return;
 
+    console.log('📣 Showing update prompt');
+    const prompt = document.getElementById('update-prompt');
+    if (!prompt) return;
+
+    showMenuPanel('update-prompt', { silent: true });
+
+    document.getElementById('update-yes').onclick = () => {
+      playSound('selectbutton');
+      updateApp();
+    };
+    document.getElementById('update-no').onclick = () => {
+      playSound('selectbutton');
+      dismissUpdateToast();
+    };
+    document.getElementById('update-close-btn').onclick = () => {
+      playSound('selectbutton');
+      dismissUpdateToast();
+    };
+  }
+
+  function dismissUpdateToast() {
+    updateToastDismissedThisSession = true;
+    hideMenuPanel('update-prompt');
+  }
+
+  window.updateApp = function () {
+    console.log("🔄 User clicked Update Now");
     if (swRegistration && swRegistration.waiting) {
       swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
     } else if (navigator.serviceWorker && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
     }
-
-    // Hard reload to activate the new version
-    setTimeout(() => {
-      window.location.reload(true);
-    }, 250);
+    setTimeout(() => window.location.reload(true), 300);
   };
-    
+
+  // Start registration
+  window.addEventListener('load', registerServiceWorker);
 
 
 
-let updateToastDismissedThisSession = false;
 
-function showUpdateToast() {
-  if (updateToastDismissedThisSession) return;
 
-  hideMenuPanel('abandon-prompt', { silent: true });
-
-  const prompt = document.getElementById('update-prompt');
-  if (!prompt) return console.error('❌ #update-prompt missing');
-
-  showMenuPanel('update-prompt', { silent: true });
-
-  // Wire buttons with the new unique IDs
-  document.getElementById('update-yes').onclick = () => {
-    playSound('selectbutton');
-    updateApp();
-  };
-  document.getElementById('update-no').onclick = () => {
-    playSound('selectbutton');
-    dismissUpdateToast();
-  };
-  document.getElementById('update-close-btn').onclick = () => {
-    playSound('selectbutton');
-    dismissUpdateToast();
-  };
-}
-
-function dismissUpdateToast() {
-  updateToastDismissedThisSession = true;
-  hideMenuPanel('update-prompt');
-}
-
-window.updateApp = function() {
-  console.log("🔄 Update Now clicked — sending SKIP_WAITING to service worker");
   
-  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
-  }
-  
-  // Force a clean reload
-  setTimeout(() => {
-    window.location.reload(true);
-  }, 100);
-};
-
 
 
 
