@@ -1792,6 +1792,7 @@
     /* Getting Started - friendly learning button */
     #getting-started-btn {
       background: #5fbae9;
+      background: #4B2E39;
       color: #ffffff;
     }
 
@@ -9954,41 +9955,71 @@
     });
 
 
-    
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => {
-        console.log('✅ Service Worker registered (version ' + CACHE_NAME + ')');
+   
+    <!-- ====================== RELIABLE PWA UPDATE SYSTEM ====================== -->
 
-        // === CRITICAL: Check for ANY waiting update on page load ===
-        if (reg.waiting) {
-          console.log('🔄 Found a WAITING service worker on page load');
-          showUpdateToast();
-          return;
-        }
+  let swRegistration = null;
 
-        // Listen for brand new updates
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          if (newWorker) {
-            console.log('🔄 New service worker found — now installing...');
+  async function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) {
+      console.log('Service Workers not supported in this browser');
+      return;
+    }
 
-            newWorker.addEventListener('statechange', () => {
-              console.log('SW state changed →', newWorker.state);
+    try {
+      swRegistration = await navigator.serviceWorker.register('/sw.js');
+      console.log(`✅ Service Worker registered — ${CACHE_NAME}`);
 
-              if (newWorker.state === 'installed') {
-                console.log('✅ New service worker is INSTALLED and waiting');
-                showUpdateToast();
-              }
-            });
+      // Check for already-waiting worker (very common on refresh after update)
+      if (swRegistration.waiting) {
+        console.log('🔄 Found waiting service worker (ready to activate)');
+        showUpdateToast();
+        return;
+      }
+
+      // Listen for brand-new updates
+      swRegistration.addEventListener('updatefound', () => {
+        const newWorker = swRegistration.installing;
+        if (!newWorker) return;
+
+        console.log('🔍 New service worker found — installing...');
+
+        newWorker.addEventListener('statechange', () => {
+          console.log(`New SW state changed → ${newWorker.state}`);
+
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            console.log('✅ New version ready — showing update toast');
+            showUpdateToast();
           }
         });
-      })
-      .catch(err => console.error('SW registration failed:', err));
-  });
-}
+      });
 
+      // Optional: background update check every hour
+      setInterval(() => {
+        if (swRegistration) swRegistration.update();
+      }, 60 * 60 * 1000);
+
+    } catch (err) {
+      console.error('❌ Service Worker registration failed:', err);
+    }
+  }
+
+  // Make the Update button more bulletproof
+  window.updateApp = function () {
+    console.log("🔄 User clicked 'Update Now'");
+
+    if (swRegistration && swRegistration.waiting) {
+      swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    } else if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+    }
+
+    // Hard reload to activate the new version
+    setTimeout(() => {
+      window.location.reload(true);
+    }, 250);
+  };
+    
 
 
 
