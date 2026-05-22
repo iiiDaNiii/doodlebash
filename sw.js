@@ -1,4 +1,4 @@
-const CACHE_NAME = 'doodle-bash-v23';   // ← we bumped the version
+const CACHE_NAME = 'doodle-bash-v24';   // ← we bumped the version
 
 const PRECACHE_ASSETS = [
   '/', 
@@ -18,31 +18,48 @@ const PRECACHE_ASSETS = [
 
 // ====================== PASTE YOUR IMAGE LIST HERE ======================
 const imagePaths = [
-      'images/greyheader.png', 'images/yellowfooter.png', 'images/guidebutton.png', 'images/menu.png', 'images/learnbutton.png',
-      'images/shufflebutton.png', 'images/shufflebuttonoutline.png', 'images/portfoliobutton.png', 'images/audio.png', 'images/scorebutton.png',
-      'images/doodlebashlogo.png', 'images/close.png', 'images/closewhite.png', 'images/notebook.png', 'images/gear1.png', 'images/gear2.png',
-      'images/rawcat.png', 'images/new.png', 'images/varietybonusgrid.png', 'images/varietybonus.png', 'images/cube.png', 'images/purplepointbubble.png',
-      'images/blackpointbubble.png', 'images/circle.png', 'images/square.png', 'images/triangle.png', 'images/line.png', 'images/dot.png',
-      'images/lens.png', 'images/halfcircle.png', 'images/drop.png', 'images/teeth.png', 'images/cylinder.png', 'images/cube.png',
-      'images/pyramid.png', 'images/cloud.png', 'images/coin.png', 'images/smiley.png', 'images/letter.png', 'images/house.png',
-      'images/die.png', 'images/piano.png', 'images/pizza.png', 'images/star.png', 'images/wireless.png', 'images/music.png',
-      'images/planet.png', 'images/sword.png', 'images/fish.png', 'images/umbrella.png', 'images/boat.png', 'images/butterfly.png',
-      'images/heart.png', 'images/turd.png', 'images/flower.png', 'images/crown.png', 'images/cat.png', 'images/rocket.png',
-      'images/mug.png', 'images/toiletpaper.png', 'images/chest.png', 'images/present.png', 'images/diamond.png', 'images/icecream.png',
-      'images/rawcircle.png', 'images/rawsquare.png', 'images/rawtriangle.png', 'images/rawline.png', 'images/rawdot.png',
-      'images/rawlens.png', 'images/rawhalfcircle.png', 'images/rawdrop.png', 'images/rawteeth.png', 'images/rawcylinder.png',
-      'images/rawcube.png', 'images/rawpyramid.png', 'images/rawcloud.png', 'images/rawcoin.png', 'images/rawsmiley.png',
-      'images/rawletter.png', 'images/rawhouse.png', 'images/rawdie.png', 'images/rawpiano.png', 'images/rawpizza.png',
-      'images/rawstar.png', 'images/rawwireless.png', 'images/rawmusic.png', 'images/rawplanet.png', 'images/rawsword.png',
-      'images/rawfish.png', 'images/rawumbrella.png', 'images/rawboat.png', 'images/rawbutterfly.png', 'images/rawheart.png',
-      'images/rawturd.png', 'images/rawflower.png', 'images/rawcrown.png', 'images/rawcat.png', 'images/rawrocket.png',
-      'images/rawmug.png', 'images/rawtoiletpaper.png', 'images/rawchest.png', 'images/rawpresent.png', 'images/rawdiamond.png',
-      'images/rawicecream.png', 'images/gettingstarted1ptgoal.png', 'images/gettingstarted2ptgoal.png', 'images/gettingstarted3ptgoal.png',
-      'images/gettingstarted4ptgoal.png', 'images/gettingstarted5ptgoal.png', 'images/note1.png', 'images/note2.png',
-      'images/note3.png', 'images/guidebutton.png', 'images/minus2pt.png', 'images/1pt.png', 'images/2pt.png',
-      'images/3pt.png', 'images/4pt.png', 'images/5pt.png', 'images/6pt.png', 'images/mission1header.png',
-      'images/mission2header.png', 'images/mission3header.png', 'images/mission4header.png', 'images/mission5header.png'
-    ];
+  'images/1pt.png', 'images/2pt.png', 'images/3pt.png', 'images/4pt.png', 'images/5pt.png',
+  'images/6pt.png', 'images/7pt.png', 'images/10pt.png', 'images/audio.png', 'images/black1pt.png',
+  'images/blackpointbubble.png', 'images/boat.png', 'images/butterfly.png', 'images/cat.png',
+  'images/checkboxleft.png', 'images/checkboxright.png', 'images/chest.png', 'images/circle.png',
+  'images/close.png', 'images/closewhite.png', 'images/cloud.png', 'images/coin.png', 'images/crown.png',
+  'images/cube.png', 'images/cylinder.png', 'images/diamond.png', 'images/die.png', 'images/doodlebashlogo.png',
+  'images/dot.png', 'images/drop.png', 'images/fish.png', 'images/flower.png', 'images/gear1.png',
+  'images/gear2.png', 'images/gettingstarted1ptgoal.png', 'images/gettingstarted2ptgoal.png',
+  'images/gettingstarted3ptgoal.png', 'images/gettingstarted4ptgoal.png', 'images/gettingstarted5ptgoal.png',
+  'images/greyheader.png', 'images/guidebutton.png', 'images/halfcircle.png', 'images/heart.png',
+  'images/house.png', 'images/icecream.png', 'images/learnbutton.png', 'images/lens.png',
+  'images/letter.png', 'images/line.png', 'images/lock.png', 'images/logoblueback1.png',
+  'images/logoblueback2.png', 'images/logocat.png', 'images/logod1.png', 'images/logod2.png',
+  'images/logoe.png', 'images/logolpen.png', 'images/logomusic.png', 'images/logo1.png',
+  'images/logo2.png', 'images/logopizza.png', 'images/logosubtitle.png', 'images/logounderline.png',
+  'images/menu.png', 'images/minus2pt.png', 'images/mission1header.png', 'images/mission2header.png',
+  'images/mission3header.png', 'images/mission4header.png', 'images/mission5header.png',
+  'images/missionbonus.png', 'images/missiondetails.png', 'images/mug.png', 'images/music.png',
+  'images/new.png', 'images/note1.png', 'images/note2.png', 'images/note3.png', 'images/notebook.png',
+  'images/notebookscanguide.png', 'images/numberline.png', 'images/piano.png', 'images/planet.png',
+  'images/portfoliobutton.png', 'images/purplepointbubble.png', 'images/pyramid.png',
+  'images/rawboat.png', 'images/rawbutterfly.png', 'images/rawcat.png', 'images/rawchest.png',
+  'images/rawcircle.png', 'images/rawcloud.png', 'images/rawcoin.png', 'images/rawcrown.png',
+  'images/rawcube.png', 'images/rawcylinder.png', 'images/rawdiamond.png', 'images/rawdie.png',
+  'images/rawdot.png', 'images/rawdrop.png', 'images/rawfish.png', 'images/rawflower.png',
+  'images/rawhalfcircle.png', 'images/rawhouse.png', 'images/rawicecream.png', 'images/rawlens.png',
+  'images/rawletter.png', 'images/rawline.png', 'images/rawmug.png', 'images/rawmusic.png',
+  'images/rawpiano.png', 'images/rawpizza.png', 'images/rawplanet.png', 'images/rawpresent.png',
+  'images/rawpyramid.png', 'images/rawrocket.png', 'images/rawsquare.png', 'images/rawstar.png',
+  'images/rawsword.png', 'images/rawteeth.png', 'images/rawtoiletpaper.png', 'images/rawturd.png',
+  'images/rawumbrella.png', 'images/rawwireless.png', 'images/rocket.png', 'images/scorebutton.png',
+  'images/scoremarker.png', 'images/scorepin.png', 'images/scoresquiggle.png', 'images/shufflebutton.png',
+  'images/shufflebuttonoutline.png', 'images/smiley.png', 'images/square.png', 'images/star.png',
+  'images/sword.png', 'images/teeth.png', 'images/toiletpaper.png', 'images/triangle.png',
+  'images/turd.png', 'images/tutimage1.png', 'images/tutimage2.png', 'images/tutimage3.png',
+  'images/tutimage4.png', 'images/tutimage5.png', 'images/tutimage6.png', 'images/tutimage7.png',
+  'images/tutimage8.png', 'images/tutimage9.png', 'images/tutimage10.png', 'images/tutimage11.png',
+  'images/tutimage12.png', 'images/tutimage13.png', 'images/tutimage14.png', 'images/tutimage15.png',
+  'images/tutimage16.png', 'images/tutimage17.png', 'images/tutimage18.png', 'images/tutimage19.png',
+  'images/umbrella.png', 'images/varietybonus.png', 'images/varietybonusgrid.png', 'images/wireless.png',
+  'images/yellowfooter.png'
+];
 
 imagePaths.forEach(path => PRECACHE_ASSETS.push(path));
 
