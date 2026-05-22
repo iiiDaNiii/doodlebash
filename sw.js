@@ -1,5 +1,4 @@
-// ====================== DOODLE BASH SERVICE WORKER v20 ======================
-const CACHE_NAME = 'doodle-bash-v20';   // ← we bumped the version
+const CACHE_NAME = 'doodle-bash-v21';   // ← we bumped the version
 
 const PRECACHE_ASSETS = [
   '/', 
