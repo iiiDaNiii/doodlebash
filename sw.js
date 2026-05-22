@@ -1,4 +1,4 @@
-const CACHE_NAME = 'doodle-bash-v28';   // ← we bumped the version
+const CACHE_NAME = 'doodle-bash-v29';   // ← we bumped the version
 
 const PRECACHE_ASSETS = [
   '/', 
@@ -74,6 +74,7 @@ self.addEventListener('install', event => {
       return cache.addAll(PRECACHE_ASSETS);
     })
   );
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
