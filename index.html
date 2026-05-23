@@ -3551,6 +3551,9 @@
     </div>
   </div>
   <script>
+
+const CACHE_NAME = 'doodle-bash-v5.06';
+
     let deck = {
       circle: 2,
       square: 2,
@@ -9968,9 +9971,8 @@
     if (!('serviceWorker' in navigator)) return;
 
     try {
-      // ← THIS IS THE KEY CHANGE: cache-busting the SW file itself
-      const versionParam = `?v=${CACHE_NAME}`;
-      swRegistration = await navigator.serviceWorker.register(`/sw.js${versionParam}`);
+    const versionParam = `?v=${CACHE_NAME}`;   // ← now uses the constant from the top
+    swRegistration = await navigator.serviceWorker.register(`/sw.js${versionParam}`);
 
       console.log(`✅ Service Worker registered — ${CACHE_NAME}`);
 
