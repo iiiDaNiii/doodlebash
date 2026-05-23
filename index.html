@@ -1792,7 +1792,7 @@
     /* Getting Started - friendly learning button */
     #getting-started-btn {
       background: #5fbae9;
-      background: #60712F;
+      background: #A5243D;
       color: #ffffff;
     }
 
@@ -9958,48 +9958,52 @@
     });
 
 
-<!-- ====================== RELIABLE PWA UPDATE SYSTEM ====================== -->
+
+
+
+    <!-- ====================== PWA UPDATE SYSTEM — DIAGNOSTIC ====================== -->
 let swRegistration = null;
 
 async function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) return;
-
+  if (!('serviceWorker' in navigator)) {
+    console.log('[PWA] ❌ Service Workers not supported');
+    return;
+  }
   try {
+    console.log('[PWA] 📡 Registering /sw.js...');
     swRegistration = await navigator.serviceWorker.register('/sw.js');
-    console.log('✅ Service Worker registered');
+    console.log('[PWA] ✅ Service Worker registered successfully');
 
-    // Check for updates immediately and every 30 seconds
     checkForUpdate();
-    setInterval(checkForUpdate, 30000);
+    setInterval(checkForUpdate, 15000); // every 15 seconds for testing
 
     swRegistration.addEventListener('updatefound', () => {
+      console.log('[PWA] 🔍 updatefound event fired — new SW detected');
       const newWorker = swRegistration.installing;
       if (newWorker) {
         newWorker.addEventListener('statechange', () => {
+          console.log(`[PWA] New SW state changed to: ${newWorker.state}`);
           if (newWorker.state === 'installed') {
+            console.log('[PWA] 🎉 New version installed — showing prompt');
             showUpdatePrompt();
           }
         });
       }
     });
   } catch (err) {
-    console.error('❌ SW registration failed:', err);
+    console.error('[PWA] ❌ SW registration failed:', err);
   }
 }
 
 async function checkForUpdate() {
   if (swRegistration) {
+    console.log('[PWA] 🔄 Checking for update...');
     await swRegistration.update();
   }
 }
 
 function showUpdatePrompt() {
-  // Don't interrupt active gameplay
-  if (currentMode === 'game' && hasGameInProgress) {
-    console.log('⏳ Update available — will show prompt after game ends');
-    return;
-  }
-
+  console.log('[PWA] Showing update prompt');
   const prompt = document.getElementById('update-prompt');
   if (!prompt) return;
 
@@ -10007,12 +10011,10 @@ function showUpdatePrompt() {
     playSound('selectbutton');
     applyUpdate();
   };
-
   document.getElementById('update-no').onclick = () => {
     playSound('selectbutton');
     prompt.classList.remove('active');
   };
-
   document.getElementById('update-close-btn').onclick = () => {
     playSound('selectbutton');
     prompt.classList.remove('active');
@@ -10022,6 +10024,7 @@ function showUpdatePrompt() {
 }
 
 window.applyUpdate = function() {
+  console.log('[PWA] User clicked Update Now');
   if (swRegistration?.waiting) {
     swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
   } else {
@@ -10029,12 +10032,32 @@ window.applyUpdate = function() {
   }
 };
 
-// Auto-reload when new version activates
 navigator.serviceWorker.addEventListener('controllerchange', () => {
+  console.log('[PWA] 🔄 Controller changed — reloading with new version');
   window.location.reload();
 });
 
-window.addEventListener('load', registerServiceWorker);
+// Temporary Force Update button for testing
+function addForceUpdateButton() {
+  const menu = document.getElementById('main-menu');
+  if (menu) {
+    const btn = document.createElement('button');
+    btn.className = 'menu-btn';
+    btn.textContent = '🔄 Force Update Check';
+    btn.style.background = '#7f2a8f';
+    btn.style.color = 'white';
+    btn.onclick = () => {
+      console.log('[PWA] Manual force update triggered');
+      checkForUpdate();
+    };
+    menu.appendChild(btn);
+  }
+}
+
+window.addEventListener('load', () => {
+  registerServiceWorker();
+  addForceUpdateButton();   // temporary test button
+});
 
 
     
