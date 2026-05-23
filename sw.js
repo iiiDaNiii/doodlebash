@@ -1,4 +1,4 @@
-const CACHE_NAME = 'doodle-bash-v5.25'; // ← bump this every update (I incremented it for you)
+const CACHE_NAME = 'doodle-bash-v5.26'; // ← bump this every update (I incremented it for you)
 
 const PRECACHE_ASSETS = [
   '/',
@@ -63,4 +63,11 @@ self.addEventListener('fetch', event => {
       });
     })
   );
+});
+
+// Allow the client to tell us to skip waiting
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
