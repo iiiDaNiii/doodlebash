@@ -1792,7 +1792,6 @@
     /* Getting Started - friendly learning button */
     #getting-started-btn {
       background: #5fbae9;
-      background: #E6F8B2;
       color: #ffffff;
     }
 
@@ -3553,7 +3552,7 @@
   </div>
   <script>
 
-const CACHE_NAME = 'doodle-bash-v5.10';
+const CACHE_NAME = 'doodle-bash-v5.11';
 
     let deck = {
       circle: 2,
@@ -9972,7 +9971,7 @@ const CACHE_NAME = 'doodle-bash-v5.10';
   console.log('🔧 registerServiceWorker started — CACHE_NAME =', CACHE_NAME);
   
   if (!('serviceWorker' in navigator)) {
-    console.error('❌ Service Worker not supported by this browser');
+    console.error('❌ Service Worker not supported');
     return;
   }
   
@@ -9980,52 +9979,39 @@ const CACHE_NAME = 'doodle-bash-v5.10';
     const versionParam = `?v=${CACHE_NAME}`;
     console.log('📡 Registering service worker with URL:', `/sw.js${versionParam}`);
     
+    // Register first
     swRegistration = await navigator.serviceWorker.register(`/sw.js${versionParam}`);
     console.log('✅ Service Worker registered successfully');
     
+    // CRITICAL: Attach listener BEFORE forcing the update check
+    swRegistration.addEventListener('updatefound', () => {
+      const newWorker = swRegistration.installing;
+      console.log('🔍 New service worker found (updatefound)');
+      
+      newWorker.addEventListener('statechange', () => {
+        console.log(` → New SW state: ${newWorker.state}`);
+        
+        if ((newWorker.state === 'installed' || newWorker.state === 'waiting') && navigator.serviceWorker.controller) {
+          console.log('✅ New version ready — showing toast');
+          showUpdateToast();
+        }
+      });
+    });
+    
+    // Force immediate check for updates
     await swRegistration.update();
     console.log('🔄 Forced update check completed');
     
+    // Also check for already-waiting worker (important for PWA reopen)
     if (swRegistration.waiting) {
-      console.log('🔥 FOUND A WAITING WORKER — showing update toast');
+      console.log('🔥 Found waiting Service Worker — showing update toast');
       showUpdateToast();
       return;
     }
-
-      // Listen for brand new updates
-      swRegistration.addEventListener('updatefound', () => {
-        const newWorker = swRegistration.installing;
-        console.log('🔍 New service worker found (updatefound)');
-
-        newWorker.addEventListener('statechange', () => {
-  console.log(` → New SW state: ${newWorker.state}`);
-
-  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-    console.log('✅ New version ready (installed) — showing toast');
-    showUpdateToast();
+  } catch (err) {
+    console.error('❌ SW registration failed:', err);
   }
-
-  if (newWorker.state === 'waiting') {
-    console.log('🔥 New SW is waiting — showing toast');
-    showUpdateToast();
-  }
-
-  if (newWorker.state === 'redundant') {
-    console.log('⚠️ New SW went redundant (install probably failed)');
-  }
-});
-      });
-
-      // Auto-reload when the new SW takes over
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        console.log('🔄 New Service Worker activated — reloading page');
-        window.location.reload();
-      });
-
-    } catch (err) {
-      console.error('❌ SW registration failed:', err);
-    }
-  }
+}
 
   function showUpdateToast() {
   if (updateToastDismissedThisSession) return;
