@@ -9958,16 +9958,15 @@
     });
 
 
-
-    <!-- ====================== AGGRESSIVE PWA UPDATE SYSTEM ====================== -->
+<!-- ====================== AGGRESSIVE PWA UPDATE SYSTEM ====================== -->
   let swRegistration = null;
   let updateToastDismissedThisSession = false;
   let updatePromptShownThisSession = false;
-  let isUpdating = false;                    // ← prevents double toast during transition
+  let isUpdating = false;
 
-  // Attach this listener ONCE at the top level (outside the function)
+  // Auto-reload when the new service worker takes over
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    console.log('🔄 New Service Worker took control — reloading with latest version');
+    console.log('🔄 New Service Worker activated — reloading page');
     window.location.reload();
   });
 
@@ -9986,7 +9985,6 @@
       swRegistration = await navigator.serviceWorker.register(`/sw.js${versionParam}`);
       console.log('✅ Service Worker registered successfully');
       
-      // CRITICAL: listener BEFORE update check
       swRegistration.addEventListener('updatefound', () => {
         const newWorker = swRegistration.installing;
         console.log('🔍 New service worker found (updatefound)');
@@ -10017,15 +10015,12 @@
     if (updateToastDismissedThisSession || updatePromptShownThisSession || isUpdating) return;
     
     updatePromptShownThisSession = true;
-    isUpdating = true;                     // ← lock it during update
-    console.log('🚨🚨🚨 showUpdateToast() WAS CALLED — update detected!');
+    isUpdating = true;
+    console.log('🚨 showUpdateToast() WAS CALLED — showing custom toast');
     
-    const shouldUpdate = confirm('🔄 Doodle Bash Update Available\n\nA new version is ready to install.\n\nUpdate now?');
-    
-    if (shouldUpdate) {
-      updateApp();
-    } else {
-      dismissUpdateToast();
+    const prompt = document.getElementById('update-prompt');
+    if (prompt) {
+      showMenuPanel('update-prompt', { silent: true });
     }
   }
 
@@ -10033,6 +10028,7 @@
     updateToastDismissedThisSession = true;
     updatePromptShownThisSession = true;
     isUpdating = false;
+    hideMenuPanel('update-prompt');
   }
 
   window.updateApp = function () {
@@ -10042,7 +10038,7 @@
     } else if (navigator.serviceWorker?.controller) {
       navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
     }
-    // DO NOT reload here — controllerchange will handle it cleanly
+    // No reload here — controllerchange listener will handle it cleanly
   };
 
   // Start it
