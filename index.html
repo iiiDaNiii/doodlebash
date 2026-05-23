@@ -1792,7 +1792,7 @@
     /* Getting Started - friendly learning button */
     #getting-started-btn {
       background: #5fbae9;
-      background: #EF7B45;
+      background: #CDEDF6;
       color: #ffffff;
     }
 
@@ -9963,39 +9963,35 @@
 
     <!-- ====================== PWA UPDATE SYSTEM — DIAGNOSTIC ====================== -->
 let swRegistration = null;
-
 async function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
 
   try {
-    // ← THIS IS THE KEY FIX: versioned URL forces fresh download of sw.js
-    const versionedSW = `/sw.js?v=${CACHE_NAME}`;
-    console.log(`[PWA] Registering versioned SW: ${versionedSW}`);
+    // This is the key fix — we register the versioned filename directly
+    const swFile = `/sw-v5.41.js`;   // ← must match the filename you just created
+    console.log(`[PWA] Registering ${swFile}`);
 
-    swRegistration = await navigator.serviceWorker.register(versionedSW);
+    swRegistration = await navigator.serviceWorker.register(swFile);
 
-    console.log('✅ Service Worker registered (versioned)');
+    console.log('✅ Service Worker registered');
 
     checkForUpdate();
-    setInterval(checkForUpdate, 15000);   // check every 15s during testing
+    setInterval(checkForUpdate, 15000);
 
     swRegistration.addEventListener('updatefound', () => {
-      console.log('[PWA] 🔍 New service worker found');
+      console.log('[PWA] New service worker found');
       const newWorker = swRegistration.installing;
       if (newWorker) {
         newWorker.addEventListener('statechange', () => {
           console.log(`[PWA] New SW state: ${newWorker.state}`);
-          if (newWorker.state === 'installed') {
-            showUpdatePrompt();
-          }
+          if (newWorker.state === 'installed') showUpdatePrompt();
         });
       }
     });
   } catch (err) {
-    console.error('[PWA] ❌ Registration failed:', err);
+    console.error('[PWA] Registration failed:', err);
   }
 }
-
 async function checkForUpdate() {
   if (swRegistration) {
     console.log('[PWA] 🔄 Checking for update...');
