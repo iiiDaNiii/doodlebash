@@ -3553,7 +3553,7 @@
   </div>
   <script>
 
-const CACHE_NAME = 'doodle-bash-v5.08';
+const CACHE_NAME = 'doodle-bash-v5.09';
 
     let deck = {
       circle: 2,
@@ -9969,23 +9969,28 @@ const CACHE_NAME = 'doodle-bash-v5.08';
   let updateToastDismissedThisSession = false;
 
   async function registerServiceWorker() {
-    if (!('serviceWorker' in navigator)) return;
-
-    try {
-    const versionParam = `?v=${CACHE_NAME}`;   // ← now uses the constant from the top
+  console.log('🔧 registerServiceWorker started — CACHE_NAME =', CACHE_NAME);
+  
+  if (!('serviceWorker' in navigator)) {
+    console.error('❌ Service Worker not supported by this browser');
+    return;
+  }
+  
+  try {
+    const versionParam = `?v=${CACHE_NAME}`;
+    console.log('📡 Registering service worker with URL:', `/sw.js${versionParam}`);
+    
     swRegistration = await navigator.serviceWorker.register(`/sw.js${versionParam}`);
-
-      console.log(`✅ Service Worker registered — ${CACHE_NAME}`);
-
-      // Force immediate check for updates
-      await swRegistration.update();
-
-      // Check for already-waiting worker
-      if (swRegistration.waiting) {
-        console.log('🔄 Found waiting Service Worker — showing update toast');
-        showUpdateToast();
-        return;
-      }
+    console.log('✅ Service Worker registered successfully');
+    
+    await swRegistration.update();
+    console.log('🔄 Forced update check completed');
+    
+    if (swRegistration.waiting) {
+      console.log('🔥 FOUND A WAITING WORKER — showing update toast');
+      showUpdateToast();
+      return;
+    }
 
       // Listen for brand new updates
       swRegistration.addEventListener('updatefound', () => {
@@ -10013,12 +10018,18 @@ const CACHE_NAME = 'doodle-bash-v5.08';
   }
 
   function showUpdateToast() {
-    if (updateToastDismissedThisSession) return;
-    const prompt = document.getElementById('update-prompt');
-    if (!prompt) return;
-    showMenuPanel('update-prompt', { silent: true });
-    // (your existing button wiring stays the same)
+  if (updateToastDismissedThisSession) return;
+  
+  console.log('🚨🚨🚨 showUpdateToast() WAS CALLED — update detected!');
+  
+  const shouldUpdate = confirm('🔄 Doodle Bash Update Available\n\nA new version is ready to install.\n\nUpdate now?');
+  
+  if (shouldUpdate) {
+    updateApp();
+  } else {
+    dismissUpdateToast();
   }
+}
 
   function dismissUpdateToast() {
     updateToastDismissedThisSession = true;
