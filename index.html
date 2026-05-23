@@ -1792,7 +1792,7 @@
     /* Getting Started - friendly learning button */
     #getting-started-btn {
       background: #5fbae9;
-      background: #769fb6;
+      background: #B098A4;
       color: #ffffff;
     }
 
@@ -9956,7 +9956,9 @@
         saveGameState();
       }
     });
-<!-- ====================== PWA UPDATE SYSTEM (clean & reliable) ====================== -->
+
+
+<!-- ====================== RELIABLE PWA UPDATE SYSTEM ====================== -->
 let swRegistration = null;
 
 async function registerServiceWorker() {
@@ -9966,9 +9968,9 @@ async function registerServiceWorker() {
     swRegistration = await navigator.serviceWorker.register('/sw.js');
     console.log('✅ Service Worker registered');
 
-    // Check for updates immediately + every 45 seconds
+    // Check for updates immediately and every 30 seconds
     checkForUpdate();
-    setInterval(checkForUpdate, 45000);
+    setInterval(checkForUpdate, 30000);
 
     swRegistration.addEventListener('updatefound', () => {
       const newWorker = swRegistration.installing;
@@ -9986,20 +9988,21 @@ async function registerServiceWorker() {
 }
 
 async function checkForUpdate() {
-  if (swRegistration) await swRegistration.update();
+  if (swRegistration) {
+    await swRegistration.update();
+  }
 }
 
 function showUpdatePrompt() {
-  // Only show prompt if user is NOT in the middle of a game
+  // Don't interrupt active gameplay
   if (currentMode === 'game' && hasGameInProgress) {
-    console.log('⏳ Update available — waiting until game ends');
+    console.log('⏳ Update available — will show prompt after game ends');
     return;
   }
 
   const prompt = document.getElementById('update-prompt');
   if (!prompt) return;
 
-  // Wire your existing buttons (they already exist in the HTML)
   document.getElementById('update-yes').onclick = () => {
     playSound('selectbutton');
     applyUpdate();
@@ -10019,20 +10022,22 @@ function showUpdatePrompt() {
 }
 
 window.applyUpdate = function() {
-  if (swRegistration && swRegistration.waiting) {
+  if (swRegistration?.waiting) {
     swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
   } else {
     window.location.reload();
   }
 };
 
-// Auto-reload when the new version takes over
+// Auto-reload when new version activates
 navigator.serviceWorker.addEventListener('controllerchange', () => {
   window.location.reload();
 });
 
-// Start the system
 window.addEventListener('load', registerServiceWorker);
+
+
+    
 
 
 
