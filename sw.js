@@ -1,4 +1,4 @@
-const CACHE_NAME = 'doodle-bash-v5.33'; // ← bump this every update (I incremented it for you)
+const CACHE_NAME = 'doodle-bash-v5.34'; // ← bump this every update (I incremented it for you)
 
 const PRECACHE_ASSETS = [
   '/',
