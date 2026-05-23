@@ -1792,6 +1792,7 @@
     /* Getting Started - friendly learning button */
     #getting-started-btn {
       background: #5fbae9;
+      background: #000000;
       color: #ffffff;
     }
 
@@ -9960,23 +9961,24 @@
   let swRegistration = null;
 
   async function registerServiceWorker() {
-    if (!('serviceWorker' in navigator)) return;
+  if (!('serviceWorker' in navigator)) return;
+  
+  try {
+    const versionParam = `?v=${CACHE_NAME}`;
+    console.log('📡 Registering SW with version:', CACHE_NAME);
     
-    try {
-      const versionParam = `?v=${CACHE_NAME}`;
-      console.log('📡 Registering SW with version:', CACHE_NAME);
-      
-      swRegistration = await navigator.serviceWorker.register(`/sw.js${versionParam}`);
-      console.log('✅ Service Worker registered');
-      
-      // Force check for updates
+    swRegistration = await navigator.serviceWorker.register(`/sw.js${versionParam}`);
+    
+    // Force immediate update check (very helpful for installed PWAs)
+    if (swRegistration) {
       await swRegistration.update();
-      console.log('🔄 Update check completed');
-      
-    } catch (err) {
-      console.error('❌ SW registration failed:', err);
     }
+    
+    console.log('✅ Service Worker registered');
+  } catch (err) {
+    console.error('❌ SW registration failed:', err);
   }
+}
 
   // Automatically reload when the new version takes over
   navigator.serviceWorker.addEventListener('controllerchange', () => {
