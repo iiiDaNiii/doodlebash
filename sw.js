@@ -4,7 +4,6 @@ const PRECACHE_ASSETS = [
   '/', 
   '/index.html',
   'manifest.json',
-  'sw.js',
 
   // === ML MODEL (critical for scoring offline) ===
   'models/doodle/model.json',
@@ -74,7 +73,6 @@ self.addEventListener('install', event => {
       return cache.addAll(PRECACHE_ASSETS);
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
