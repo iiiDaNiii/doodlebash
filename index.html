@@ -1792,7 +1792,6 @@
     /* Getting Started - friendly learning button */
     #getting-started-btn {
       background: #5fbae9;
-      background: #000000;
       color: #ffffff;
     }
 
@@ -3553,7 +3552,7 @@
   </div>
   <script>
 
-const CACHE_NAME = 'doodle-bash-v5.12';
+const CACHE_NAME = 'doodle-bash-v5.13';
 
     let deck = {
       circle: 2,
@@ -9960,11 +9959,17 @@ const CACHE_NAME = 'doodle-bash-v5.12';
 
 
 
-
-<!-- ====================== AGGRESSIVE PWA UPDATE SYSTEM ====================== -->
+    <!-- ====================== AGGRESSIVE PWA UPDATE SYSTEM ====================== -->
   let swRegistration = null;
   let updateToastDismissedThisSession = false;
-  let updatePromptShownThisSession = false;   // ← NEW: prevents multiple popups
+  let updatePromptShownThisSession = false;
+  let isUpdating = false;                    // ← prevents double toast during transition
+
+  // Attach this listener ONCE at the top level (outside the function)
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    console.log('🔄 New Service Worker took control — reloading with latest version');
+    window.location.reload();
+  });
 
   async function registerServiceWorker() {
     console.log('🔧 registerServiceWorker started — CACHE_NAME =', CACHE_NAME);
@@ -9981,7 +9986,7 @@ const CACHE_NAME = 'doodle-bash-v5.12';
       swRegistration = await navigator.serviceWorker.register(`/sw.js${versionParam}`);
       console.log('✅ Service Worker registered successfully');
       
-      // Attach listener BEFORE forcing update check
+      // CRITICAL: listener BEFORE update check
       swRegistration.addEventListener('updatefound', () => {
         const newWorker = swRegistration.installing;
         console.log('🔍 New service worker found (updatefound)');
@@ -9996,31 +10001,23 @@ const CACHE_NAME = 'doodle-bash-v5.12';
         });
       });
       
-      // Force immediate check for updates
       await swRegistration.update();
       console.log('🔄 Forced update check completed');
       
-      // Check for already-waiting worker (important on PWA reopen)
       if (swRegistration.waiting) {
         console.log('🔥 Found waiting Service Worker — showing update toast');
         showUpdateToast();
       }
-      
-      // Auto-reload when the new SW takes over (restored)
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        console.log('🔄 New Service Worker activated — reloading page');
-        window.location.reload();
-      });
-      
     } catch (err) {
       console.error('❌ SW registration failed:', err);
     }
   }
 
   function showUpdateToast() {
-    if (updateToastDismissedThisSession || updatePromptShownThisSession) return;
+    if (updateToastDismissedThisSession || updatePromptShownThisSession || isUpdating) return;
     
-    updatePromptShownThisSession = true;   // ← Lock it so we never show twice in same load
+    updatePromptShownThisSession = true;
+    isUpdating = true;                     // ← lock it during update
     console.log('🚨🚨🚨 showUpdateToast() WAS CALLED — update detected!');
     
     const shouldUpdate = confirm('🔄 Doodle Bash Update Available\n\nA new version is ready to install.\n\nUpdate now?');
@@ -10035,7 +10032,7 @@ const CACHE_NAME = 'doodle-bash-v5.12';
   function dismissUpdateToast() {
     updateToastDismissedThisSession = true;
     updatePromptShownThisSession = true;
-    // hideMenuPanel('update-prompt');   // uncomment later when you switch back to custom toast
+    isUpdating = false;
   }
 
   window.updateApp = function () {
@@ -10045,10 +10042,10 @@ const CACHE_NAME = 'doodle-bash-v5.12';
     } else if (navigator.serviceWorker?.controller) {
       navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
     }
-    // No extra timeout needed — controllerchange will reload
+    // DO NOT reload here — controllerchange will handle it cleanly
   };
 
-  // Start it (only once per page load)
+  // Start it
   window.addEventListener('load', registerServiceWorker);
 
 
