@@ -1,22 +1,18 @@
-// ====================== DOODLE BASH SERVICE WORKER ======================
-const CACHE_NAME = 'doodle-bash-v5.45';
+// ====================== DOODLE BASH SERVICE WORKER — DIAGNOSTIC ======================
+const CACHE_NAME = 'doodle-bash-v5.46';   // ← BUMP THIS EVERY TEST
 
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
   'manifest.json',
-
-  // Core libraries
   'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js',
   'https://docs.opencv.org/4.10.0/opencv.js',
-
-  // ML Model
   'models/doodle/model.json',
   'models/doodle/metadata.json',
   'models/doodle/weights.bin',
 ];
 
-// === Paste your full imagePaths array here (the one already in your HTML) ===
+// Paste your full imagePaths array here (same as before)
 const imagePaths = ['images/10pt.png', 'images/1pt.png', 'images/2pt.png', 'images/3pt.png', 'images/4pt.png',
   'images/5pt.png', 'images/6pt.png', 'images/7pt.png', 'images/audio.png', 'images/black1pt.png',
   'images/blackpointbubble.png', 'images/boat.png', 'images/butterfly.png', 'images/cat.png',
@@ -61,33 +57,56 @@ const imagePaths = ['images/10pt.png', 'images/1pt.png', 'images/2pt.png', 'imag
   'images/yellowfooter.png'];
 imagePaths.forEach(path => PRECACHE_ASSETS.push(path));
 
+console.log(`[SW] 🚀 Service Worker starting — version ${CACHE_NAME}`);
+
 self.addEventListener('install', event => {
+  console.log(`[SW] 📥 Install event for ${CACHE_NAME}`);
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      console.log(`🚀 Pre-caching ${CACHE_NAME}`);
+      console.log(`[SW] 📦 Pre-caching ${PRECACHE_ASSETS.length} assets...`);
       return cache.addAll(PRECACHE_ASSETS);
-    }).then(() => self.skipWaiting())
+    }).then(() => {
+      console.log(`[SW] ✅ Precache complete — skipping waiting`);
+      return self.skipWaiting();
+    })
   );
 });
 
 self.addEventListener('activate', event => {
+  console.log(`[SW] 🔥 Activate event — claiming clients`);
   event.waitUntil(
     Promise.all([
-      self.clients.claim(),                    // ← IMPORTANT: take control of all open tabs/installed apps
-      caches.keys().then(names => Promise.all(
-        names.map(name => name !== CACHE_NAME ? caches.delete(name) : null)
-      ))
+      self.clients.claim(),
+      caches.keys().then(names => {
+        console.log(`[SW] 🗑️ Found caches:`, names);
+        return Promise.all(
+          names.map(name => {
+            if (name !== CACHE_NAME) {
+              console.log(`[SW] 🗑️ Deleting old cache: ${name}`);
+              return caches.delete(name);
+            }
+          })
+        );
+      })
     ])
   );
-  console.log(`✅ Activated ${CACHE_NAME}`);
+  console.log(`[SW] ✅ Activated ${CACHE_NAME}`);
 });
 
 self.addEventListener('fetch', event => {
+  // Only log a few fetches to avoid spam
+  if (event.request.url.includes('sw.js') || Math.random() < 0.05) {
+    console.log(`[SW] 📡 Fetch: ${event.request.url}`);
+  }
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request))
   );
 });
 
 self.addEventListener('message', event => {
-  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+  console.log(`[SW] 📨 Message received:`, event.data);
+  if (event.data?.type === 'SKIP_WAITING') {
+    console.log(`[SW] ⏩ SKIP_WAITING requested — activating new version`);
+    self.skipWaiting();
+  }
 });
