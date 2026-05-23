@@ -1,23 +1,20 @@
-const CACHE_NAME = 'doodle-bash-v5.09';   // ← we bumped the version
+const CACHE_NAME = 'doodle-bash-v5.10';   // ← bump this every release
 
 const PRECACHE_ASSETS = [
-  '/', 
+  '/',
   '/index.html',
   'manifest.json',
-
-  // === ML MODEL (critical for scoring offline) ===
+  // === ML MODEL ===
   'models/doodle/model.json',
   'models/doodle/metadata.json',
-  'models/doodle/weights.bin',           // ← your single weights file
-
-  // === Pinned versions of TF.js and OpenCV (much more reliable offline) ===
+  'models/doodle/weights.bin',
+  // === Pinned TF.js + OpenCV (these often cause precache failures) ===
   'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js',
   'https://docs.opencv.org/4.10.0/opencv.js'
 ];
 
-// ====================== PASTE YOUR IMAGE LIST HERE ======================
-
-    const imagePaths = [
+// ====================== IMAGE LIST ======================
+const imagePaths = [
   'images/10pt.png', 'images/1pt.png', 'images/2pt.png', 'images/3pt.png', 'images/4pt.png',
   'images/5pt.png', 'images/6pt.png', 'images/7pt.png', 'images/audio.png', 'images/black1pt.png',
   'images/blackpointbubble.png', 'images/boat.png', 'images/butterfly.png', 'images/cat.png',
@@ -61,23 +58,42 @@ const PRECACHE_ASSETS = [
   'images/umbrella.png', 'images/varietybonus.png', 'images/varietybonusgrid.png', 'images/wireless.png',
   'images/yellowfooter.png'
 ];
-
-
 imagePaths.forEach(path => PRECACHE_ASSETS.push(path));
 
-// ====================== SERVICE WORKER CODE (do not change) ======================
+// ====================== SERVICE WORKER ======================
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      console.log('✅ Pre-caching everything for offline use');
-      return cache.addAll(PRECACHE_ASSETS);
+      console.log('✅ Starting precache for', CACHE_NAME);
+      return cache.addAll(PRECACHE_ASSETS)
+        .then(() => console.log('✅ Pre-caching completed successfully'))
+        .catch(err => {
+          console.error('❌ Precache failed! Some files could not be cached:', err);
+          // IMPORTANT: we still let the SW install so updates can continue
+        });
     })
   );
+  // NO skipWaiting() here — this is correct
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(self.clients.claim());
-  console.log('✅ Service Worker activated');
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      // Delete ALL old version caches (this clears the old game files)
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(name => {
+            if (name !== CACHE_NAME) {
+              console.log('🗑️ Deleting old cache:', name);
+              return caches.delete(name);
+            }
+          })
+        );
+      })
+    ])
+  );
+  console.log('✅ Service Worker activated — old caches cleaned');
 });
 
 self.addEventListener('fetch', event => {
@@ -97,6 +113,7 @@ self.addEventListener('fetch', event => {
 
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('🔄 SKIP_WAITING received');
     self.skipWaiting();
   }
 });
