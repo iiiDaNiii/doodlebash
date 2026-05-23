@@ -9956,76 +9956,68 @@
         saveGameState();
       }
     });
-
-<!-- ====================== AUTOMATIC PWA UPDATE SYSTEM ====================== -->
- let swRegistration = null;
+<!-- ====================== PWA UPDATE SYSTEM (clean & reliable) ====================== -->
+let swRegistration = null;
 
 async function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
 
   try {
-    const versionParam = `?v=${CACHE_NAME}`;
-    console.log('📡 Registering SW with version:', CACHE_NAME);
-    
-    swRegistration = await navigator.serviceWorker.register(`/sw.js${versionParam}`);
+    swRegistration = await navigator.serviceWorker.register('/sw.js');
     console.log('✅ Service Worker registered');
 
     // Check for updates immediately + every 45 seconds
-    await checkForUpdate();
+    checkForUpdate();
     setInterval(checkForUpdate, 45000);
 
-    // Listen for new service worker becoming available
     swRegistration.addEventListener('updatefound', () => {
       const newWorker = swRegistration.installing;
       if (newWorker) {
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed') {
-            showUpdateToast();
+            showUpdatePrompt();
           }
         });
       }
     });
-
   } catch (err) {
     console.error('❌ SW registration failed:', err);
   }
 }
 
 async function checkForUpdate() {
-  if (!swRegistration) return;
-  try {
-    await swRegistration.update();
-  } catch (e) {}
+  if (swRegistration) await swRegistration.update();
 }
 
-// Show a nice toast using your existing #toast element
-function showUpdateToast() {
-  const toast = document.getElementById('toast');
-  if (!toast) return;
+function showUpdatePrompt() {
+  // Only show prompt if user is NOT in the middle of a game
+  if (currentMode === 'game' && hasGameInProgress) {
+    console.log('⏳ Update available — waiting until game ends');
+    return;
+  }
 
-  toast.innerHTML = `
-    New version available!<br>
-    <button onclick="applyUpdate()" 
-            style="margin-top:8px; padding:6px 16px; font-size:4.5cqi; 
-                   background:#7f2a8f; color:white; border:none; 
-                   border-radius:9999px; font-family:'Covered By Your Grace',cursive;">
-      Update Now
-    </button>
-  `;
-  toast.style.background = '#4dbde5';
-  toast.style.color = '#000';
-  toast.style.whiteSpace = 'normal';
-  toast.style.padding = '12px 20px';
-  toast.style.textAlign = 'center';
-  toast.classList.add('show');
+  const prompt = document.getElementById('update-prompt');
+  if (!prompt) return;
 
-  // Auto-hide after 15 seconds if ignored
-  setTimeout(() => {
-    if (toast.classList.contains('show')) toast.classList.remove('show');
-  }, 15000);
+  // Wire your existing buttons (they already exist in the HTML)
+  document.getElementById('update-yes').onclick = () => {
+    playSound('selectbutton');
+    applyUpdate();
+  };
+
+  document.getElementById('update-no').onclick = () => {
+    playSound('selectbutton');
+    prompt.classList.remove('active');
+  };
+
+  document.getElementById('update-close-btn').onclick = () => {
+    playSound('selectbutton');
+    prompt.classList.remove('active');
+  };
+
+  prompt.classList.add('active');
 }
 
-// Called when user taps the Update button
 window.applyUpdate = function() {
   if (swRegistration && swRegistration.waiting) {
     swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
@@ -10034,14 +10026,13 @@ window.applyUpdate = function() {
   }
 };
 
-  // Automatically reload when the new version takes over
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    console.log('🔄 New version activated — reloading page');
-    window.location.reload();
-  });
+// Auto-reload when the new version takes over
+navigator.serviceWorker.addEventListener('controllerchange', () => {
+  window.location.reload();
+});
 
-  // Start it
-  window.addEventListener('load', registerServiceWorker);
+// Start the system
+window.addEventListener('load', registerServiceWorker);
 
 
 
