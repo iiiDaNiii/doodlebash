@@ -1,5 +1,5 @@
 // ====================== DOODLE BASH SERVICE WORKER ======================
-const CACHE_NAME = 'doodle-bash-v5.42';   // ← BUMP THIS EVERY UPDATE (e.g. v5.39 next time)
+const CACHE_NAME = 'doodle-bash-v5.43';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -16,7 +16,7 @@ const PRECACHE_ASSETS = [
   'models/doodle/weights.bin',
 ];
 
-// All your images (exactly the list from your HTML)
+// === Paste your full imagePaths array here (the one already in your HTML) ===
 const imagePaths = ['images/10pt.png', 'images/1pt.png', 'images/2pt.png', 'images/3pt.png', 'images/4pt.png',
   'images/5pt.png', 'images/6pt.png', 'images/7pt.png', 'images/audio.png', 'images/black1pt.png',
   'images/blackpointbubble.png', 'images/boat.png', 'images/butterfly.png', 'images/cat.png',
@@ -66,27 +66,17 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME).then(cache => {
       console.log(`🚀 Pre-caching ${CACHE_NAME}`);
       return cache.addAll(PRECACHE_ASSETS);
-    }).then(() => {
-      console.log('✅ Precache done — skipping waiting');
-      return self.skipWaiting();
-    })
+    }).then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
     Promise.all([
-      self.clients.claim(),
-      caches.keys().then(names => {
-        return Promise.all(
-          names.map(name => {
-            if (name !== CACHE_NAME) {
-              console.log(`🗑️ Deleting old cache: ${name}`);
-              return caches.delete(name);
-            }
-          })
-        );
-      })
+      self.clients.claim(),                    // ← IMPORTANT: take control of all open tabs/installed apps
+      caches.keys().then(names => Promise.all(
+        names.map(name => name !== CACHE_NAME ? caches.delete(name) : null)
+      ))
     ])
   );
   console.log(`✅ Activated ${CACHE_NAME}`);
@@ -94,21 +84,10 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      return cached || fetch(event.request).then(response => {
-        if (response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      });
-    })
+    caches.match(event.request).then(cached => cached || fetch(event.request))
   );
 });
 
-// Allow client to force activation
 self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
