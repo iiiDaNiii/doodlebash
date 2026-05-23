@@ -1792,7 +1792,7 @@
     /* Getting Started - friendly learning button */
     #getting-started-btn {
       background: #5fbae9;
-      background: #000000;
+      background: #E6F8B2;
       color: #ffffff;
     }
 
@@ -3553,7 +3553,7 @@
   </div>
   <script>
 
-const CACHE_NAME = 'doodle-bash-v5.09';
+const CACHE_NAME = 'doodle-bash-v5.10';
 
     let deck = {
       circle: 2,
@@ -9998,12 +9998,22 @@ const CACHE_NAME = 'doodle-bash-v5.09';
         console.log('🔍 New service worker found (updatefound)');
 
         newWorker.addEventListener('statechange', () => {
-          console.log(`   → New SW state: ${newWorker.state}`);
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            console.log('✅ New version is ready — showing toast');
-            showUpdateToast();
-          }
-        });
+  console.log(` → New SW state: ${newWorker.state}`);
+
+  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+    console.log('✅ New version ready (installed) — showing toast');
+    showUpdateToast();
+  }
+
+  if (newWorker.state === 'waiting') {
+    console.log('🔥 New SW is waiting — showing toast');
+    showUpdateToast();
+  }
+
+  if (newWorker.state === 'redundant') {
+    console.log('⚠️ New SW went redundant (install probably failed)');
+  }
+});
       });
 
       // Auto-reload when the new SW takes over
