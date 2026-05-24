@@ -120,7 +120,7 @@
     @media (max-aspect-ratio: 9/16) {
       #game-container {
         width: 100vw;
-        height: 100vh;
+        height: 100dvh;
       }
     }
 
@@ -1792,7 +1792,6 @@
     /* Getting Started - friendly learning button */
     #getting-started-btn {
       background: #5fbae9;
-      background: #000000;
       color: #ffffff;
     }
 
@@ -9968,7 +9967,7 @@ async function registerServiceWorker() {
 
   try {
     // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.49.js`;   // ← must match the filename you just created
+    const swFile = `/sw-v5.50.js`;   // ← must match the filename you just created
     console.log(`[PWA] Registering ${swFile}`);
 
     swRegistration = await navigator.serviceWorker.register(swFile);
