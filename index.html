@@ -120,7 +120,7 @@
     @media (max-aspect-ratio: 9/16) {
       #game-container {
         width: 100vw;
-        height: calc(100vw * 16 / 9);
+        height: 100vh;
       }
     }
 
@@ -182,7 +182,7 @@
       background-size: auto 75%;
       background-position: center;
       background-repeat: no-repeat;
-      z-index: 20;
+      z-index: 21;
       transition: transform 0.35s ease-out;
       transform: translateY(100dvh) rotate(0deg);
       cursor: pointer;
@@ -9967,7 +9967,7 @@ async function registerServiceWorker() {
 
   try {
     // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.47.js`;   // ← must match the filename you just created
+    const swFile = `/sw-v5.48.js`;   // ← must match the filename you just created
     console.log(`[PWA] Registering ${swFile}`);
 
     swRegistration = await navigator.serviceWorker.register(swFile);
