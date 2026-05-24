@@ -1,5 +1,5 @@
 // ====================== DOODLE BASH SERVICE WORKER — DIAGNOSTIC ======================
-const CACHE_NAME = 'doodle-bash-v5.46';   // ← BUMP THIS EVERY TEST
+const CACHE_NAME = 'doodle-bash-v5.47';   // ← BUMP THIS EVERY TEST
 
 const PRECACHE_ASSETS = [
   '/',
@@ -11,6 +11,27 @@ const PRECACHE_ASSETS = [
   'models/doodle/metadata.json',
   'models/doodle/weights.bin',
 ];
+
+// === ALL SOUND FILES (33 total) ===
+const soundPaths = [
+  'sounds/clack1.mp3', 'sounds/clack2.mp3', 'sounds/clack3.mp3',
+  'sounds/learn.mp3',
+  'sounds/remove.mp3',
+  'sounds/snap.mp3',
+  'sounds/score.mp3',
+  'sounds/win.mp3',
+  'sounds/modalslide1.mp3', 'sounds/modalslide2.mp3', 'sounds/modalslide3.mp3', 'sounds/modalslide4.mp3',
+  'sounds/button1.mp3', 'sounds/button2.mp3', 'sounds/button3.mp3',
+  'sounds/circle1.mp3', 'sounds/circle2.mp3', 'sounds/circle3.mp3', 'sounds/circle4.mp3',
+  'sounds/button9.mp3', 'sounds/button10.mp3', 'sounds/button11.mp3',
+  'sounds/01raindisabled.mp3',           // BGM
+  'sounds/flap1.mp3', 'sounds/flap2.mp3', 'sounds/flap3.mp3',
+  'sounds/flap4.mp3', 'sounds/flap5.mp3', 'sounds/flap6.mp3',
+  'sounds/pointbubble1.mp3', 'sounds/pointbubble2.mp3',
+  'sounds/pointbubble3.mp3', 'sounds/pointbubble4.mp3'
+];
+
+soundPaths.forEach(path => PRECACHE_ASSETS.push(path));
 
 // Paste your full imagePaths array here (same as before)
 const imagePaths = ['images/10pt.png', 'images/1pt.png', 'images/2pt.png', 'images/3pt.png', 'images/4pt.png',
