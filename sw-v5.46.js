@@ -1,12 +1,12 @@
 // ====================== DOODLE BASH SERVICE WORKER — DIAGNOSTIC ======================
-const CACHE_NAME = 'doodle-bash-v5.45';   // ← BUMP THIS EVERY TEST
+const CACHE_NAME = 'doodle-bash-v5.46';   // ← BUMP THIS EVERY TEST
 
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
   'manifest.json',
+  'opencv.js',
   'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js',
-  'https://docs.opencv.org/4.10.0/opencv.js',
   'models/doodle/model.json',
   'models/doodle/metadata.json',
   'models/doodle/weights.bin',
