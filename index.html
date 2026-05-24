@@ -182,7 +182,7 @@
       background-size: auto 75%;
       background-position: center;
       background-repeat: no-repeat;
-      z-index: 21;
+      z-index: 20;
       transition: transform 0.35s ease-out;
       transform: translateY(100dvh) rotate(0deg);
       cursor: pointer;
@@ -9967,7 +9967,7 @@ async function registerServiceWorker() {
 
   try {
     // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.50.js`;   // ← must match the filename you just created
+    const swFile = `/sw-v5.51.js`;   // ← must match the filename you just created
     console.log(`[PWA] Registering ${swFile}`);
 
     swRegistration = await navigator.serviceWorker.register(swFile);
