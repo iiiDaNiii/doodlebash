@@ -9967,7 +9967,7 @@ async function registerServiceWorker() {
 
   try {
     // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.44.js`;   // ← must match the filename you just created
+    const swFile = `/sw-v5.45.js`;   // ← must match the filename you just created
     console.log(`[PWA] Registering ${swFile}`);
 
     swRegistration = await navigator.serviceWorker.register(swFile);
@@ -10033,26 +10033,8 @@ navigator.serviceWorker.addEventListener('controllerchange', () => {
   window.location.reload();
 });
 
-// Temporary Force Update button for testing
-function addForceUpdateButton() {
-  const menu = document.getElementById('main-menu');
-  if (menu) {
-    const btn = document.createElement('button');
-    btn.className = 'menu-btn';
-    btn.textContent = '🔄 Force Update Check';
-    btn.style.background = '#7f2a8f';
-    btn.style.color = 'white';
-    btn.onclick = () => {
-      console.log('[PWA] Manual force update triggered');
-      checkForUpdate();
-    };
-    menu.appendChild(btn);
-  }
-}
-
 window.addEventListener('load', () => {
   registerServiceWorker();
-  addForceUpdateButton();   // temporary test button
 });
 
 
