@@ -173,7 +173,7 @@
       grid-row: 4;
     }
 
-       #doodle-l1,
+    #doodle-l1,
 #doodle-l2,
 #doodle-l3,
 #doodle-r1,
@@ -6494,12 +6494,16 @@
         });
 
         // === INSIDE the incoming doodle setTimeout (fade IN after doodles settle) ===
-        setTimeout(() => {
-          document.querySelectorAll('.doodle-checkbox').forEach(cb => {
-            cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
-            cb.style.opacity = '1';
-          });
-        }, 720);   // 720ms gives a nice, intentional pause after the doodles land
+setTimeout(() => {
+  document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+    cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
+    cb.style.opacity = '1';
+  });
+
+  // ←←← THIS IS THE FIX
+  saveGameState();
+  console.log('%c💾 Game state saved AFTER full shuffle animation (cold-start resume now works)', 'color:#0f0; font-weight:bold');
+}, 720);
 
       }, 350);
 
@@ -6508,7 +6512,6 @@
         tutorialStep = 3;
         animateTutorialOut(() => setTimeout(() => showTutorialStep(3), 1250));
       }
-      saveGameState();
       if (tutorialStep === 19) {
         animateTutorialOut(() => setTimeout(() => showTutorialStep(20), 1400));
       }
@@ -9988,7 +9991,7 @@ async function registerServiceWorker() {
 
   try {
     // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.52.js`;   // ← must match the filename you just created
+    const swFile = `/sw-v5.53.js`;   // ← must match the filename you just created
     console.log(`[PWA] Registering ${swFile}`);
 
     swRegistration = await navigator.serviceWorker.register(swFile);
