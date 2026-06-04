@@ -120,7 +120,7 @@
     @media (max-aspect-ratio: 9/16) {
       #game-container {
         width: 100vw;
-        height: 100dvh;
+        height: calc(100vw * 16 / 9);
       }
     }
 
@@ -174,40 +174,19 @@
     }
 
     #doodle-l1,
-#doodle-l2,
-#doodle-l3,
-#doodle-r1,
-#doodle-r2,
-#doodle-r3 {
-  background-size: auto 75%;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: 25;                    /* visually on top */
-  pointer-events: none;           /* lets clicks pass through to checkbox */
-  transition: transform 0.35s ease-out;
-  transform: translateY(100dvh) rotate(0deg);
-  cursor: pointer;
-  
-  /* NEW: Create a clickable overlay exactly matching the visible doodle image */
-  position: relative;
-}
-
-#doodle-l1::after,
-#doodle-l2::after,
-#doodle-l3::after,
-#doodle-r1::after,
-#doodle-r2::after,
-#doodle-r3::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 50%;                     /* matches background-size */
-  height: 75%;
-  z-index: 10;
-  pointer-events: auto;           /* only this area is clickable for Guide */
-}
+    #doodle-l2,
+    #doodle-l3,
+    #doodle-r1,
+    #doodle-r2,
+    #doodle-r3 {
+      background-size: auto 75%;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: 20;
+      transition: transform 0.35s ease-out;
+      transform: translateY(100dvh) rotate(0deg);
+      cursor: pointer;
+    }
 
     .doodle-checkbox {
       position: absolute;
@@ -954,7 +933,7 @@
       font-family: 'Fira Sans', sans-serif;
       font-size: 4.5cqi;
       line-height: 1.55;
-      z-index: 250;
+      z-index: 99999!important;
       opacity: 0;
       visibility: hidden;
       transform: translateY(2.2cqi);
@@ -1770,7 +1749,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding-top: 24cqi;
+      padding-top: 16cqi;
       gap: 4cqi;
       z-index: 50;
       container-type: inline-size;
@@ -1791,7 +1770,7 @@
     .menu-btn {
       font-family: 'Covered By Your Grace', cursive;
       font-size: 7cqi;
-      padding: 3cqi 8cqi;
+      padding: 2cqi 6cqi;
       border-radius: 9999px;
       background: #4dbde5;
       color: white;
@@ -1827,6 +1806,11 @@
       background: #7f2a8f;
       color: #ffffff;
     }
+
+    #more-games-btn {
+  background: #eaeeef;
+  color: #000000;
+}
 
     /* ==================== MENU BUTTON HOVER — ROCKING ANIMATION ==================== */
     .menu-btn {
@@ -2751,6 +2735,56 @@
         container-type: inline-size;
       }
 
+      /* ==================== MORE GAMES SUB-MENU ==================== */
+#more-games-sub-menu {
+  position: absolute;
+  inset: 4cqh;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(1cqi);
+  border-radius: 1.5cqh;
+  display: none;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 12cqi;
+  padding-bottom: 6cqi;
+  gap: 3cqi;
+  z-index: 60;
+  container-type: inline-size;
+  overflow-y: auto;
+}
+
+/* Preview image */
+#more-games-preview {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 2cqi;
+  margin-bottom: 2cqi;
+  padding: 0 6cqi;
+  box-sizing: border-box;
+}
+
+/* Description text */
+#more-games-text {
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 5cqi;
+  line-height: 1.55;
+  color: #222;
+  text-align: left;
+  width: 88cqi;
+  padding: 0 2cqi;
+  margin-bottom: 4cqi;
+}
+
+/* Check it out button - centered */
+#more-games-check-btn {
+  background: #4dbde5;
+  color: white;
+  width: 65cqi;
+  margin-top: 3cqi;
+}
+
       /* FORCE the campaign divider to be visible — overrides everything */
       #campaign-menu .group-divider {
         border-top: 1px solid #000 !important;
@@ -3393,6 +3427,19 @@
       <button id="campaign-start-doodle-btn" class="menu-btn">Let's Doodle!</button>
     </div>
 
+<!-- MORE GAMES SUB-MENU -->
+<div id="more-games-sub-menu" class="menu-panel">
+  <img id="more-games-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
+
+  <img src="images/gamespreview.png" id="more-games-preview">
+
+  <div id="more-games-text">
+    Find more print-and-play games and get help with your next design project at clearlysharp.com
+  </div>
+
+  <button class="menu-btn" id="more-games-check-btn">Check it out</button>
+</div>
+
     <!-- LEARN MODAL -->
     <div id="learn-modal" class="modal learn">
       <div class="modal-top learn">
@@ -3758,6 +3805,12 @@
     let sfxVolume = 0.6; // Default SFX volume (matches most in volumes{})
     let musicVolume = 0.3; // Default BGM volume
 
+    // ====================== DYNAMIC BGM PLAYLIST ======================
+let bgmPlaylist = [];
+let currentBgmIndex = 0;
+let currentBgmAudio = null;
+let bgmPlaylistStarted = false;
+
     const soundFiles = {
       shuffle: ['sounds/clack1.mp3', 'sounds/clack2.mp3', 'sounds/clack3.mp3'],
       learn: 'sounds/learn.mp3',
@@ -3769,9 +3822,15 @@
       button: ['sounds/button1.mp3', 'sounds/button2.mp3', 'sounds/button3.mp3'],
       circle: ['sounds/circle1.mp3', 'sounds/circle2.mp3', 'sounds/circle3.mp3', 'sounds/circle4.mp3'],
       selectbutton: ['sounds/button9.mp3', 'sounds/button10.mp3', 'sounds/button11.mp3'],
-      bgm: 'sounds/01raindisabled.mp3',
       flap: ['sounds/flap1.mp3', 'sounds/flap2.mp3', 'sounds/flap3.mp3', 'sounds/flap4.mp3', 'sounds/flap5.mp3', 'sounds/flap6.mp3'],
-      pointbubble: ['sounds/pointbubble1.mp3', 'sounds/pointbubble2.mp3', 'sounds/pointbubble3.mp3', 'sounds/pointbubble4.mp3']
+      pointbubble: ['sounds/pointbubble1.mp3', 'sounds/pointbubble2.mp3', 'sounds/pointbubble3.mp3', 'sounds/pointbubble4.mp3'],
+      // === NEW DYNAMIC BGM PLAYLIST ===
+  bgm: [
+    'sounds/01raindisabled.mp3',
+    'sounds/02classdisabled.mp3',
+    'sounds/03towndisabled.mp3',
+    'sounds/04cafedisabled.mp3'
+  ]
     };
 
     // NEW: Menu State Management
@@ -3779,6 +3838,7 @@
     const defaultDeck = { circle: 2, square: 2, triangle: 2, dot: 2, line: 2 }; // Your starting deck
     let currentMode = 'menu'; // 'menu', 'arcade-sub', 'game'
     let currentMission = null; // Tracks selected mission (1-5 or null for arcade/full)
+    let suppressGuideButtonInMissionDetail = false;
 
 
 
@@ -5115,7 +5175,8 @@
         { text: 'Resume', id: 'resume-btn', disabled: !(hasGameInProgress || tutorialInProgress) },
         { text: 'Getting Started', id: 'getting-started-btn', disabled: false },
         { text: 'Arcade Mode', id: 'arcade-btn', disabled: false },
-        { text: 'Campaign', id: 'campaign-btn', disabled: false }   // ← now always enabled
+        { text: 'Campaign', id: 'campaign-btn', disabled: false },   // ← now always enabled
+        { text: 'More Games', id: 'more-games-btn', disabled: false }
       ];
 
       buttons.forEach(btnInfo => {
@@ -5127,6 +5188,7 @@
         btn.textContent = btnInfo.text;
         if (btnInfo.disabled) btn.classList.add('disabled');
         menu.appendChild(btn);
+
       });
 
       // Add logo dynamically below buttons
@@ -5146,6 +5208,31 @@
       }
       document.getElementById('getting-started-btn').addEventListener('click', showGettingStartedSubMenu);
       document.getElementById('campaign-btn').addEventListener('click', showCampaignMenu); // ← normal click now
+
+      // More Games button
+const moreGamesBtn = document.getElementById('more-games-btn');
+if (moreGamesBtn) {
+  moreGamesBtn.addEventListener('click', showMoreGamesSubMenu);
+}
+
+// Close button for More Games submenu
+const moreGamesClose = document.getElementById('more-games-close-btn');
+if (moreGamesClose) {
+  moreGamesClose.addEventListener('click', () => {
+    playSound('selectbutton');
+    hideMenuPanel('more-games-sub-menu');
+    showMainMenu();
+  });
+}
+
+// "Check it out" button
+const checkItOutBtn = document.getElementById('more-games-check-btn');
+if (checkItOutBtn) {
+  checkItOutBtn.addEventListener('click', () => {
+    playSound('selectbutton');
+    window.open('https://www.clearlysharp.com/games', '_blank');
+  });
+}
     }
 
     let campaignTapCount = 0;
@@ -5320,6 +5407,13 @@
       showMenuPanel('campaign-menu', { silent: true });
       currentMode = 'campaign-menu';
     }
+
+function showMoreGamesSubMenu() {
+  playSound('button');
+  hideMenuPanel('main-menu');
+  showMenuPanel('more-games-sub-menu', { silent: true });
+  currentMode = 'more-games-sub';
+}
 
     function handleCampaignCodeSubmit() {
       playSound('selectbutton');
@@ -5505,6 +5599,7 @@
     function selectMission(missionNum) {
       playSound('selectbutton');
       currentMission = missionNum;
+      suppressGuideButtonInMissionDetail = true;
       // Slide out the getting-started sub-menu (replaces instant display:none)
       hideMenuPanel('getting-started-sub-menu');
       const detail = document.getElementById('mission-detail');
@@ -5539,7 +5634,7 @@
           playSound('selectbutton');
           e.stopPropagation(); // Prevent bubbling to global hide
           const doodle = img.dataset.doodle;
-          showTooltipForDoodle(doodle, img);
+          showTooltipForDoodle(doodle, img, false);
         });
       });
       setTimeout(() => {
@@ -5589,6 +5684,7 @@
     }
 
     function startGame(isResume = false) {
+      suppressGuideButtonInMissionDetail = false;
       if (menuAdjustedTimeout) clearTimeout(menuAdjustedTimeout);
 
       // ← ONLY reset on a fresh new game. On Resume we keep the current doodles.
@@ -5828,76 +5924,146 @@
     // In remove (after deck[doodle]--)
     hasGameInProgress = Object.entries(deck).some(([k, v]) => v !== defaultDeck[k]); // Check if differs from default
 
-    /* Replace the existing function preloadAudio() { ... } in <script> with this full version (adds pointbubble: 0.5 volume) */
-    function preloadAudio() {
-      if (Object.keys(audio).length > 0) return; // already preloaded
-      console.log('🎵 Preloading all sound effects...');
-      const volumes = {
-        shuffle: 0.6,
-        learn: 0.6,
-        remove: 0.6,
-        snap: 0.6,
-        score: 0.6,
-        win: 0.6,
-        modalslide: 0.2,
-        selectbutton: 0.3,
-        bgm: 0.3,
-        flap: 0.4,
-        pointbubble: 0.5  // Balanced volume for point bubbles (adjust as needed)
-      };
-      Object.entries(soundFiles).forEach(([name, files]) => {
-        const vol = volumes[name] || 0.6; // Fallback to 0.6 if not specified
-        if (Array.isArray(files)) {
-          soundsIndex[name] = 0;
-          files.forEach((src, i) => {
-            const soundKey = `${name}_${i}`;
-            audio[soundKey] = new Audio(src);
-            audio[soundKey].preload = 'auto';
-            audio[soundKey].volume = vol; // ← Use custom volume
-            audio[soundKey].baseVolume = vol;
+    
+function preloadAudio() {
+  if (Object.keys(audio).length > 0) return;
 
-            // Log load errors
-            audio[soundKey].onerror = () => {
-              console.error(`❌ Failed to load ${src}: ${audio[soundKey].error.message}`);
-            };
-            audio[soundKey].onloadeddata = () => {
-              console.log(` Loaded: ${soundKey} (${src}) at volume ${vol}`);
-            };
-          });
-        } else {
-          audio[name] = new Audio(files);
-          audio[name].preload = 'auto';
-          audio[name].volume = vol; // ← Use custom volume
-          // Log load errors for single files too
-          audio[name].baseVolume = vol;
-          audio[name].onerror = () => {
-            console.error(`❌ Failed to load ${files}: ${audio[name].error.message}`);
-          };
-          audio[name].onloadeddata = () => {
-            console.log(` Loaded: ${name} (${files}) at volume ${vol}`);
-            if (name === 'bgm') {
-              audio.bgm.loop = true; // ← Enable seamless looping
-            }
-          };
-        }
+  console.log('🎵 Preloading all sound effects + BGM playlist...');
+
+  const volumes = {
+    shuffle: 0.6,
+    learn: 0.6,
+    remove: 0.6,
+    snap: 0.6,
+    score: 0.6,
+    win: 0.6,
+    modalslide: 0.2,
+    selectbutton: 0.3,
+    flap: 0.4,
+    pointbubble: 0.5,
+    bgm: 0.3
+  };
+
+  Object.entries(soundFiles).forEach(([name, files]) => {
+    const vol = volumes[name] || 0.6;
+
+    if (name === 'bgm' && Array.isArray(files)) {
+      // Special handling for BGM playlist
+      bgmPlaylist = files;
+      files.forEach((src, i) => {
+        const soundKey = `bgm_${i}`;
+        audio[soundKey] = new Audio(src);
+        audio[soundKey].preload = 'auto';
+        audio[soundKey].volume = vol;
+        audio[soundKey].baseVolume = vol;
+        audio[soundKey].loop = false; // We control looping manually
+
+        audio[soundKey].onerror = () => {
+          console.error(`❌ Failed to load BGM track: ${src}`);
+        };
+        audio[soundKey].onloadeddata = () => {
+          console.log(` Loaded BGM track: ${soundKey} (${src})`);
+        };
       });
-      console.log('✅ All sounds preloaded! (Check for errors above)');
-    }
+    } 
+    else if (Array.isArray(files)) {
+      soundsIndex[name] = 0;
+      files.forEach((src, i) => {
+        const soundKey = `${name}_${i}`;
+        audio[soundKey] = new Audio(src);
+        audio[soundKey].preload = 'auto';
+        audio[soundKey].volume = vol;
+        audio[soundKey].baseVolume = vol;
 
-    function updateSFXVolume(newVol) {
-      sfxVolume = newVol;
-      Object.keys(audio).forEach(key => {
-        if (key !== 'bgm' && audio[key].baseVolume !== undefined) {
-          audio[key].volume = audio[key].baseVolume * newVol;
-        }
+        audio[soundKey].onerror = () => console.error(`❌ Failed to load ${src}`);
       });
+    } 
+    else {
+      audio[name] = new Audio(files);
+      audio[name].preload = 'auto';
+      audio[name].volume = vol;
+      audio[name].baseVolume = vol;
     }
+  });
 
-    // NEW function: To update BGM volume
-    function updateMusicVolume(newVol) {
-      musicVolume = newVol;
-      if (audio.bgm) audio.bgm.volume = musicVolume;
+  console.log('✅ All sounds + BGM playlist preloaded!');
+}
+
+// ====================== BGM PLAYLIST CONTROLLER ======================
+function startBgmPlaylist() {
+  if (bgmPlaylistStarted || bgmPlaylist.length === 0) return;
+
+  // Pick a random starting song
+  currentBgmIndex = Math.floor(Math.random() * bgmPlaylist.length);
+  console.log(`🎵 Starting BGM playlist at random track: ${currentBgmIndex + 1}`);
+
+  playCurrentBgmTrack();
+  bgmPlaylistStarted = true;
+}
+
+function playCurrentBgmTrack() {
+  // Stop previous track if any
+  if (currentBgmAudio) {
+    currentBgmAudio.pause();
+    currentBgmAudio.onended = null;
+  }
+
+  const key = `bgm_${currentBgmIndex}`;
+  currentBgmAudio = audio[key];
+
+  if (!currentBgmAudio) {
+    console.warn("BGM track not found:", key);
+    return;
+  }
+
+  currentBgmAudio.currentTime = 0;
+  currentBgmAudio.volume = currentBgmAudio.baseVolume * musicVolume;
+
+  currentBgmAudio.play().then(() => {
+    console.log(`▶️ Now playing: Track ${currentBgmIndex + 1}`);
+  }).catch(e => {
+    console.warn("BGM play blocked:", e);
+  });
+
+  // When this song ends, go to the next one in sequence
+  currentBgmAudio.onended = () => {
+    currentBgmIndex = (currentBgmIndex + 1) % bgmPlaylist.length;
+    playCurrentBgmTrack();
+  };
+}
+
+function updateSFXVolume(newVol) {
+  sfxVolume = newVol;
+
+  // Update all SFX
+  Object.keys(audio).forEach(key => {
+    if (key !== 'bgm' && !key.startsWith('bgm_') && audio[key].baseVolume !== undefined) {
+      audio[key].volume = audio[key].baseVolume * sfxVolume;
     }
+  });
+
+  saveAudioSettings();   // ← NEW: persist the change
+}
+
+function updateMusicVolume(newVol) {
+  musicVolume = newVol;
+
+  // Update currently playing BGM
+  if (currentBgmAudio) {
+    currentBgmAudio.volume = currentBgmAudio.baseVolume * musicVolume;
+  }
+
+  // Update all BGM tracks
+  for (let i = 0; i < bgmPlaylist.length; i++) {
+    const track = audio[`bgm_${i}`];
+    if (track) {
+      track.volume = track.baseVolume * musicVolume;
+    }
+  }
+
+  saveAudioSettings();   // ← NEW: persist the change
+}
+
 
     function playSound(name) {
       const files = soundFiles[name];
@@ -5943,14 +6109,18 @@
       });
       // Then continue with if (filteredMerges.length === 0 && filterDoodle) { ... }
       if (filteredMerges.length === 0 && filterDoodle) {
-        const empty = document.createElement('div');
-        empty.style.padding = '20cqi';
-        empty.style.textAlign = 'center';
-        empty.style.color = '#666';
-        empty.style.fontSize = '5cqi';
-        empty.textContent = `No recipes found for "${filterDoodle}"`;
-        content.appendChild(empty);
-      } else {
+  const empty = document.createElement('div');
+  empty.style.padding = '20cqi';
+  empty.style.textAlign = 'center';
+  empty.style.color = '#666';
+  empty.style.fontSize = '5cqi';
+  empty.style.fontFamily = "'Fira Sans', sans-serif";
+  empty.innerHTML = `
+  The <img src="images/${filterDoodle}.png" class="inline-doodle" style="vertical-align: middle; height: 1.15em; width: auto;"> 
+  doodle has not been unlocked yet.
+`;
+  content.appendChild(empty);
+} else {
         if (!filterDoodle) {
           // Full guide: Custom order by first input
           const guideOrder = ["circle", "square", "triangle", "line", "dot", "lens", "halfcircle", "drop", "teeth", "cylinder", "cube", "pyramid"];
@@ -6374,6 +6544,7 @@
       void detail.offsetHeight; // Reflow to lock current transform
       hideMenuPanel('mission-detail');
       showGettingStartedSubMenu(); // Immediate call—overlaps the slide-out for smooth transition
+      suppressGuideButtonInMissionDetail = false;
     });
 
     document.getElementById('abandon-close-btn').addEventListener('click', () => {
@@ -6494,16 +6665,12 @@
         });
 
         // === INSIDE the incoming doodle setTimeout (fade IN after doodles settle) ===
-setTimeout(() => {
-  document.querySelectorAll('.doodle-checkbox').forEach(cb => {
-    cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
-    cb.style.opacity = '1';
-  });
-
-  // ←←← THIS IS THE FIX
-  saveGameState();
-  console.log('%c💾 Game state saved AFTER full shuffle animation (cold-start resume now works)', 'color:#0f0; font-weight:bold');
-}, 720);
+        setTimeout(() => {
+          document.querySelectorAll('.doodle-checkbox').forEach(cb => {
+            cb.style.transition = 'opacity 480ms cubic-bezier(0.25, 0.1, 0.25, 1)';
+            cb.style.opacity = '1';
+          });
+        }, 720);   // 720ms gives a nice, intentional pause after the doodles land
 
       }, 350);
 
@@ -6512,6 +6679,7 @@ setTimeout(() => {
         tutorialStep = 3;
         animateTutorialOut(() => setTimeout(() => showTutorialStep(3), 1250));
       }
+      saveGameState();
       if (tutorialStep === 19) {
         animateTutorialOut(() => setTimeout(() => showTutorialStep(20), 1400));
       }
@@ -7969,14 +8137,37 @@ setTimeout(() => {
       latestDetectedCorners = null;
 
       // 4. CRITICAL: Clear ALL dynamic results content (this was the main cause of second-scan crash)
-      const tally = document.getElementById('score-tally');
-      if (tally) {
-        tally.style.display = 'none';
-        tally.innerHTML = '';
-      }
+      // === TALLY + NUMBERLINE RESET (prevents numberline from being destroyed on 2nd scoring) ===
+const tally = document.getElementById('score-tally');
+const scoreLine = document.getElementById('score-line');
 
-      const scoreLine = document.getElementById('score-line');
-      if (scoreLine) scoreLine.style.display = 'none';
+// Rescue the numberline BEFORE clearing the tally
+if (scoreLine && tally && tally.contains(scoreLine)) {
+  const scoreContent = document.getElementById('score-content');
+  if (scoreContent) scoreContent.appendChild(scoreLine);
+}
+
+if (tally) {
+  tally.style.display = 'none';
+  tally.innerHTML = '';
+}
+
+if (scoreLine) {
+  scoreLine.style.display = 'none';
+
+  // Reset numberline animation state
+  const squiggle = document.getElementById('score-squiggle');
+  const marker = document.getElementById('score-marker');
+  const numberDivs = scoreLine.querySelectorAll('.score-numbers > div');
+
+  if (squiggle) squiggle.style.clipPath = 'inset(0 100% 0 0)';
+  if (marker) {
+    marker.style.transition = 'none';
+    marker.style.left = '0%';
+    marker.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+  }
+  numberDivs.forEach(div => div.classList.remove('lit'));
+}
 
       const review = document.getElementById('score-review-container');
       if (review) {
@@ -8030,6 +8221,8 @@ setTimeout(() => {
       if (tweakEl) tweakEl.style.display = 'none';
       console.log('%c✅ Score modal is now completely clean', 'color:lime');
     }
+    
+    
     function resetShuffleZone() {
       const doodleIds = ['doodle-l1', 'doodle-l2', 'doodle-l3', 'doodle-r1', 'doodle-r2', 'doodle-r3'];
       doodleIds.forEach(id => {
@@ -8056,6 +8249,7 @@ setTimeout(() => {
 
     // ====================== PERSISTENT SAVE / LOAD ======================
     const SAVE_KEY = 'doodleBashSaveState';
+    const AUDIO_SETTINGS_KEY = 'doodleBashAudioSettings';
 
     function saveGameState() {
       const state = {
@@ -8161,6 +8355,37 @@ setTimeout(() => {
         return false;
       }
     }
+
+// ====================== AUDIO SETTINGS PERSISTENCE ======================
+function saveAudioSettings() {
+  const settings = {
+    sfxVolume: sfxVolume,
+    musicVolume: musicVolume
+  };
+  localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function loadAudioSettings() {
+  const saved = localStorage.getItem(AUDIO_SETTINGS_KEY);
+  if (!saved) return false;
+
+  try {
+    const settings = JSON.parse(saved);
+    
+    if (settings.sfxVolume !== undefined) {
+      sfxVolume = settings.sfxVolume;
+    }
+    if (settings.musicVolume !== undefined) {
+      musicVolume = settings.musicVolume;
+    }
+
+    console.log('🔊 Audio settings loaded:', settings);
+    return true;
+  } catch (e) {
+    console.error('Failed to load audio settings:', e);
+    return false;
+  }
+}
 
     function restoreCurrentVisualState() {
       const saved = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
@@ -9520,92 +9745,95 @@ setTimeout(() => {
     // ====================== SMART TOOLTIP ON SELECT ======================
 
     function showTooltipForDoodle(doodle, element) {
-      const tooltip = document.getElementById('tooltip');
-      const desc = document.getElementById('tooltip-desc');
+  const tooltip = document.getElementById('tooltip');
+  const desc = document.getElementById('tooltip-desc');
 
-      if (!doodleDescriptions[doodle]) return;
+  if (!doodleDescriptions[doodle]) return;
 
-      desc.innerHTML = renderDescription(getDoodleDescription(doodle));
+  desc.innerHTML = renderDescription(getDoodleDescription(doodle));
 
-      // Make inline doodle images clickable
-      const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
-      inlineDoodles.forEach(img => {
-        img.addEventListener('click', (e) => {
-          playSound('selectbutton');
-          e.stopImmediatePropagation();
-          const targetDoodle = img.dataset.doodle;
-          handleInlineDoodleClick(targetDoodle);
-        });
-      });
+  // Make inline doodle images clickable
+  const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
+  inlineDoodles.forEach(img => {
+    img.addEventListener('click', (e) => {
+      playSound('selectbutton');
+      e.stopImmediatePropagation();
+      const targetDoodle = img.dataset.doodle;
+      handleInlineDoodleClick(targetDoodle);
+    });
+  });
 
-      const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
-      if (oldBtn) oldBtn.remove();
+  const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
+  if (oldBtn) oldBtn.remove();
 
-      // === CRITICAL FIX: reset any styles left by the mission-detail tooltip ===
-      tooltip.style.width = '75cqi';
-      tooltip.style.maxWidth = '75cqi';
-      tooltip.style.bottom = 'auto';
-      tooltip.style.top = 'auto';
-      tooltip.style.zIndex = '250';
-      tooltip.style.transform = '';
+  // === CRITICAL FIX: reset any styles left by the mission-detail tooltip ===
+  tooltip.style.width = '75cqi';
+  tooltip.style.maxWidth = '75cqi';
+  tooltip.style.bottom = 'auto';
+  tooltip.style.top = 'auto';
+  tooltip.style.zIndex = '250';
+  tooltip.style.transform = '';
 
-      const container = document.getElementById('game-container');
-      const containerRect = container.getBoundingClientRect();
-      const doodleRect = element.getBoundingClientRect();
+  const container = document.getElementById('game-container');
+  const containerRect = container.getBoundingClientRect();
+  const doodleRect = element.getBoundingClientRect();
 
-      tooltip.style.visibility = 'hidden';
-      tooltip.classList.add('show');
+  tooltip.style.visibility = 'hidden';
+  tooltip.classList.add('show');
 
-      // Tiny delay so browser finishes laying out dynamic content
-      requestAnimationFrame(() => {
-        const tooltipHeightPx = tooltip.offsetHeight;
+  // Tiny delay so browser finishes laying out dynamic content
+  requestAnimationFrame(() => {
+    const tooltipHeightPx = tooltip.offsetHeight;
 
-        tooltip.classList.remove('show');
-        tooltip.style.visibility = 'visible';
-        tooltip.style.left = '50%';
-        tooltip.style.transform = 'translateX(-50%)';
+    tooltip.classList.remove('show');
+    tooltip.style.visibility = 'visible';
+    tooltip.style.left = '50%';
+    tooltip.style.transform = 'translateX(-50%)';
 
-        const normalGapCqi = 2;
-        const safetyPx = 28;
-        const containerWidthPx = containerRect.width;
-        const normalGapPx = (normalGapCqi / 100) * containerWidthPx;
-        const relDoodleTop = doodleRect.top - containerRect.top;
-        const doodleCenterPx = relDoodleTop + (doodleRect.height / 2);
-        const relDoodleBottom = relDoodleTop + doodleRect.height;
-        const spaceBelowPx = containerRect.height - relDoodleBottom;
+    const normalGapCqi = 2;
+    const safetyPx = 28;
+    const containerWidthPx = containerRect.width;
+    const normalGapPx = (normalGapCqi / 100) * containerWidthPx;
+    const relDoodleTop = doodleRect.top - containerRect.top;
+    const doodleCenterPx = relDoodleTop + (doodleRect.height / 2);
+    const relDoodleBottom = relDoodleTop + doodleRect.height;
+    const spaceBelowPx = containerRect.height - relDoodleBottom;
 
-        let proposedTopPx;
-        if (spaceBelowPx >= tooltipHeightPx + normalGapPx + safetyPx) {
-          const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
-          proposedTopPx = doodleCenterPx + offsetFromCenterPx;
-        } else {
-          const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
-          const extraAboveClearancePx = doodleRect.height * 0.7;
-          const totalOffsetAbovePx = offsetFromCenterPx + extraAboveClearancePx;
-          const tooltipBottomPx = doodleCenterPx - totalOffsetAbovePx;
-          proposedTopPx = tooltipBottomPx - tooltipHeightPx;
-        }
-
-        proposedTopPx = Math.max(18, Math.min(proposedTopPx, containerRect.height - tooltipHeightPx - 18));
-        const proposedTopCqi = (proposedTopPx / containerWidthPx) * 100;
-        tooltip.style.top = `${proposedTopCqi.toFixed(2)}cqi`;
-
-        const guideBtn = document.createElement('button');
-        guideBtn.className = 'tooltip-guide-btn';
-        guideBtn.textContent = 'See in Guide';
-        guideBtn.onclick = () => {
-          playSound('selectbutton');
-          hideTooltip();
-          renderGuide(doodle);
-          openModal('guide-modal');
-        };
-        tooltip.appendChild(guideBtn);
-
-        tooltip.classList.add('show');
-      });
+    let proposedTopPx;
+    if (spaceBelowPx >= tooltipHeightPx + normalGapPx + safetyPx) {
+      const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
+      proposedTopPx = doodleCenterPx + offsetFromCenterPx;
+    } else {
+      const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
+      const extraAboveClearancePx = doodleRect.height * 0.7;
+      const totalOffsetAbovePx = offsetFromCenterPx + extraAboveClearancePx;
+      const tooltipBottomPx = doodleCenterPx - totalOffsetAbovePx;
+      proposedTopPx = tooltipBottomPx - tooltipHeightPx;
     }
 
-    function hideTooltip() {
+    proposedTopPx = Math.max(18, Math.min(proposedTopPx, containerRect.height - tooltipHeightPx - 18));
+    const proposedTopCqi = (proposedTopPx / containerWidthPx) * 100;
+    tooltip.style.top = `${proposedTopCqi.toFixed(2)}cqi`;
+
+    // === NEW: Only show "See in Guide" button if we're NOT in a Getting Started mission detail ===
+    if (!suppressGuideButtonInMissionDetail) {
+      const guideBtn = document.createElement('button');
+      guideBtn.className = 'tooltip-guide-btn';
+      guideBtn.textContent = 'See in Guide';
+      guideBtn.onclick = () => {
+        playSound('selectbutton');
+        hideTooltip();
+        renderGuide(doodle);
+        openModal('guide-modal');
+      };
+      tooltip.appendChild(guideBtn);
+    }
+
+    tooltip.classList.add('show');
+  });
+}
+
+function hideTooltip() {
       const tooltip = document.getElementById('tooltip');
       const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
       if (oldBtn) oldBtn.remove();
@@ -9613,22 +9841,72 @@ setTimeout(() => {
       tooltip.style.zIndex = '';
       tooltip.style.transform = '';
     }
-
+    
+    
     function handleInlineDoodleClick(targetDoodle) {
-      hideTooltip();
-      const learnModal = document.getElementById('learn-modal');
-      const isLearnOpen = learnModal.classList.contains('active');
-      if (!isLearnOpen) {
-        populateLearnGrid();
-        openModal('learn-modal');
-      }
-      // Find and select the cell in the Learn grid
-      const cell = document.querySelector(`#learn-grid .doodle-cell[data-doodle="${targetDoodle}"]`);
+  const tooltip = document.getElementById('tooltip');
+  const learnModal = document.getElementById('learn-modal');
+  const portfolioModal = document.getElementById('portfolio-modal');
+
+  const isLearnOpen = learnModal && learnModal.classList.contains('active');
+  const isPortfolioOpen = portfolioModal && portfolioModal.classList.contains('active');
+  const isInPortfolio = isPortfolioOpen;
+  const isInMissionMenu = suppressGuideButtonInMissionDetail;
+
+  hideTooltip();
+
+  // === Handle not-yet-unlocked doodles in Learn, Portfolio, and Mission Detail menus ===
+  if ((isLearnOpen || isPortfolioOpen || isInMissionMenu) && currentMission && currentMission <= 5) {
+    const allowed = getAllowedDoodles(currentMission);
+    if (!allowed.includes(targetDoodle)) {
+      const desc = document.getElementById('tooltip-desc');
+      desc.innerHTML = `
+        The <img src="images/${targetDoodle}.png" class="inline-doodle" style="vertical-align: middle; height: 1.15em; width: auto;"> 
+        doodle has not been unlocked yet.
+      `;
+      tooltip.style.left = '50%';
+      tooltip.style.transform = 'translateX(-50%)';
+      tooltip.style.bottom = '28cqi';
+      tooltip.style.top = 'auto';
+      tooltip.classList.add('show');
+      return;
+    }
+  }
+
+  // === Portfolio or Mission Menu context: keep tooltip position stable ===
+  if (isInPortfolio || isInMissionMenu) {
+    const referenceEl = tooltip || document.getElementById('game-container');
+    showTooltipForDoodle(targetDoodle, referenceEl);
+    return;
+  }
+
+  // === Default behavior for Learn modal grid + main game view ===
+  if (isLearnOpen) {
+    const grid = document.getElementById('learn-grid');
+    if (grid) {
+      const cell = grid.querySelector(`.doodle-cell[data-doodle="${targetDoodle}"]`);
       if (cell) {
-        toggleSelection(cell, document.getElementById('learn-grid'), 'learn');
+        toggleSelection(cell, grid, 'learn');
+        return;
       }
     }
-    function handleGuideInlineClick(targetDoodle) {
+  }
+
+  // Fallback: open Learn modal
+  if (!isLearnOpen && !isPortfolioOpen) {
+    populateLearnGrid();
+    openModal('learn-modal');
+
+    setTimeout(() => {
+      const grid = document.getElementById('learn-grid');
+      const cell = grid?.querySelector(`.doodle-cell[data-doodle="${targetDoodle}"]`);
+      if (cell) {
+        toggleSelection(cell, grid, 'learn');
+      }
+    }, 60);
+  }
+}
+function handleGuideInlineClick(targetDoodle) {
       renderGuide(targetDoodle); // re-filter the guide + show new tooltip at bottom
     }
     // GLOBAL TOOLTIP CLOSE HANDLER — protects mission-detail button + Learn/Portfolio doodles
@@ -9695,19 +9973,12 @@ setTimeout(() => {
     preloadAudio();
     // === BGM AUTO-START ON FIRST INTERACTION (FIXED) ===
     let bgmPlaying = false;
+
     function startBGM() {
-      if (bgmPlaying) return; // Already playing
-      if (audio.bgm) {
-        audio.bgm.play().then(() => {
-          bgmPlaying = true;
-          console.log('🎼 BGM started on first interaction!');
-        }).catch(e => {
-          console.warn('🔇 BGM blocked (retry on next interaction):', e);
-        });
-      } else {
-        console.warn('🔇 BGM not loaded yet – check preloadAudio() and file path');
-      }
-    }
+  if (bgmPlaylistStarted) return;
+  startBgmPlaylist();
+}
+    
     // Trigger BGM on FIRST user gesture (click/tap anywhere)
     document.addEventListener('click', startBGM, { once: true });
     document.addEventListener('touchstart', startBGM, { once: true }); // For mobile
@@ -9789,35 +10060,44 @@ setTimeout(() => {
     }
 
     async function initApp() {
-      const startTime = Date.now();
-      try {
-        await preloadImages();
-        const elapsed = Date.now() - startTime;
-        const minTime = 2800; // keeps your logo animation perfect
-        if (elapsed < minTime) {
-          await new Promise(resolve => setTimeout(resolve, minTime - elapsed));
-        }
+  const startTime = Date.now();
 
-        // === NEW: Load any saved game state BEFORE showing the menu ===
-        const hadSavedGame = loadGameState();
-        if (hadSavedGame) {
-          console.log('🎮 Previous game restored — Resume button is now available');
-        }
+  // Load saved audio settings very early (before any sound can play)
+  loadAudioSettings();
 
-        showMainMenu(); // Load menu behind loading screen (exactly as original)
+  try {
+    await preloadImages();
+    await preloadAudio();                    // ← Added this line
 
-        // Fade out loading screen to reveal menu
-        const loadingScreen = document.getElementById('loading-screen');
-        loadingScreen.style.opacity = '0';
-        await new Promise(resolve => setTimeout(resolve, 600));
-        loadingScreen.style.display = 'none';
+    // Apply the user's saved volume levels
+    updateSFXVolume(sfxVolume);
+    updateMusicVolume(musicVolume);
 
-      } catch (e) {
-        console.error('Preload error:', e);
-        document.getElementById('loading-screen').textContent = 'Error loading assets – please refresh';
-      }
-      
+    const elapsed = Date.now() - startTime;
+    const minTime = 2800; // keeps your logo animation perfect
+    if (elapsed < minTime) {
+      await new Promise(resolve => setTimeout(resolve, minTime - elapsed));
     }
+
+    // Load game state (unchanged)
+    const hadSavedGame = loadGameState();
+    if (hadSavedGame) {
+      console.log('🎮 Previous game restored — Resume button is now available');
+    }
+
+    showMainMenu();
+
+    // Fade out loading screen
+    const loadingScreen = document.getElementById('loading-screen');
+    loadingScreen.style.opacity = '0';
+    await new Promise(resolve => setTimeout(resolve, 600));
+    loadingScreen.style.display = 'none';
+
+  } catch (e) {
+    console.error('Preload error:', e);
+    document.getElementById('loading-screen').textContent = 'Error loading assets – please refresh';
+  }
+}
 
     // Campaign close buttons
     document.getElementById('campaign-close-btn').addEventListener('click', () => {
@@ -9991,7 +10271,7 @@ async function registerServiceWorker() {
 
   try {
     // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.53.js`;   // ← must match the filename you just created
+    const swFile = `/sw-v5.47.js`;   // ← must match the filename you just created
     console.log(`[PWA] Registering ${swFile}`);
 
     swRegistration = await navigator.serviceWorker.register(swFile);
@@ -10067,38 +10347,37 @@ window.addEventListener('load', () => {
 
 
     initApp();
+const audioControls = document.getElementById('audio-controls');
 
-    const audioControls = document.getElementById('audio-controls');
+// SFX Slider
+const sfxLabel = document.createElement('div');
+sfxLabel.className = 'audio-label';
+sfxLabel.textContent = 'SFX Volume';
+const sfxSlider = document.createElement('input');
+sfxSlider.type = 'range';
+sfxSlider.className = 'audio-slider';
+sfxSlider.min = 0;
+sfxSlider.max = 1;
+sfxSlider.step = 0.1;
+sfxSlider.value = sfxVolume;                    // ← Use loaded value
+sfxSlider.addEventListener('input', (e) => updateSFXVolume(parseFloat(e.target.value)));
+audioControls.appendChild(sfxLabel);
+audioControls.appendChild(sfxSlider);
 
-    // SFX Slider
-    const sfxLabel = document.createElement('div');
-    sfxLabel.className = 'audio-label';
-    sfxLabel.textContent = 'SFX Volume';
-    const sfxSlider = document.createElement('input');
-    sfxSlider.type = 'range';
-    sfxSlider.className = 'audio-slider';
-    sfxSlider.min = 0;
-    sfxSlider.max = 1;
-    sfxSlider.step = 0.1;
-    sfxSlider.value = sfxVolume;
-    sfxSlider.addEventListener('input', (e) => updateSFXVolume(parseFloat(e.target.value)));
-    audioControls.appendChild(sfxLabel);
-    audioControls.appendChild(sfxSlider);
-
-    // Music Slider
-    const musicLabel = document.createElement('div');
-    musicLabel.className = 'audio-label';
-    musicLabel.textContent = 'Music Volume';
-    const musicSlider = document.createElement('input');
-    musicSlider.type = 'range';
-    musicSlider.className = 'audio-slider';
-    musicSlider.min = 0;
-    musicSlider.max = 1;
-    musicSlider.step = 0.1;
-    musicSlider.value = musicVolume;
-    musicSlider.addEventListener('input', (e) => updateMusicVolume(parseFloat(e.target.value)));
-    audioControls.appendChild(musicLabel);
-    audioControls.appendChild(musicSlider);
+// Music Slider
+const musicLabel = document.createElement('div');
+musicLabel.className = 'audio-label';
+musicLabel.textContent = 'Music Volume';
+const musicSlider = document.createElement('input');
+musicSlider.type = 'range';
+musicSlider.className = 'audio-slider';
+musicSlider.min = 0;
+musicSlider.max = 1;
+musicSlider.step = 0.1;
+musicSlider.value = musicVolume;                // ← Use loaded value
+musicSlider.addEventListener('input', (e) => updateMusicVolume(parseFloat(e.target.value)));
+audioControls.appendChild(musicLabel);
+audioControls.appendChild(musicSlider);
 
     // Optional: Close on outside click
     document.addEventListener('click', (e) => {
