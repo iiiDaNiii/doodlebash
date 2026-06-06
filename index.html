@@ -174,19 +174,40 @@
     }
 
     #doodle-l1,
-    #doodle-l2,
-    #doodle-l3,
-    #doodle-r1,
-    #doodle-r2,
-    #doodle-r3 {
-      background-size: auto 75%;
-      background-position: center;
-      background-repeat: no-repeat;
-      z-index: 20;
-      transition: transform 0.35s ease-out;
-      transform: translateY(100dvh) rotate(0deg);
-      cursor: pointer;
-    }
+#doodle-l2,
+#doodle-l3,
+#doodle-r1,
+#doodle-r2,
+#doodle-r3 {
+  background-size: auto 75%;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 25;                    /* visually on top */
+  pointer-events: none;           /* lets clicks pass through to checkbox */
+  transition: transform 0.35s ease-out;
+  transform: translateY(100dvh) rotate(0deg);
+  cursor: pointer;
+  
+  /* NEW: Create a clickable overlay exactly matching the visible doodle image */
+  position: relative;
+}
+
+#doodle-l1::after,
+#doodle-l2::after,
+#doodle-l3::after,
+#doodle-r1::after,
+#doodle-r2::after,
+#doodle-r3::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50%;                     /* matches background-size */
+  height: 75%;
+  z-index: 10;
+  pointer-events: auto;           /* only this area is clickable for Guide */
+}
 
     .doodle-checkbox {
       position: absolute;
@@ -3826,10 +3847,10 @@ let bgmPlaylistStarted = false;
       pointbubble: ['sounds/pointbubble1.mp3', 'sounds/pointbubble2.mp3', 'sounds/pointbubble3.mp3', 'sounds/pointbubble4.mp3'],
       // === NEW DYNAMIC BGM PLAYLIST ===
   bgm: [
-    'sounds/01raindisabled.mp3',
-    'sounds/02classdisabled.mp3',
-    'sounds/03towndisabled.mp3',
-    'sounds/04cafedisabled.mp3'
+    'sounds/01rain.mp3',
+    'sounds/02class.mp3',
+    'sounds/03town.mp3',
+    'sounds/04cafe.mp3'
   ]
     };
 
@@ -10271,7 +10292,7 @@ async function registerServiceWorker() {
 
   try {
     // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.55.js`;   // ← must match the filename you just created
+    const swFile = `/sw-v5.56.js`;   // ← must match the filename you just created
     console.log(`[PWA] Registering ${swFile}`);
 
     swRegistration = await navigator.serviceWorker.register(swFile);
