@@ -3717,10 +3717,10 @@
       present: "{present} scores {4pt} + {2pt} if {letter} is <i><b>directly left or right</b></i>.",
       pyramid: "{pyramid} is an intermediate shape that can merge to create {diamond} or {icecream}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Also score {10pt} PER <i><b>set</b></i> of {cube}{cylinder}{pyramid}.",
       rocket: "{rocket} scores {2pt} + {3pt} if {cloud} is <i><b>directly below</b></i>&nbsp + {1pt} PER {planet}/{star} <i><b>above</b></i> on <i><b>same page</b></i>.",
-      smiley: "{smiley} scores {1pt} + {2pt} PER <i><b>surrounding</b></i> {pizza}/{icecream}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
+      smiley: "{smiley} scores {1pt} + {2pt} PER <i><b>surrounding</b></i> {pizza}/{mug}/{icecream}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
       star: "{star} scores {2pt} + {1pt} PER <i><b>surrounding</b></i> {planet}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {boat} and {rocket}.",
       sword: "{sword} scores {5pt} - {black1pt} PER <b><i>other</i></b> {sword} on the <i><b>same page</b></i>&nbsp (the score can't be negative).",
-      toiletpaper: "{toiletpaper} scores {1pt} + {7pt} PER <i><b>surrounding</b></i> {turd}.",
+      toiletpaper: "{toiletpaper} scores {1pt} + {6pt} PER <i><b>surrounding</b></i> {turd}.",
       turd: "{turd} scores {minus2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {cat} and {toiletpaper}.",
       umbrella: "{umbrella} scores {1pt} PER {drop} <i><b>above</b></i> on the <i><b>same page</b></i>.",
       wireless: "{wireless} is used to merge non-adjacent doodles. Circle a {wireless} to use it, then individually circle any doodles you'd like to merge.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {house}.",
@@ -4999,7 +4999,7 @@ let bgmPlaylistStarted = false;
       "start12": {
         code: "start12",
         title: "Drawing Essentials",
-        description: "Your starting portfolio includes: {circle}{square}{triangle}{line}{dot}{lens}{halfcircle}{drop}{teeth}{cylinder}{cube}{pyramid}.",
+        description: "Your starting portfolio consists of: {circle}{square}{triangle}{line}{dot}{lens}{halfcircle}{drop}{teeth}{cylinder}{cube}{pyramid}",
         modifiers: {
           startingDeck: {
             circle: 1,
@@ -5020,7 +5020,7 @@ let bgmPlaylistStarted = false;
       "repetition5": {
         code: "repetition5",
         title: "Practice Makes Perfect",
-        description: "Score {5pt} per row (single page) of the same doodle.",
+        description: "Score {5pt} per row of five matching doodles on either page.",
         modifiers: {}
       },
       "art101": {
@@ -5121,7 +5121,7 @@ let bgmPlaylistStarted = false;
     <div style="font-family:'Covered By Your Grace',cursive; font-size:6.5cqi; color:#7f2a8f; text-align:center; margin-bottom:3cqi;">
       Drawing Essentials
     </div>
-    <p>Your starting portfolio includes: {circle}{square}{triangle}{line}{dot}{lens}{halfcircle}{drop}{teeth}{cylinder}{cube}{pyramid}. <b>Now go score as many points as you can!</b></p>
+    <p>Your starting portfolio consists of: {circle}{square}{triangle}{line}{dot}{lens}{halfcircle}{drop}{teeth}{cylinder}{cube}{pyramid}. <b>Score as many points as you can!</b></p>
   `,
 
       repetition5: `
@@ -6541,6 +6541,7 @@ function updateMusicVolume(newVol) {
 
     document.getElementById('close-score').addEventListener('click', () => {
       playSound('selectbutton');
+      resetNumberlineAnimation();
       closeModal('score-modal');
       resetScoreModal();  // ← NEW: Full reset on close
     });
@@ -7130,6 +7131,7 @@ function updateMusicVolume(newVol) {
     let scoreLoupeCanvas = null;
     let scoreWarpedCanvas = null;
     let scoreWarpedGrayMat = null;   // ← NEW: greyscale version used for model + export
+    let scoringCancelled = false;
 
     // === ROBUST OPENCV LOADER (replaces old cvReadyPromise) ===
     let cvReady = false;
@@ -8129,8 +8131,44 @@ function updateMusicVolume(newVol) {
       liveDetectionFrameId = requestAnimationFrame(detectLoop);
     }
 
+    function resetNumberlineAnimation() {
+  const scoreLine = document.getElementById('score-line');
+  if (!scoreLine) return;
+
+  const squiggle = document.getElementById('score-squiggle');
+  const marker = document.getElementById('score-marker');
+  const numberDivs = scoreLine.querySelectorAll('.score-numbers > div');
+
+  // Force hide
+  scoreLine.style.display = 'none';
+
+  // Reset squiggle
+  if (squiggle) {
+    squiggle.style.transition = 'none';
+    squiggle.style.clipPath = 'inset(0 100% 0 0)';
+  }
+
+  // Reset marker completely
+  if (marker) {
+    marker.style.transition = 'none';
+    marker.style.left = '0%';
+    marker.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+    // Clear any leftover transform from the wiggle animation
+    marker.style.removeProperty('transform');
+  }
+
+  // Remove all .lit classes from the numbers
+  numberDivs.forEach(div => {
+    div.classList.remove('lit');
+  });
+
+  console.log('%c✅ Numberline animation state fully reset', 'color:#0f0');
+}
+
     function resetScoreModal() {
       console.log('%c🔄 [resetScoreModal] FULL DEEP CLEANUP — ready for next scan', 'color:#0f0; font-weight:bold');
+
+      scoringCancelled = true;
 
       // 1. Stop camera + live detection
       if (scoreStream) {
@@ -8158,11 +8196,12 @@ function updateMusicVolume(newVol) {
       latestDetectedCorners = null;
 
       // 4. CRITICAL: Clear ALL dynamic results content (this was the main cause of second-scan crash)
-      // === TALLY + NUMBERLINE RESET (prevents numberline from being destroyed on 2nd scoring) ===
+
+// === AGGRESSIVE NUMBERLINE + TALLY RESET ===
 const tally = document.getElementById('score-tally');
 const scoreLine = document.getElementById('score-line');
 
-// Rescue the numberline BEFORE clearing the tally
+// Rescue the numberline if it got moved into the tally
 if (scoreLine && tally && tally.contains(scoreLine)) {
   const scoreContent = document.getElementById('score-content');
   if (scoreContent) scoreContent.appendChild(scoreLine);
@@ -8173,22 +8212,8 @@ if (tally) {
   tally.innerHTML = '';
 }
 
-if (scoreLine) {
-  scoreLine.style.display = 'none';
-
-  // Reset numberline animation state
-  const squiggle = document.getElementById('score-squiggle');
-  const marker = document.getElementById('score-marker');
-  const numberDivs = scoreLine.querySelectorAll('.score-numbers > div');
-
-  if (squiggle) squiggle.style.clipPath = 'inset(0 100% 0 0)';
-  if (marker) {
-    marker.style.transition = 'none';
-    marker.style.left = '0%';
-    marker.style.transform = 'translate(-50%, -50%) rotate(0deg)';
-  }
-  numberDivs.forEach(div => div.classList.remove('lit'));
-}
+// Call the dedicated reset function (this is the important part)
+resetNumberlineAnimation();
 
       const review = document.getElementById('score-review-container');
       if (review) {
@@ -8676,7 +8701,7 @@ function loadAudioSettings() {
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'toiletpaper') {
           let count = getSurrounding(r, c).filter(s => s.doodle === 'turd').length;
-          let pts = 1 + count * 7;
+          let pts = 1 + count * 6;
           total += pts;
           perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
@@ -8712,18 +8737,18 @@ function loadAudioSettings() {
     }
 
     function calculateSmiley() {
-      let total = 0, perCellList = [];
-      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-        if (scoreBoard[r][c] === 'smiley') {
-          let count = getSurrounding(r, c).filter(s => ['pizza', 'icecream'].includes(s.doodle)).length;
-          let pts = 1 + count * 2; // ← Changed: 1 base + 2 per surrounding pizza/icecream
-          total += pts;
-          perCellList.push({ r, c, pts });
-          scorePerCellScore[r][c] += pts;
-        }
-      }
-      return { total, perCellList };
+  let total = 0, perCellList = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+    if (scoreBoard[r][c] === 'smiley') {
+      let count = getSurrounding(r, c).filter(s => ['pizza', 'mug', 'icecream'].includes(s.doodle)).length;
+      let pts = 1 + count * 2; // 1 base + 2 per surrounding pizza/mug/icecream
+      total += pts;
+      perCellList.push({ r, c, pts });
+      scorePerCellScore[r][c] += pts;
     }
+  }
+  return { total, perCellList };
+}
 
     function calculateSword() {
       let total = 0, perCellList = [];
@@ -9317,6 +9342,7 @@ function loadAudioSettings() {
     }
 
     async function runScoringAnimation() {
+      scoringCancelled = false;   // ← Add this line
       console.log("%c🚀 runScoringAnimation STARTED (2nd+ scan test)", "color:orange; font-weight:bold; font-size:16px");
 
       try {
@@ -9383,6 +9409,8 @@ function loadAudioSettings() {
           }
           total += subtotal;
         }
+
+        
 
         console.log(`✅ Main scoring loop FINISHED. Non-zero rules: ${nonZeroResults.length}`);
 
@@ -9484,6 +9512,11 @@ function loadAudioSettings() {
           await new Promise(r => setTimeout(r, 1900));
         }
 
+                if (scoringCancelled) {
+          console.log("🛑 Scoring was cancelled — aborting animation");
+          return;
+        }
+
         // Variety bonus (protected)
         if ((currentMission === null || currentMission >= 5) && bonus !== 0) {
           try {
@@ -9505,6 +9538,11 @@ function loadAudioSettings() {
 
         // Restore normal grid
         scoreGridCells.forEach(gridCell => gridCell.classList.remove('low-opacity', 'non-scoring'));
+
+        if (scoringCancelled) {
+          console.log("🛑 Scoring cancelled before final display");
+          return;
+        }
 
         // ==================== FINAL TOTAL BUBBLE + NUMBERLINE + ASSESSMENT ====================
         console.log(`✅ Starting final phase. Total = ${total}`);
@@ -9632,7 +9670,9 @@ function loadAudioSettings() {
       }
     }
 
-    function showAssessmentMessage(totalScore) {
+        function showAssessmentMessage(totalScore) {
+      if (scoringCancelled) return;   // ← Prevents duplicate Main Menu button
+
       const tally = document.getElementById('score-tally');
       if (!tally) return;
 
@@ -9724,6 +9764,7 @@ function loadAudioSettings() {
       );
     }
     document.getElementById('score-score-btn').onclick = () => {
+      scoringCancelled = false;
       playSound('score');
       // === GAME IS NOW COMPLETE — CLEAR SAVE STATE ===
   clearSavedGameState();
@@ -10292,7 +10333,7 @@ async function registerServiceWorker() {
 
   try {
     // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.56.js`;   // ← must match the filename you just created
+    const swFile = `/sw-v5.57.js`;   // ← must match the filename you just created
     console.log(`[PWA] Registering ${swFile}`);
 
     swRegistration = await navigator.serviceWorker.register(swFile);
