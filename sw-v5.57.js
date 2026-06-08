@@ -1,5 +1,5 @@
 // ====================== DOODLE BASH SERVICE WORKER — DIAGNOSTIC ======================
-const CACHE_NAME = 'doodle-bash-v5.56';   // ← BUMP THIS EVERY TEST
+const CACHE_NAME = 'doodle-bash-v5.57';   // ← BUMP THIS EVERY TEST
 
 const PRECACHE_ASSETS = [
   '/',
