@@ -9079,36 +9079,85 @@ function loadAudioSettings() {
       }
       return { total, perCellList };
     }
+    
+    function calculateFocalPointsBonus(nonZeroResults) {
+  if (!activeCampaign || activeCampaign.code !== "centerx2") return;
 
-    function calculateFocalPointsBonus() {
-      if (!activeCampaign || activeCampaign.code !== "centerx2") return { total: 0, perCellList: [] };
+  console.log("%c🔍 [centerx2] Starting center doubling check...", "color:#0f0; font-weight:bold");
 
-      console.log("%c🔍 [FocalPoints] Doubling center doodles in place...", "color:#0f0;font-weight:bold");
+  const centers = [
+    { r: 3, c: 2 },
+    { r: 3, c: 8 }
+  ];
 
-      const centers = [
-        { r: 3, c: 2 },
-        { r: 3, c: 8 }
-      ];
+  const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
 
-      let totalExtra = 0;
-      let perCellList = [];
+  for (let { r, c } of centers) {
+    const doodle = scoreBoard[r]?.[c];
+    if (!doodle || doodle === 'unknown') continue;
 
-      for (let center of centers) {
-        const r = center.r;
-        const c = center.c;
-        if (scoreBoard[r] && scoreBoard[r][c] && scoreBoard[r][c] !== 'unknown') {
-          const original = scorePerCellScore[r][c];
-          const extra = original;
-          scorePerCellScore[r][c] = original * 2;   // double for total + die
+    const currentValue = scorePerCellScore[r][c] || 0;
+    if (currentValue <= 0) continue;
 
-          totalExtra += extra;
-          perCellList.push({ r, c, pts: extra });
+    const extra = currentValue;
+    const newValue = currentValue * 2;
 
-          console.log(`   ✅ Doubled center [${r},${c}] (${scoreBoard[r][c]}) ${original} → ${original * 2}`);
-        }
-      }
-      return { total: totalExtra, perCellList };
+    // Double the center cell
+    scorePerCellScore[r][c] = newValue;
+
+    const entry = nonZeroResults.find(e => e.rule && e.rule.type === doodle);
+    if (!entry || !entry.result?.perCellList) continue;
+
+    const cellEntry = entry.result.perCellList.find(p => p && p.r === r && p.c === c);
+    if (cellEntry) {
+      cellEntry.pts = newValue;
     }
+    if (typeof entry.subtotal === 'number') {
+      entry.subtotal += extra;
+    }
+
+    console.log(`   ✅ Doubled center [${r},${c}] ${doodle}: ${currentValue} → ${newValue}`);
+
+    // === NEW: Update any adjacent Die that should now copy the doubled value ===
+    for (let [dr, dc] of dirs) {
+      const nr = r + dr;
+      const nc = c + dc;
+
+      if (nr < 0 || nr >= 7 || nc < 0 || nc >= 11) continue;
+      if (scoreBoard[nr][nc] !== 'die') continue;
+
+      // Re-calculate what this die should copy now (using the updated scorePerCellScore)
+      let maxNeighbor = 0;
+      const neighbors = getSurrounding(nr, nc);
+
+      for (let n of neighbors) {
+        if (n.doodle === 'die') continue;
+        if (['cube', 'cylinder', 'pyramid'].includes(n.doodle)) continue;
+
+        maxNeighbor = Math.max(maxNeighbor, scorePerCellScore[n.r][n.c]);
+      }
+
+      const oldDieValue = scorePerCellScore[nr][nc];
+      if (maxNeighbor > oldDieValue) {
+        scorePerCellScore[nr][nc] = maxNeighbor;
+
+        // Update the die's entry in nonZeroResults
+        const dieEntry = nonZeroResults.find(e => e.rule && e.rule.type === 'die');
+        if (dieEntry && dieEntry.result?.perCellList) {
+          const dieCell = dieEntry.result.perCellList.find(p => p && p.r === nr && p.c === nc);
+          if (dieCell) {
+            dieCell.pts = maxNeighbor;
+          }
+          if (typeof dieEntry.subtotal === 'number') {
+            dieEntry.subtotal += (maxNeighbor - oldDieValue);
+          }
+        }
+
+        console.log(`   → Updated adjacent Die at [${nr},${nc}] to copy doubled value: ${maxNeighbor}`);
+      }
+    }
+  }
+}
 
     function calculateDie() {
       let total = 0, perCellList = [];
@@ -9444,6 +9493,10 @@ function loadAudioSettings() {
             missionBonus = calculateAtLeast7Bonus();
           }
         }
+        // Apply centerx2 doubling
+if (activeCampaign && activeCampaign.code === "centerx2") {
+  calculateFocalPointsBonus(nonZeroResults);   // ← pass the variable
+}
 
         // === Animate individual doodle rows ===
         for (let entry of nonZeroResults) {
@@ -10333,7 +10386,7 @@ async function registerServiceWorker() {
 
   try {
     // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.57.js`;   // ← must match the filename you just created
+    const swFile = `/sw-v5.58.js`;   // ← must match the filename you just created
     console.log(`[PWA] Registering ${swFile}`);
 
     swRegistration = await navigator.serviceWorker.register(swFile);
