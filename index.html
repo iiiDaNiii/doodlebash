@@ -5289,15 +5289,6 @@ if (moreGamesBtn) {
   moreGamesBtn.addEventListener('click', showMoreGamesSubMenu);
 }
 
-// Close button for More Games submenu
-const moreGamesClose = document.getElementById('more-games-close-btn');
-if (moreGamesClose) {
-  moreGamesClose.addEventListener('click', () => {
-    playSound('selectbutton');
-    hideMenuPanel('more-games-sub-menu');
-    showMainMenu();
-  });
-}
 
 // "Check it out" button
 const checkItOutBtn = document.getElementById('more-games-check-btn');
@@ -5340,6 +5331,7 @@ if (!document.getElementById('info-btn')) {
     let campaignLastTap = 0;
 
     function showArcadeSubMenu() {
+      playSound('button');
       if (hasGameInProgress || tutorialInProgress) {
         pendingNewGameAction = 'arcade';
         showMenuPanel('abandon-prompt');
@@ -5513,7 +5505,16 @@ function showMoreGamesSubMenu() {
   playSound('button');
   hideMenuPanel('main-menu');
   showMenuPanel('more-games-sub-menu', { silent: true });
-  currentMode = 'more-games-sub';
+
+  // Wire close button here (instead of in renderMenuButtons)
+  const closeBtn = document.getElementById('more-games-close-btn');
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      playSound('selectbutton');
+      hideMenuPanel('more-games-sub-menu');
+      showMainMenu();
+    };
+  }
 }
 
 function showInfoSubMenu() {
@@ -5970,6 +5971,7 @@ function showInfoSubMenu() {
 
     // Replace the entire 'prompt-no' event listener with this (clears pendingAction on cancel)
     document.getElementById('prompt-no').addEventListener('click', () => {
+      playSound('button');
       hideMenuPanel('abandon-prompt'); // ← Updated to use hideMenuPanel
       pendingNewGameAction = null; // Clear on cancel
       if (currentMode === 'arcade-sub') {
@@ -5979,45 +5981,54 @@ function showInfoSubMenu() {
     });
 
     document.getElementById('prompt-yes').addEventListener('click', () => {
-      playSound('button');
-      hasGameInProgress = false;
-      tutorialInProgress = false;
-      tutorialRestricted = false;
-      tutorialStep = 0;
-      clearSavedGameState();
+  hasGameInProgress = false;
 
-      // FULL CLEANUP: hide the tutorial overlay immediately
-      const overlay = document.getElementById('tutorial-overlay');
-      if (overlay) {
-        overlay.classList.remove('active');
-      }
+  // ====================== TUTORIAL RESET ======================
+  tutorialInProgress = false;
+  tutorialRestricted = false;
+  tutorialStep = 0;
+  tutorialCompleted = false;           // ← Added
+  firstTutorialShuffleDone = false;    // ← Added
+  isTypingTutorial = false;            // ← Added
 
-      deck = { ...defaultDeck };
-      resetShuffleZone();
-      activeCampaign = null;
+  // FULL CLEANUP: hide the tutorial overlay immediately
+  const overlay = document.getElementById('tutorial-overlay');
+  if (overlay) {
+    overlay.classList.remove('active', 'slide-out', 'slide-in'); // ← Expanded
+    overlay.style.transform = '';                               // ← Added
+    overlay.style.transition = '';                              // ← Added
+  }
 
-      // NEW: Clear mission state when switching to Arcade (prevents tutorial from re-triggering)
-      if (pendingNewGameAction === 'arcade') {
-        currentMission = null;
-      }
+  clearSavedGameState();
 
-      hideMenuPanel('abandon-prompt');
+  deck = { ...defaultDeck };
+  resetShuffleZone();
+  activeCampaign = null;
 
-      if (pendingNewGameAction === 'arcade') {
-        startGame();
-        hideMenuPanel('arcade-sub-menu');
-      } else if (pendingNewGameAction === 'getting-started') {
-        showGettingStartedSubMenu();
-      } else if (pendingNewGameAction === 'mission') {
-        startGame();
-        hideMenuPanel('mission-detail');
-      }
-      // ←←← NEW: Campaign support
-      else if (pendingNewGameAction === 'campaign') {
-        showCampaignMenu();
-      }
-      pendingNewGameAction = null;
-    });
+  // NEW: Clear mission state when switching to Arcade (prevents tutorial from re-triggering)
+  if (pendingNewGameAction === 'arcade') {
+    currentMission = null;
+  }
+
+  hideMenuPanel('abandon-prompt');
+
+  if (pendingNewGameAction === 'arcade') {
+    hideMenuPanel('main-menu', { silent: true });
+  showMenuPanel('arcade-sub-menu', { silent: true });
+  currentMode = 'arcade-sub';
+} else if (pendingNewGameAction === 'getting-started') {
+    showGettingStartedSubMenu();
+  } else if (pendingNewGameAction === 'mission') {
+    startGame();
+    hideMenuPanel('mission-detail');
+  }
+  // ←←← NEW: Campaign support
+  else if (pendingNewGameAction === 'campaign') {
+    showCampaignMenu();
+  }
+  pendingNewGameAction = null;
+});
+    
     document.getElementById('mission-play-btn').addEventListener('click', () => {
       playSound('button');
       if (hasGameInProgress) {
@@ -10481,7 +10492,7 @@ async function registerServiceWorker() {
 
   try {
     // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.59.js`;   // ← must match the filename you just created
+    const swFile = `/sw-v5.60.js`;   // ← must match the filename you just created
     console.log(`[PWA] Registering ${swFile}`);
 
     swRegistration = await navigator.serviceWorker.register(swFile);
