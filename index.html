@@ -2775,6 +2775,24 @@
   overflow-y: auto;
 }
 
+#info-sub-menu {
+  position: absolute;
+  inset: 4cqh;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(1cqi);
+  border-radius: 1.5cqh;
+  display: none;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 12cqi;
+  padding-bottom: 6cqi;
+  gap: 3cqi;
+  z-index: 60;
+  container-type: inline-size;
+  overflow-y: auto;
+}
+
 /* Preview image */
 #more-games-preview {
   width: 100%;
@@ -3404,6 +3422,37 @@
       <img id="getting-started-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
     </div> <!-- Buttons added dynamically via JS -->
 
+
+<div id="info-sub-menu" class="menu-panel">
+  <img id="info-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
+
+  <div class="submenu-title" style="color:#4dbde5; margin-bottom:3cqi;">Doodle Bash v1.0</div>
+
+  <div style="font-family:'Fira Sans',sans-serif; font-size:4.8cqi; line-height:1.55; color:#222; text-align:left; width:86cqi; padding:0 4cqi;">
+
+    <p style="margin-top:4cqi;">
+      Design and Art by Daniel Young
+      <a href="https://www.clearlysharp.com/games" target="_blank" 
+         style="color:#4dbde5; text-decoration:underline;">clearlysharp.com</a>
+    </p>
+
+ <br>
+
+    <p style="margin-top:4cqi;">
+      Original soundtrack by Daniel Young</strong> with drums by Noah Travis of 
+      <a href="https://anthologymusic.wixsite.com/anthology-music" target="_blank" 
+         style="color:#4dbde5; text-decoration:underline;">Anthology Music</a>.
+    </p>
+
+    <br>
+
+    <p style="margin-top:5cqi; font-size:4.3cqi; color:#555;">
+      Thanks for doodling! If you have any feedback, feel free to reach out: <strong>dan@clearlysharp.com</strong>
+    </p>
+
+  </div>
+</div>
+
     <!-- Mission Detail Screen -->
     <div id="mission-detail" class="menu-panel" style="display: none;">
       <img id="mission-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
@@ -3448,6 +3497,8 @@
       <button id="campaign-start-doodle-btn" class="menu-btn">Let's Doodle!</button>
     </div>
 
+    
+
 <!-- MORE GAMES SUB-MENU -->
 <div id="more-games-sub-menu" class="menu-panel">
   <img id="more-games-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
@@ -3460,6 +3511,8 @@
 
   <button class="menu-btn" id="more-games-check-btn">Check it out</button>
 </div>
+
+
 
     <!-- LEARN MODAL -->
     <div id="learn-modal" class="modal learn">
@@ -3909,7 +3962,7 @@ let bgmPlaylistStarted = false;
     const tutorialSteps = [
       {
         id: 1,
-        message: `Welcome to <b><i>Doodle Bash!</i></b> Let's get you up to speed with how things work around here. If you haven't already, <i>print off a game sheet</i> and <i>grab something to write with!</i>`,
+        message: `Welcome to <b><i>Doodle Bash!</i></b> Let's get you up to speed with how things work around here. If you haven't already, <i>print off a <b>Notebook</b> game sheet</i> and <i>grab something to write with!</i>`,
         overlayClass: '',
         buttonText: `I'm ready`,
         buttonAction: () => advanceTutorial(2)
@@ -5254,7 +5307,34 @@ if (checkItOutBtn) {
     window.open('https://www.clearlysharp.com/games', '_blank');
   });
 }
+
+
+// ====================== INFO BUTTON (top right of main menu) ======================
+if (!document.getElementById('info-btn')) {
+  const infoBtn = document.createElement('img');
+  infoBtn.src = 'images/info.png';
+  infoBtn.id = 'info-btn';
+  
+  // Custom positioning - do NOT use sub-close-btn class
+  infoBtn.style.position = 'absolute';
+  infoBtn.style.top = '4cqi';
+  infoBtn.style.right = '4cqi';
+  infoBtn.style.height = '7cqi';
+  infoBtn.style.width = '7cqi';
+  infoBtn.style.zIndex = '80';
+  infoBtn.style.cursor = 'pointer';
+
+  menu.appendChild(infoBtn);
+
+  infoBtn.addEventListener('click', () => {
+    playSound('button');
+    hideMenuPanel('main-menu');
+    showInfoSubMenu();
+  });
+}
     }
+
+
 
     let campaignTapCount = 0;
     let campaignLastTap = 0;
@@ -5356,7 +5436,7 @@ if (checkItOutBtn) {
       // Description
       const desc = document.createElement('div');
       desc.id = 'getting-started-desc';
-      desc.innerHTML = "These 5 missions are designed to slowly acquaint you with the many doodles in <i>Doodle Bash</i>. Start from the top, and get ready to learn how to draw!";
+      desc.innerHTML = "These 5 missions are designed to gradually acquaint you with the many doodles in <i>Doodle Bash</i>. Start from the top, and get ready to learn how to draw!";
       subMenu.appendChild(desc);
 
       // === NEW: Mission Header Images as Buttons ===
@@ -5434,6 +5514,21 @@ function showMoreGamesSubMenu() {
   hideMenuPanel('main-menu');
   showMenuPanel('more-games-sub-menu', { silent: true });
   currentMode = 'more-games-sub';
+}
+
+function showInfoSubMenu() {
+  const subMenu = document.getElementById('info-sub-menu');
+  showMenuPanel('info-sub-menu', { silent: true });
+
+  // Wire close button
+  const closeBtn = document.getElementById('info-close-btn');
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      playSound('selectbutton');
+      hideMenuPanel('info-sub-menu');
+      showMainMenu();
+    };
+  }
 }
 
     function handleCampaignCodeSubmit() {
@@ -10386,7 +10481,7 @@ async function registerServiceWorker() {
 
   try {
     // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.58.js`;   // ← must match the filename you just created
+    const swFile = `/sw-v5.59.js`;   // ← must match the filename you just created
     console.log(`[PWA] Registering ${swFile}`);
 
     swRegistration = await navigator.serviceWorker.register(swFile);
