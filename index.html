@@ -7064,7 +7064,7 @@ function updateMusicVolume(newVol) {
   } else {
     hideTooltip();
     if (modalType === 'learn' || modalType === 'portfolio') {
-      actionBtn.style.cssText = '';           // Full reset on deselect too
+      actionBtn.style.cssText = '';           // ← Add this line
       actionBtn.classList.remove('pulsing');
 
       const modal = document.getElementById(modalType + '-modal');
@@ -7175,24 +7175,24 @@ function updateMusicVolume(newVol) {
           saveGameState();
           selected.classList.add('animate-remove');
           setTimeout(() => {
-            selected.style.opacity = '0';
-            selected.style.pointerEvents = 'none';
-            selected.classList.remove('selected');
-            btn.classList.remove('animate-shrink'); // Reset animation class
-            hideTooltip();
-            // NEW: Move button back to header BEFORE repopulating grid (to preserve it)
-            const modal = document.getElementById('portfolio-modal');
-            const buttonsDiv = modal.querySelector('.buttons');
-            if (buttonsDiv && !buttonsDiv.contains(btn)) {
-              buttonsDiv.appendChild(btn);
-            }
-            btn.style.display = 'none';
-            btn.style.top = '';
-            btn.style.left = '';
-            btn.style.opacity = '';
-            // Now safe to repopulate (button is out of the grid)
-            populatePortfolioGrid();
-          }, 600); // Matches animate-remove duration
+    selected.style.opacity = '0';
+    selected.style.pointerEvents = 'none';
+    selected.classList.remove('selected');
+    btn.classList.remove('animate-shrink');
+
+    hideTooltip();
+
+    // === STRONGER RESET (minimal addition) ===
+    btn.style.cssText = '';
+
+    const modal = document.getElementById('portfolio-modal');
+    const buttonsDiv = modal.querySelector('.buttons');
+    if (buttonsDiv && !buttonsDiv.contains(btn)) {
+      buttonsDiv.appendChild(btn);
+    }
+
+    populatePortfolioGrid();
+}, 600);
         }
       }
     });
@@ -10483,7 +10483,7 @@ async function registerServiceWorker() {
 
   try {
     // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.63.js`;   // ← must match the filename you just created
+    const swFile = `/sw-v5.64.js`;   // ← must match the filename you just created
     console.log(`[PWA] Registering ${swFile}`);
 
     swRegistration = await navigator.serviceWorker.register(swFile);
