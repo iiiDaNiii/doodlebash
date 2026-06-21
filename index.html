@@ -3759,7 +3759,7 @@
       die: "{die} copies the value of a <i><b>surrounding</b></i> doodle (it can't copy another {die}.)",
       flower: "{flower} scores {2pt} + {2pt} if {heart} is <i><b>directly above</b></i>.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {butterfly}.",
       heart: "{heart} scores {2pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {flower}, {letter}, and {music}.",
-      house: "{house} scores {1pt} + {1pt} PER <i><b>surrounding</b></i> {smiley}/{wireless}.",
+      house: "{house} scores {2pt} + {1pt} PER <i><b>surrounding</b></i> {smiley}/{wireless}.",
       icecream: "{icecream} scores {4pt}.<br><hr style='border:0; height:1px; background:#a0d0e8; margin:8px 0;'>Contributes to scoring for {smiley}.",
       letter: "{letter} scores {1pt} + {3pt} if {heart} is <i><b>directly above</b></i>. Contributes to scoring for {present}.",
       mug: "{mug} scores {2pt} + {2pt} if {drop} is <i><b>directly above</b></i>.",
@@ -3877,7 +3877,7 @@
     const audio = {};
     const soundsIndex = {}; // Tracks current index per sound type
     let sfxVolume = 0.6; // Default SFX volume (matches most in volumes{})
-    let musicVolume = 0.3; // Default BGM volume
+    let musicVolume = 0.4; // Default BGM volume
 
     // ====================== DYNAMIC BGM PLAYLIST ======================
 let bgmPlaylist = [];
@@ -6068,7 +6068,7 @@ function preloadAudio() {
     selectbutton: 0.3,
     flap: 0.4,
     pointbubble: 0.5,
-    bgm: 0.3
+    bgm: 0.75
   };
 
   Object.entries(soundFiles).forEach(([name, files]) => {
@@ -7001,89 +7001,80 @@ function updateMusicVolume(newVol) {
 
       console.log(`✅ Fast Learner added: ${randomDoodle}`);
     }
+    
     function toggleSelection(cell, grid, modalType) {
-      // Clean up tutorial highlight before normal selection logic runs
-      grid.querySelectorAll('.doodle-cell.tutorial-highlight').forEach(c => {
-        c.classList.remove('tutorial-highlight');
-        c.style.removeProperty('--base-transform');
-      });
-      const isSelected = cell.classList.contains('selected');
-      const actionBtn = modalType === 'learn'
-        ? document.getElementById('modal-learn-btn')
-        : document.getElementById('modal-remove-btn');
+  grid.querySelectorAll('.doodle-cell.tutorial-highlight').forEach(c => {
+    c.classList.remove('tutorial-highlight');
+    c.style.removeProperty('--base-transform');
+  });
 
-      // Deselect all other cells
-      grid.querySelectorAll('.doodle-cell').forEach(c => c.classList.remove('selected'));
+  const isSelected = cell.classList.contains('selected');
+  const actionBtn = modalType === 'learn'
+    ? document.getElementById('modal-learn-btn')
+    : document.getElementById('modal-remove-btn');
 
-      if (!isSelected) {
-        cell.classList.add('selected');
-        showTooltipForDoodle(cell.dataset.doodle, cell);
+  grid.querySelectorAll('.doodle-cell').forEach(c => c.classList.remove('selected'));
 
-        if (modalType === 'learn' || modalType === 'portfolio') {
-          // Move button into grid (if not already there)
-          if (!grid.contains(actionBtn)) {
-            grid.appendChild(actionBtn);
+  if (!isSelected) {
+    cell.classList.add('selected');
+    showTooltipForDoodle(cell.dataset.doodle, cell);
+
+    if (modalType === 'learn' || modalType === 'portfolio') {
+      // === FULL RESET before moving (critical for iOS) ===
+      actionBtn.style.cssText = '';           // Nuclear reset of all inline styles
+      actionBtn.classList.remove('pulsing');
+
+      if (!grid.contains(actionBtn)) {
+        grid.appendChild(actionBtn);
+      }
+
+      // iOS Safari hardening (kept but now on a clean button)
+      actionBtn.style.display = 'block';
+      actionBtn.style.opacity = '0';
+      actionBtn.style.position = 'absolute';  // Be explicit
+
+      void actionBtn.offsetHeight;
+      void grid.offsetHeight;
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const gridRect = grid.getBoundingClientRect();
+          const cellRect = cell.getBoundingClientRect();
+          const btnRect = actionBtn.getBoundingClientRect();
+
+          const gapPx = (5.2 / 100) * gridRect.width;
+          const relativeCellTop = cellRect.top - gridRect.top;
+          const topOffset = relativeCellTop + (cellRect.height / 2) - (btnRect.height / 2);
+
+          let leftOffset;
+          const cellIndex = Array.from(grid.querySelectorAll('.doodle-cell')).indexOf(cell);
+          if ((cellIndex % 6) + 1 <= 3) {
+            leftOffset = (cellRect.right - gridRect.left) + gapPx;
+          } else {
+            leftOffset = (cellRect.left - gridRect.left) - btnRect.width - gapPx;
           }
 
-          // === iOS SAFARI HARDENING ===
-          actionBtn.style.display = 'block';
-          actionBtn.style.opacity = '0';
-          void actionBtn.offsetHeight;     // first reflow
-          void grid.offsetHeight;          // second reflow (forces grid layout pass)
+          actionBtn.style.top = `${topOffset}px`;
+          actionBtn.style.left = `${leftOffset}px`;
+          actionBtn.style.opacity = '1';
+          actionBtn.classList.add('pulsing');
+        });
+      });
+    }
+  } else {
+    hideTooltip();
+    if (modalType === 'learn' || modalType === 'portfolio') {
+      actionBtn.style.cssText = '';           // Full reset on deselect too
+      actionBtn.classList.remove('pulsing');
 
-          // Give Safari one extra frame to settle the layout
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {   // double-RAF is the magic for iOS
-              const gridRect = grid.getBoundingClientRect();
-              const cellRect = cell.getBoundingClientRect();
-              const btnRect = actionBtn.getBoundingClientRect();
-
-              const gridStyle = getComputedStyle(grid);
-              const gapCqi = 5.2;
-              const gapPx = (gapCqi / 100) * gridRect.width;
-
-              const relativeCellTop = cellRect.top - gridRect.top;
-              const topOffset = relativeCellTop + (cellRect.height / 2) - (btnRect.height / 2);
-
-              let leftOffset;
-              if ((Array.from(grid.querySelectorAll('.doodle-cell')).indexOf(cell) % 6) + 1 <= 3) {
-                // left side → button goes to the right
-                leftOffset = (cellRect.right - gridRect.left) + gapPx;
-              } else {
-                // right side → button goes to the left
-                leftOffset = (cellRect.left - gridRect.left) - btnRect.width - gapPx;
-              }
-
-              actionBtn.style.top = `${topOffset}px`;
-              actionBtn.style.left = `${leftOffset}px`;
-              actionBtn.style.opacity = '1';
-              actionBtn.classList.add('pulsing');
-            });
-          });
-        }
-      } else {
-        // === DESELECT LOGIC (unchanged but cleaned up) ===
-        hideTooltip();
-        if (modalType === 'learn' || modalType === 'portfolio') {
-          actionBtn.classList.remove('pulsing');
-          actionBtn.style.opacity = '0';
-
-          setTimeout(() => {
-            actionBtn.style.display = 'none';
-            actionBtn.style.top = '';
-            actionBtn.style.left = '';
-
-            // Return button to header
-            const modal = document.getElementById(modalType + '-modal');
-            const buttonsDiv = modal.querySelector('.buttons');
-            if (buttonsDiv && !buttonsDiv.contains(actionBtn)) {
-              buttonsDiv.appendChild(actionBtn);
-            }
-          }, 200);
-        }
+      const modal = document.getElementById(modalType + '-modal');
+      const buttonsDiv = modal.querySelector('.buttons');
+      if (buttonsDiv && !buttonsDiv.contains(actionBtn)) {
+        buttonsDiv.appendChild(actionBtn);
       }
     }
-
+  }
+}
 
     document.getElementById('modal-learn-btn').addEventListener('click', () => {
       playSound('selectbutton');  // ← NEW
@@ -8820,7 +8811,7 @@ function loadAudioSettings() {
       for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
         if (scoreBoard[r][c] === 'house') {
           let count = getSurrounding(r, c).filter(s => ['smiley', 'wireless'].includes(s.doodle)).length;
-          let pts = 1 + count * 1;
+          let pts = 2 + count * 1;
           total += pts;
           perCellList.push({ r, c, pts });
           scorePerCellScore[r][c] += pts;
@@ -10492,7 +10483,7 @@ async function registerServiceWorker() {
 
   try {
     // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.62.js`;   // ← must match the filename you just created
+    const swFile = `/sw-v5.63.js`;   // ← must match the filename you just created
     console.log(`[PWA] Registering ${swFile}`);
 
     swRegistration = await navigator.serviceWorker.register(swFile);
