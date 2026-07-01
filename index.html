@@ -3447,7 +3447,7 @@
     <br>
 
     <p style="margin-top:5cqi; font-size:4.3cqi; color:#555;">
-      Thanks for doodling! If you have any feedback, feel free to reach out: <strong>dan@clearlysharp.com</strong>
+      Thanks for doodling! If you have any feedback or bugs to report, feel free to reach out: <strong>dan@clearlysharp.com</strong>
     </p>
 
   </div>
@@ -4300,7 +4300,7 @@ let bgmPlaylistStarted = false;
       "Wow... that's um... really nice! Why don't you uh... hang it on the fridge or something?",
       "Okay... a decent effort! You're starting to get the hang of this!",
       "Hey now! Look who's learning how to draw! I can tell you put some work into this.",
-      "This is actually quite good.  You could probably sell a few of these at a local craft market!",
+      "This is actually quite good.  Maybe you could sell your art at a local craft market or something!",
       "A stunning composition! You’ve got a keen eye for detail and a steady doodling hand. Let’s get this in an art gallery ASAP!",
       "You’re like a modern day Picasso! or... another one of those old art dudes. Rembrandt?  I think that’s another one...",
       "*speechless applause*",
@@ -7020,9 +7020,12 @@ function updateMusicVolume(newVol) {
     showTooltipForDoodle(cell.dataset.doodle, cell);
 
     if (modalType === 'learn' || modalType === 'portfolio') {
-      // === FULL RESET before moving (critical for iOS) ===
-      actionBtn.style.cssText = '';           // Nuclear reset of all inline styles
-      actionBtn.classList.remove('pulsing');
+    actionBtn.style.cssText = '';
+    actionBtn.style.position = '';
+    actionBtn.style.top = '';
+    actionBtn.style.left = '';
+    actionBtn.style.transform = '';
+    actionBtn.classList.remove('pulsing');
 
       if (!grid.contains(actionBtn)) {
         grid.appendChild(actionBtn);
@@ -7064,16 +7067,20 @@ function updateMusicVolume(newVol) {
   } else {
     hideTooltip();
     if (modalType === 'learn' || modalType === 'portfolio') {
-      actionBtn.style.cssText = '';           // ← Add this line
-      actionBtn.classList.remove('pulsing');
+        actionBtn.style.cssText = '';
+        actionBtn.style.position = '';
+        actionBtn.style.top = '';
+        actionBtn.style.left = '';
+        actionBtn.style.transform = '';
+        actionBtn.classList.remove('pulsing');
 
-      const modal = document.getElementById(modalType + '-modal');
-      const buttonsDiv = modal.querySelector('.buttons');
-      if (buttonsDiv && !buttonsDiv.contains(actionBtn)) {
-        buttonsDiv.appendChild(actionBtn);
-      }
+        const modal = document.getElementById(modalType + '-modal');
+        const buttonsDiv = modal.querySelector('.buttons');
+        if (buttonsDiv && !buttonsDiv.contains(actionBtn)) {
+            buttonsDiv.appendChild(actionBtn);
+        }
     }
-  }
+}
 }
 
     document.getElementById('modal-learn-btn').addEventListener('click', () => {
@@ -7182,14 +7189,24 @@ function updateMusicVolume(newVol) {
 
     hideTooltip();
 
-    // === STRONGER RESET (minimal addition) ===
+    // === STRONGER iOS RESET ===
     btn.style.cssText = '';
+    btn.style.position = 'static';     // Force it out of absolute positioning
+    btn.style.top = '';
+    btn.style.left = '';
+    btn.style.transform = '';
+    btn.style.opacity = '';
+    btn.style.display = '';
 
+    // Move button back safely
     const modal = document.getElementById('portfolio-modal');
     const buttonsDiv = modal.querySelector('.buttons');
     if (buttonsDiv && !buttonsDiv.contains(btn)) {
-      buttonsDiv.appendChild(btn);
+        buttonsDiv.appendChild(btn);
     }
+
+    // Force reflow before repopulating
+    void modal.offsetHeight;
 
     populatePortfolioGrid();
 }, 600);
@@ -10483,7 +10500,7 @@ async function registerServiceWorker() {
 
   try {
     // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.65.js`;   // ← must match the filename you just created
+    const swFile = `/sw-v5.66.js`;   // ← must match the filename you just created
     console.log(`[PWA] Registering ${swFile}`);
 
     swRegistration = await navigator.serviceWorker.register(swFile);
