@@ -174,40 +174,44 @@
     }
 
     #doodle-l1,
-#doodle-l2,
-#doodle-l3,
-#doodle-r1,
-#doodle-r2,
-#doodle-r3 {
-  background-size: auto 75%;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: 25;                    /* visually on top */
-  pointer-events: none;           /* lets clicks pass through to checkbox */
-  transition: transform 0.35s ease-out;
-  transform: translateY(100dvh) rotate(0deg);
-  cursor: pointer;
-  
-  /* NEW: Create a clickable overlay exactly matching the visible doodle image */
-  position: relative;
-}
+    #doodle-l2,
+    #doodle-l3,
+    #doodle-r1,
+    #doodle-r2,
+    #doodle-r3 {
+      background-size: auto 75%;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: 25;
+      /* visually on top */
+      pointer-events: none;
+      /* lets clicks pass through to checkbox */
+      transition: transform 0.35s ease-out;
+      transform: translateY(100dvh) rotate(0deg);
+      cursor: pointer;
 
-#doodle-l1::after,
-#doodle-l2::after,
-#doodle-l3::after,
-#doodle-r1::after,
-#doodle-r2::after,
-#doodle-r3::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 50%;                     /* matches background-size */
-  height: 75%;
-  z-index: 10;
-  pointer-events: auto;           /* only this area is clickable for Guide */
-}
+      /* NEW: Create a clickable overlay exactly matching the visible doodle image */
+      position: relative;
+    }
+
+    #doodle-l1::after,
+    #doodle-l2::after,
+    #doodle-l3::after,
+    #doodle-r1::after,
+    #doodle-r2::after,
+    #doodle-r3::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50%;
+      /* matches background-size */
+      height: 75%;
+      z-index: 10;
+      pointer-events: auto;
+      /* only this area is clickable for Guide */
+    }
 
     .doodle-checkbox {
       position: absolute;
@@ -954,7 +958,7 @@
       font-family: 'Fira Sans', sans-serif;
       font-size: 4.5cqi;
       line-height: 1.55;
-      z-index: 99999!important;
+      z-index: 99999 !important;
       opacity: 0;
       visibility: hidden;
       transform: translateY(2.2cqi);
@@ -1021,7 +1025,7 @@
       color: #000;
       font-family: 'Fira Sans', sans-serif;
       font-weight: 600;
-      font-size: 5cqi;
+      font-size: 4.5cqi;
       padding: 2cqi 5cqi;
       border-radius: 9999px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
@@ -1829,9 +1833,9 @@
     }
 
     #more-games-btn {
-  background: #eaeeef;
-  color: #000000;
-}
+      background: #eaeeef;
+      color: #000000;
+    }
 
     /* ==================== MENU BUTTON HOVER — ROCKING ANIMATION ==================== */
     .menu-btn {
@@ -1966,37 +1970,37 @@
     }
 
     /* ====================== UPDATE PROMPT STYLES (exact copy of abandon prompt) ====================== */
-#update-prompt {
-  position: absolute;
-  inset: 10cqi;
-  background: rgba(255, 255, 255, 0.9);
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 4cqi;
-  z-index: 9999;
-  border-radius: 4cqi;
-  box-shadow: 0 2cqi 8cqi rgba(0, 0, 0, 0.2);
-  container-type: inline-size;
-}
+    #update-prompt {
+      position: absolute;
+      inset: 10cqi;
+      background: rgba(255, 255, 255, 0.9);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 4cqi;
+      z-index: 9999;
+      border-radius: 4cqi;
+      box-shadow: 0 2cqi 8cqi rgba(0, 0, 0, 0.2);
+      container-type: inline-size;
+    }
 
-#update-prompt.active {
-  display: flex;
-}
+    #update-prompt.active {
+      display: flex;
+    }
 
-#update-prompt-text {
-  font-family: 'Fira Sans', sans-serif;
-  font-size: 4.5cqi;
-  text-align: center;
-  width: 80cqi;
-  color: #222;
-}
+    #update-prompt-text {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 4.5cqi;
+      text-align: center;
+      width: 80cqi;
+      color: #222;
+    }
 
-#update-prompt-buttons {
-  display: flex;
-  gap: 4cqi;
-}
+    #update-prompt-buttons {
+      display: flex;
+      gap: 4cqi;
+    }
 
     /* ==================== TUTORIAL CHOICE PROMPT ==================== */
     #tutorial-choice-prompt {
@@ -2487,17 +2491,17 @@
     }
   </style>
 
-<!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json">
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
 
-<!-- iOS Safari support -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Doodle Bash">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+  <!-- iOS Safari support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Doodle Bash">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<!-- Theme color -->
-<meta name="theme-color" content="#4dbde5">
+  <!-- Theme color -->
+  <meta name="theme-color" content="#4dbde5">
 
 </head>
 
@@ -2757,72 +2761,72 @@
       }
 
       /* ==================== MORE GAMES SUB-MENU ==================== */
-#more-games-sub-menu {
-  position: absolute;
-  inset: 4cqh;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(1cqi);
-  border-radius: 1.5cqh;
-  display: none;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  padding-top: 12cqi;
-  padding-bottom: 6cqi;
-  gap: 3cqi;
-  z-index: 60;
-  container-type: inline-size;
-  overflow-y: auto;
-}
+      #more-games-sub-menu {
+        position: absolute;
+        inset: 4cqh;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(1cqi);
+        border-radius: 1.5cqh;
+        display: none;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        padding-top: 12cqi;
+        padding-bottom: 6cqi;
+        gap: 3cqi;
+        z-index: 60;
+        container-type: inline-size;
+        overflow-y: auto;
+      }
 
-#info-sub-menu {
-  position: absolute;
-  inset: 4cqh;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(1cqi);
-  border-radius: 1.5cqh;
-  display: none;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  padding-top: 12cqi;
-  padding-bottom: 6cqi;
-  gap: 3cqi;
-  z-index: 60;
-  container-type: inline-size;
-  overflow-y: auto;
-}
+      #info-sub-menu {
+        position: absolute;
+        inset: 4cqh;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(1cqi);
+        border-radius: 1.5cqh;
+        display: none;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        padding-top: 12cqi;
+        padding-bottom: 6cqi;
+        gap: 3cqi;
+        z-index: 60;
+        container-type: inline-size;
+        overflow-y: auto;
+      }
 
-/* Preview image */
-#more-games-preview {
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  border-radius: 2cqi;
-  margin-bottom: 2cqi;
-  padding: 0 6cqi;
-  box-sizing: border-box;
-}
+      /* Preview image */
+      #more-games-preview {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        border-radius: 2cqi;
+        margin-bottom: 2cqi;
+        padding: 0 6cqi;
+        box-sizing: border-box;
+      }
 
-/* Description text */
-#more-games-text {
-  font-family: 'Fira Sans', sans-serif;
-  font-size: 5cqi;
-  line-height: 1.55;
-  color: #222;
-  text-align: left;
-  width: 88cqi;
-  padding: 0 2cqi;
-  margin-bottom: 4cqi;
-}
+      /* Description text */
+      #more-games-text {
+        font-family: 'Fira Sans', sans-serif;
+        font-size: 5cqi;
+        line-height: 1.55;
+        color: #222;
+        text-align: left;
+        width: 88cqi;
+        padding: 0 2cqi;
+        margin-bottom: 4cqi;
+      }
 
-/* Check it out button - centered */
-#more-games-check-btn {
-  background: #4dbde5;
-  color: white;
-  width: 65cqi;
-  margin-top: 3cqi;
-}
+      /* Check it out button - centered */
+      #more-games-check-btn {
+        background: #4dbde5;
+        color: white;
+        width: 65cqi;
+        margin-top: 3cqi;
+      }
 
       /* FORCE the campaign divider to be visible — overrides everything */
       #campaign-menu .group-divider {
@@ -3364,7 +3368,7 @@
     </div>
     <!-- Main Menu -->
     <div id="main-menu" class="menu-panel">
-    
+
     </div>
 
     <!-- Arcade Sub-Menu -->
@@ -3388,19 +3392,20 @@
     </div>
 
 
-<!-- UPDATE PROMPT (completely unique IDs + exact styling match to abandon prompt) -->
-<div id="update-prompt" class="menu-panel" style="display:none;">
-  <img id="update-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
+    <!-- UPDATE PROMPT (completely unique IDs + exact styling match to abandon prompt) -->
+    <div id="update-prompt" class="menu-panel" style="display:none;">
+      <img id="update-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
 
-  <div id="update-prompt-text" style="text-align:center; font-size:5.2cqi; line-height:1.55; padding:0 4cqi; color:#222;">
-    A new version of <strong>Doodle Bash</strong> is available!
-  </div>
+      <div id="update-prompt-text"
+        style="text-align:center; font-size:5.2cqi; line-height:1.55; padding:0 4cqi; color:#222;">
+        A new version of <strong>Doodle Bash</strong> is available!
+      </div>
 
-  <div id="update-prompt-buttons" style="margin-top:4cqi; display:flex; gap:4cqi; justify-content:center;">
-    <button class="prompt-btn" id="update-yes" style="background:#4dbde5; color:white; flex:1;">Update</button>
-    <button class="prompt-btn" id="update-no" style="background:#fbb065; color:#000; flex:1;">Later</button>
-  </div>
-</div>
+      <div id="update-prompt-buttons" style="margin-top:4cqi; display:flex; gap:4cqi; justify-content:center;">
+        <button class="prompt-btn" id="update-yes" style="background:#4dbde5; color:white; flex:1;">Update</button>
+        <button class="prompt-btn" id="update-no" style="background:#fbb065; color:#000; flex:1;">Later</button>
+      </div>
+    </div>
 
     <!-- Tutorial Choice Prompt for First Scribbles -->
     <div id="tutorial-choice-prompt" class="menu-panel" style="display: none;">
@@ -3423,35 +3428,37 @@
     </div> <!-- Buttons added dynamically via JS -->
 
 
-<div id="info-sub-menu" class="menu-panel">
-  <img id="info-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
+    <div id="info-sub-menu" class="menu-panel">
+      <img id="info-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
 
-  <div class="submenu-title" style="color:#4dbde5; margin-bottom:3cqi;">Doodle Bash v1.0</div>
+      <div class="submenu-title" style="color:#4dbde5; margin-bottom:3cqi;">Doodle Bash v1.0</div>
 
-  <div style="font-family:'Fira Sans',sans-serif; font-size:4.8cqi; line-height:1.55; color:#222; text-align:left; width:86cqi; padding:0 4cqi;">
+      <div
+        style="font-family:'Fira Sans',sans-serif; font-size:4.8cqi; line-height:1.55; color:#222; text-align:left; width:86cqi; padding:0 4cqi;">
 
-    <p style="margin-top:4cqi;">
-      Design and Art by Daniel Young
-      <a href="https://www.clearlysharp.com/games" target="_blank" 
-         style="color:#4dbde5; text-decoration:underline;">clearlysharp.com</a>
-    </p>
+        <p style="margin-top:4cqi;">
+          Design and Art by Daniel Young
+          <a href="https://www.clearlysharp.com/games" target="_blank"
+            style="color:#4dbde5; text-decoration:underline;">clearlysharp.com</a>
+        </p>
 
- <br>
+        <br>
 
-    <p style="margin-top:4cqi;">
-      Original soundtrack by Daniel Young</strong> with drums by Noah Travis of 
-      <a href="https://anthologymusic.wixsite.com/anthology-music" target="_blank" 
-         style="color:#4dbde5; text-decoration:underline;">Anthology Music</a>.
-    </p>
+        <p style="margin-top:4cqi;">
+          Original soundtrack by Daniel Young</strong> with drums by Noah Travis of
+          <a href="https://anthologymusic.wixsite.com/anthology-music" target="_blank"
+            style="color:#4dbde5; text-decoration:underline;">Anthology Music</a>.
+        </p>
 
-    <br>
+        <br>
 
-    <p style="margin-top:5cqi; font-size:4.3cqi; color:#555;">
-      Thanks for doodling! If you have any feedback or bugs to report, feel free to reach out: <strong>dan@clearlysharp.com</strong>
-    </p>
+        <p style="margin-top:5cqi; font-size:4.3cqi; color:#555;">
+          Thanks for doodling! If you have any feedback or bugs to report, feel free to reach out:
+          <strong>dan@clearlysharp.com</strong>
+        </p>
 
-  </div>
-</div>
+      </div>
+    </div>
 
     <!-- Mission Detail Screen -->
     <div id="mission-detail" class="menu-panel" style="display: none;">
@@ -3497,20 +3504,20 @@
       <button id="campaign-start-doodle-btn" class="menu-btn">Let's Doodle!</button>
     </div>
 
-    
 
-<!-- MORE GAMES SUB-MENU -->
-<div id="more-games-sub-menu" class="menu-panel">
-  <img id="more-games-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
 
-  <img src="images/gamespreview.png" id="more-games-preview">
+    <!-- MORE GAMES SUB-MENU -->
+    <div id="more-games-sub-menu" class="menu-panel">
+      <img id="more-games-close-btn" src="images/close.png" class="sub-close-btn" alt="Close">
 
-  <div id="more-games-text">
-    Find more print-and-play games and get help with your next design project at clearlysharp.com
-  </div>
+      <img src="images/gamespreview.png" id="more-games-preview">
 
-  <button class="menu-btn" id="more-games-check-btn">Check it out</button>
-</div>
+      <div id="more-games-text">
+        Find more print-and-play games and get help with your next design project at clearlysharp.com
+      </div>
+
+      <button class="menu-btn" id="more-games-check-btn">Check it out</button>
+    </div>
 
 
 
@@ -3880,10 +3887,10 @@
     let musicVolume = 0.4; // Default BGM volume
 
     // ====================== DYNAMIC BGM PLAYLIST ======================
-let bgmPlaylist = [];
-let currentBgmIndex = 0;
-let currentBgmAudio = null;
-let bgmPlaylistStarted = false;
+    let bgmPlaylist = [];
+    let currentBgmIndex = 0;
+    let currentBgmAudio = null;
+    let bgmPlaylistStarted = false;
 
     const soundFiles = {
       shuffle: ['sounds/clack1.mp3', 'sounds/clack2.mp3', 'sounds/clack3.mp3'],
@@ -3899,12 +3906,12 @@ let bgmPlaylistStarted = false;
       flap: ['sounds/flap1.mp3', 'sounds/flap2.mp3', 'sounds/flap3.mp3', 'sounds/flap4.mp3', 'sounds/flap5.mp3', 'sounds/flap6.mp3'],
       pointbubble: ['sounds/pointbubble1.mp3', 'sounds/pointbubble2.mp3', 'sounds/pointbubble3.mp3', 'sounds/pointbubble4.mp3'],
       // === NEW DYNAMIC BGM PLAYLIST ===
-  bgm: [
-    'sounds/01rain.mp3',
-    'sounds/02class.mp3',
-    'sounds/03town.mp3',
-    'sounds/04cafe.mp3'
-  ]
+      bgm: [
+        'sounds/01rain.mp3',
+        'sounds/02class.mp3',
+        'sounds/03town.mp3',
+        'sounds/04cafe.mp3'
+      ]
     };
 
     // NEW: Menu State Management
@@ -5284,45 +5291,45 @@ let bgmPlaylistStarted = false;
       document.getElementById('campaign-btn').addEventListener('click', showCampaignMenu); // ← normal click now
 
       // More Games button
-const moreGamesBtn = document.getElementById('more-games-btn');
-if (moreGamesBtn) {
-  moreGamesBtn.addEventListener('click', showMoreGamesSubMenu);
-}
+      const moreGamesBtn = document.getElementById('more-games-btn');
+      if (moreGamesBtn) {
+        moreGamesBtn.addEventListener('click', showMoreGamesSubMenu);
+      }
 
 
-// "Check it out" button
-const checkItOutBtn = document.getElementById('more-games-check-btn');
-if (checkItOutBtn) {
-  checkItOutBtn.addEventListener('click', () => {
-    playSound('selectbutton');
-    window.open('https://www.clearlysharp.com/games', '_blank');
-  });
-}
+      // "Check it out" button
+      const checkItOutBtn = document.getElementById('more-games-check-btn');
+      if (checkItOutBtn) {
+        checkItOutBtn.addEventListener('click', () => {
+          playSound('selectbutton');
+          window.open('https://www.clearlysharp.com/games', '_blank');
+        });
+      }
 
 
-// ====================== INFO BUTTON (top right of main menu) ======================
-if (!document.getElementById('info-btn')) {
-  const infoBtn = document.createElement('img');
-  infoBtn.src = 'images/info.png';
-  infoBtn.id = 'info-btn';
-  
-  // Custom positioning - do NOT use sub-close-btn class
-  infoBtn.style.position = 'absolute';
-  infoBtn.style.top = '4cqi';
-  infoBtn.style.right = '4cqi';
-  infoBtn.style.height = '7cqi';
-  infoBtn.style.width = '7cqi';
-  infoBtn.style.zIndex = '80';
-  infoBtn.style.cursor = 'pointer';
+      // ====================== INFO BUTTON (top right of main menu) ======================
+      if (!document.getElementById('info-btn')) {
+        const infoBtn = document.createElement('img');
+        infoBtn.src = 'images/info.png';
+        infoBtn.id = 'info-btn';
 
-  menu.appendChild(infoBtn);
+        // Custom positioning - do NOT use sub-close-btn class
+        infoBtn.style.position = 'absolute';
+        infoBtn.style.top = '4cqi';
+        infoBtn.style.right = '4cqi';
+        infoBtn.style.height = '7cqi';
+        infoBtn.style.width = '7cqi';
+        infoBtn.style.zIndex = '80';
+        infoBtn.style.cursor = 'pointer';
 
-  infoBtn.addEventListener('click', () => {
-    playSound('button');
-    hideMenuPanel('main-menu');
-    showInfoSubMenu();
-  });
-}
+        menu.appendChild(infoBtn);
+
+        infoBtn.addEventListener('click', () => {
+          playSound('button');
+          hideMenuPanel('main-menu');
+          showInfoSubMenu();
+        });
+      }
     }
 
 
@@ -5501,36 +5508,36 @@ if (!document.getElementById('info-btn')) {
       currentMode = 'campaign-menu';
     }
 
-function showMoreGamesSubMenu() {
-  playSound('button');
-  hideMenuPanel('main-menu');
-  showMenuPanel('more-games-sub-menu', { silent: true });
+    function showMoreGamesSubMenu() {
+      playSound('button');
+      hideMenuPanel('main-menu');
+      showMenuPanel('more-games-sub-menu', { silent: true });
 
-  // Wire close button here (instead of in renderMenuButtons)
-  const closeBtn = document.getElementById('more-games-close-btn');
-  if (closeBtn) {
-    closeBtn.onclick = () => {
-      playSound('selectbutton');
-      hideMenuPanel('more-games-sub-menu');
-      showMainMenu();
-    };
-  }
-}
+      // Wire close button here (instead of in renderMenuButtons)
+      const closeBtn = document.getElementById('more-games-close-btn');
+      if (closeBtn) {
+        closeBtn.onclick = () => {
+          playSound('selectbutton');
+          hideMenuPanel('more-games-sub-menu');
+          showMainMenu();
+        };
+      }
+    }
 
-function showInfoSubMenu() {
-  const subMenu = document.getElementById('info-sub-menu');
-  showMenuPanel('info-sub-menu', { silent: true });
+    function showInfoSubMenu() {
+      const subMenu = document.getElementById('info-sub-menu');
+      showMenuPanel('info-sub-menu', { silent: true });
 
-  // Wire close button
-  const closeBtn = document.getElementById('info-close-btn');
-  if (closeBtn) {
-    closeBtn.onclick = () => {
-      playSound('selectbutton');
-      hideMenuPanel('info-sub-menu');
-      showMainMenu();
-    };
-  }
-}
+      // Wire close button
+      const closeBtn = document.getElementById('info-close-btn');
+      if (closeBtn) {
+        closeBtn.onclick = () => {
+          playSound('selectbutton');
+          hideMenuPanel('info-sub-menu');
+          showMainMenu();
+        };
+      }
+    }
 
     function handleCampaignCodeSubmit() {
       playSound('selectbutton');
@@ -5981,54 +5988,54 @@ function showInfoSubMenu() {
     });
 
     document.getElementById('prompt-yes').addEventListener('click', () => {
-  hasGameInProgress = false;
+      hasGameInProgress = false;
 
-  // ====================== TUTORIAL RESET ======================
-  tutorialInProgress = false;
-  tutorialRestricted = false;
-  tutorialStep = 0;
-  tutorialCompleted = false;           // ← Added
-  firstTutorialShuffleDone = false;    // ← Added
-  isTypingTutorial = false;            // ← Added
+      // ====================== TUTORIAL RESET ======================
+      tutorialInProgress = false;
+      tutorialRestricted = false;
+      tutorialStep = 0;
+      tutorialCompleted = false;           // ← Added
+      firstTutorialShuffleDone = false;    // ← Added
+      isTypingTutorial = false;            // ← Added
 
-  // FULL CLEANUP: hide the tutorial overlay immediately
-  const overlay = document.getElementById('tutorial-overlay');
-  if (overlay) {
-    overlay.classList.remove('active', 'slide-out', 'slide-in'); // ← Expanded
-    overlay.style.transform = '';                               // ← Added
-    overlay.style.transition = '';                              // ← Added
-  }
+      // FULL CLEANUP: hide the tutorial overlay immediately
+      const overlay = document.getElementById('tutorial-overlay');
+      if (overlay) {
+        overlay.classList.remove('active', 'slide-out', 'slide-in'); // ← Expanded
+        overlay.style.transform = '';                               // ← Added
+        overlay.style.transition = '';                              // ← Added
+      }
 
-  clearSavedGameState();
+      clearSavedGameState();
 
-  deck = { ...defaultDeck };
-  resetShuffleZone();
-  activeCampaign = null;
+      deck = { ...defaultDeck };
+      resetShuffleZone();
+      activeCampaign = null;
 
-  // NEW: Clear mission state when switching to Arcade (prevents tutorial from re-triggering)
-  if (pendingNewGameAction === 'arcade') {
-    currentMission = null;
-  }
+      // NEW: Clear mission state when switching to Arcade (prevents tutorial from re-triggering)
+      if (pendingNewGameAction === 'arcade') {
+        currentMission = null;
+      }
 
-  hideMenuPanel('abandon-prompt');
+      hideMenuPanel('abandon-prompt');
 
-  if (pendingNewGameAction === 'arcade') {
-    hideMenuPanel('main-menu', { silent: true });
-  showMenuPanel('arcade-sub-menu', { silent: true });
-  currentMode = 'arcade-sub';
-} else if (pendingNewGameAction === 'getting-started') {
-    showGettingStartedSubMenu();
-  } else if (pendingNewGameAction === 'mission') {
-    startGame();
-    hideMenuPanel('mission-detail');
-  }
-  // ←←← NEW: Campaign support
-  else if (pendingNewGameAction === 'campaign') {
-    showCampaignMenu();
-  }
-  pendingNewGameAction = null;
-});
-    
+      if (pendingNewGameAction === 'arcade') {
+        hideMenuPanel('main-menu', { silent: true });
+        showMenuPanel('arcade-sub-menu', { silent: true });
+        currentMode = 'arcade-sub';
+      } else if (pendingNewGameAction === 'getting-started') {
+        showGettingStartedSubMenu();
+      } else if (pendingNewGameAction === 'mission') {
+        startGame();
+        hideMenuPanel('mission-detail');
+      }
+      // ←←← NEW: Campaign support
+      else if (pendingNewGameAction === 'campaign') {
+        showCampaignMenu();
+      }
+      pendingNewGameAction = null;
+    });
+
     document.getElementById('mission-play-btn').addEventListener('click', () => {
       playSound('button');
       if (hasGameInProgress) {
@@ -6051,145 +6058,145 @@ function showInfoSubMenu() {
     // In remove (after deck[doodle]--)
     hasGameInProgress = Object.entries(deck).some(([k, v]) => v !== defaultDeck[k]); // Check if differs from default
 
-    
-function preloadAudio() {
-  if (Object.keys(audio).length > 0) return;
 
-  console.log('🎵 Preloading all sound effects + BGM playlist...');
+    function preloadAudio() {
+      if (Object.keys(audio).length > 0) return;
 
-  const volumes = {
-    shuffle: 0.6,
-    learn: 0.6,
-    remove: 0.6,
-    snap: 0.6,
-    score: 0.6,
-    win: 0.6,
-    modalslide: 0.2,
-    selectbutton: 0.3,
-    flap: 0.4,
-    pointbubble: 0.5,
-    bgm: 0.75
-  };
+      console.log('🎵 Preloading all sound effects + BGM playlist...');
 
-  Object.entries(soundFiles).forEach(([name, files]) => {
-    const vol = volumes[name] || 0.6;
+      const volumes = {
+        shuffle: 0.6,
+        learn: 0.6,
+        remove: 0.6,
+        snap: 0.6,
+        score: 0.6,
+        win: 0.6,
+        modalslide: 0.2,
+        selectbutton: 0.3,
+        flap: 0.4,
+        pointbubble: 0.5,
+        bgm: 0.75
+      };
 
-    if (name === 'bgm' && Array.isArray(files)) {
-      // Special handling for BGM playlist
-      bgmPlaylist = files;
-      files.forEach((src, i) => {
-        const soundKey = `bgm_${i}`;
-        audio[soundKey] = new Audio(src);
-        audio[soundKey].preload = 'auto';
-        audio[soundKey].volume = vol;
-        audio[soundKey].baseVolume = vol;
-        audio[soundKey].loop = false; // We control looping manually
+      Object.entries(soundFiles).forEach(([name, files]) => {
+        const vol = volumes[name] || 0.6;
 
-        audio[soundKey].onerror = () => {
-          console.error(`❌ Failed to load BGM track: ${src}`);
-        };
-        audio[soundKey].onloadeddata = () => {
-          console.log(` Loaded BGM track: ${soundKey} (${src})`);
-        };
+        if (name === 'bgm' && Array.isArray(files)) {
+          // Special handling for BGM playlist
+          bgmPlaylist = files;
+          files.forEach((src, i) => {
+            const soundKey = `bgm_${i}`;
+            audio[soundKey] = new Audio(src);
+            audio[soundKey].preload = 'auto';
+            audio[soundKey].volume = vol;
+            audio[soundKey].baseVolume = vol;
+            audio[soundKey].loop = false; // We control looping manually
+
+            audio[soundKey].onerror = () => {
+              console.error(`❌ Failed to load BGM track: ${src}`);
+            };
+            audio[soundKey].onloadeddata = () => {
+              console.log(` Loaded BGM track: ${soundKey} (${src})`);
+            };
+          });
+        }
+        else if (Array.isArray(files)) {
+          soundsIndex[name] = 0;
+          files.forEach((src, i) => {
+            const soundKey = `${name}_${i}`;
+            audio[soundKey] = new Audio(src);
+            audio[soundKey].preload = 'auto';
+            audio[soundKey].volume = vol;
+            audio[soundKey].baseVolume = vol;
+
+            audio[soundKey].onerror = () => console.error(`❌ Failed to load ${src}`);
+          });
+        }
+        else {
+          audio[name] = new Audio(files);
+          audio[name].preload = 'auto';
+          audio[name].volume = vol;
+          audio[name].baseVolume = vol;
+        }
       });
-    } 
-    else if (Array.isArray(files)) {
-      soundsIndex[name] = 0;
-      files.forEach((src, i) => {
-        const soundKey = `${name}_${i}`;
-        audio[soundKey] = new Audio(src);
-        audio[soundKey].preload = 'auto';
-        audio[soundKey].volume = vol;
-        audio[soundKey].baseVolume = vol;
 
-        audio[soundKey].onerror = () => console.error(`❌ Failed to load ${src}`);
+      console.log('✅ All sounds + BGM playlist preloaded!');
+    }
+
+    // ====================== BGM PLAYLIST CONTROLLER ======================
+    function startBgmPlaylist() {
+      if (bgmPlaylistStarted || bgmPlaylist.length === 0) return;
+
+      // Pick a random starting song
+      currentBgmIndex = Math.floor(Math.random() * bgmPlaylist.length);
+      console.log(`🎵 Starting BGM playlist at random track: ${currentBgmIndex + 1}`);
+
+      playCurrentBgmTrack();
+      bgmPlaylistStarted = true;
+    }
+
+    function playCurrentBgmTrack() {
+      // Stop previous track if any
+      if (currentBgmAudio) {
+        currentBgmAudio.pause();
+        currentBgmAudio.onended = null;
+      }
+
+      const key = `bgm_${currentBgmIndex}`;
+      currentBgmAudio = audio[key];
+
+      if (!currentBgmAudio) {
+        console.warn("BGM track not found:", key);
+        return;
+      }
+
+      currentBgmAudio.currentTime = 0;
+      currentBgmAudio.volume = currentBgmAudio.baseVolume * musicVolume;
+
+      currentBgmAudio.play().then(() => {
+        console.log(`▶️ Now playing: Track ${currentBgmIndex + 1}`);
+      }).catch(e => {
+        console.warn("BGM play blocked:", e);
       });
-    } 
-    else {
-      audio[name] = new Audio(files);
-      audio[name].preload = 'auto';
-      audio[name].volume = vol;
-      audio[name].baseVolume = vol;
+
+      // When this song ends, go to the next one in sequence
+      currentBgmAudio.onended = () => {
+        currentBgmIndex = (currentBgmIndex + 1) % bgmPlaylist.length;
+        playCurrentBgmTrack();
+      };
     }
-  });
 
-  console.log('✅ All sounds + BGM playlist preloaded!');
-}
+    function updateSFXVolume(newVol) {
+      sfxVolume = newVol;
 
-// ====================== BGM PLAYLIST CONTROLLER ======================
-function startBgmPlaylist() {
-  if (bgmPlaylistStarted || bgmPlaylist.length === 0) return;
+      // Update all SFX
+      Object.keys(audio).forEach(key => {
+        if (key !== 'bgm' && !key.startsWith('bgm_') && audio[key].baseVolume !== undefined) {
+          audio[key].volume = audio[key].baseVolume * sfxVolume;
+        }
+      });
 
-  // Pick a random starting song
-  currentBgmIndex = Math.floor(Math.random() * bgmPlaylist.length);
-  console.log(`🎵 Starting BGM playlist at random track: ${currentBgmIndex + 1}`);
-
-  playCurrentBgmTrack();
-  bgmPlaylistStarted = true;
-}
-
-function playCurrentBgmTrack() {
-  // Stop previous track if any
-  if (currentBgmAudio) {
-    currentBgmAudio.pause();
-    currentBgmAudio.onended = null;
-  }
-
-  const key = `bgm_${currentBgmIndex}`;
-  currentBgmAudio = audio[key];
-
-  if (!currentBgmAudio) {
-    console.warn("BGM track not found:", key);
-    return;
-  }
-
-  currentBgmAudio.currentTime = 0;
-  currentBgmAudio.volume = currentBgmAudio.baseVolume * musicVolume;
-
-  currentBgmAudio.play().then(() => {
-    console.log(`▶️ Now playing: Track ${currentBgmIndex + 1}`);
-  }).catch(e => {
-    console.warn("BGM play blocked:", e);
-  });
-
-  // When this song ends, go to the next one in sequence
-  currentBgmAudio.onended = () => {
-    currentBgmIndex = (currentBgmIndex + 1) % bgmPlaylist.length;
-    playCurrentBgmTrack();
-  };
-}
-
-function updateSFXVolume(newVol) {
-  sfxVolume = newVol;
-
-  // Update all SFX
-  Object.keys(audio).forEach(key => {
-    if (key !== 'bgm' && !key.startsWith('bgm_') && audio[key].baseVolume !== undefined) {
-      audio[key].volume = audio[key].baseVolume * sfxVolume;
+      saveAudioSettings();   // ← NEW: persist the change
     }
-  });
 
-  saveAudioSettings();   // ← NEW: persist the change
-}
+    function updateMusicVolume(newVol) {
+      musicVolume = newVol;
 
-function updateMusicVolume(newVol) {
-  musicVolume = newVol;
+      // Update currently playing BGM
+      if (currentBgmAudio) {
+        currentBgmAudio.volume = currentBgmAudio.baseVolume * musicVolume;
+      }
 
-  // Update currently playing BGM
-  if (currentBgmAudio) {
-    currentBgmAudio.volume = currentBgmAudio.baseVolume * musicVolume;
-  }
+      // Update all BGM tracks
+      for (let i = 0; i < bgmPlaylist.length; i++) {
+        const track = audio[`bgm_${i}`];
+        if (track) {
+          track.volume = track.baseVolume * musicVolume;
+        }
+      }
 
-  // Update all BGM tracks
-  for (let i = 0; i < bgmPlaylist.length; i++) {
-    const track = audio[`bgm_${i}`];
-    if (track) {
-      track.volume = track.baseVolume * musicVolume;
+      saveAudioSettings();   // ← NEW: persist the change
     }
-  }
-
-  saveAudioSettings();   // ← NEW: persist the change
-}
 
 
     function playSound(name) {
@@ -6236,18 +6243,18 @@ function updateMusicVolume(newVol) {
       });
       // Then continue with if (filteredMerges.length === 0 && filterDoodle) { ... }
       if (filteredMerges.length === 0 && filterDoodle) {
-  const empty = document.createElement('div');
-  empty.style.padding = '20cqi';
-  empty.style.textAlign = 'center';
-  empty.style.color = '#666';
-  empty.style.fontSize = '5cqi';
-  empty.style.fontFamily = "'Fira Sans', sans-serif";
-  empty.innerHTML = `
+        const empty = document.createElement('div');
+        empty.style.padding = '20cqi';
+        empty.style.textAlign = 'center';
+        empty.style.color = '#666';
+        empty.style.fontSize = '5cqi';
+        empty.style.fontFamily = "'Fira Sans', sans-serif";
+        empty.innerHTML = `
   The <img src="images/${filterDoodle}.png" class="inline-doodle" style="vertical-align: middle; height: 1.15em; width: auto;"> 
   doodle has not been unlocked yet.
 `;
-  content.appendChild(empty);
-} else {
+        content.appendChild(empty);
+      } else {
         if (!filterDoodle) {
           // Full guide: Custom order by first input
           const guideOrder = ["circle", "square", "triangle", "line", "dot", "lens", "halfcircle", "drop", "teeth", "cylinder", "cube", "pyramid"];
@@ -7001,87 +7008,112 @@ function updateMusicVolume(newVol) {
 
       console.log(`✅ Fast Learner added: ${randomDoodle}`);
     }
-    
+
+    function resetActionButton(btn) {
+      if (!btn) return;
+
+      // Remove all animation and state classes
+      btn.classList.remove('pulsing', 'animate-shrink', 'animate-learn');
+
+      // Aggressive style reset (more thorough than cssText = '' for iOS Safari)
+      btn.style.cssText = '';
+      btn.style.position = 'absolute';
+      btn.style.display = 'none';
+      btn.style.opacity = '0';
+      btn.style.top = '';
+      btn.style.left = '';
+      btn.style.transform = '';
+    }
+
     function toggleSelection(cell, grid, modalType) {
-  grid.querySelectorAll('.doodle-cell.tutorial-highlight').forEach(c => {
-    c.classList.remove('tutorial-highlight');
-    c.style.removeProperty('--base-transform');
-  });
+      grid.querySelectorAll('.doodle-cell.tutorial-highlight').forEach(c => {
+        c.classList.remove('tutorial-highlight');
+        c.style.removeProperty('--base-transform');
+      });
 
-  const isSelected = cell.classList.contains('selected');
-  const actionBtn = modalType === 'learn'
-    ? document.getElementById('modal-learn-btn')
-    : document.getElementById('modal-remove-btn');
+      const isSelected = cell.classList.contains('selected');
+      const actionBtn = modalType === 'learn'
+        ? document.getElementById('modal-learn-btn')
+        : document.getElementById('modal-remove-btn');
 
-  grid.querySelectorAll('.doodle-cell').forEach(c => c.classList.remove('selected'));
+      grid.querySelectorAll('.doodle-cell').forEach(c => c.classList.remove('selected'));
 
-  if (!isSelected) {
-    cell.classList.add('selected');
-    showTooltipForDoodle(cell.dataset.doodle, cell);
+      if (!isSelected) {
+        cell.classList.add('selected');
+        showTooltipForDoodle(cell.dataset.doodle, cell);
 
-    if (modalType === 'learn' || modalType === 'portfolio') {
-    actionBtn.style.cssText = '';
-    actionBtn.style.position = '';
-    actionBtn.style.top = '';
-    actionBtn.style.left = '';
-    actionBtn.style.transform = '';
-    actionBtn.classList.remove('pulsing');
+        if (modalType === 'learn' || modalType === 'portfolio') {
+          resetActionButton(actionBtn);           // ← NEW: Force clean state before positioning (iOS fix)
 
-      if (!grid.contains(actionBtn)) {
-        grid.appendChild(actionBtn);
-      }
+          actionBtn.style.cssText = '';
+          actionBtn.style.position = '';
+          actionBtn.style.top = '';
+          actionBtn.style.left = '';
+          actionBtn.style.transform = '';
+          actionBtn.classList.remove('pulsing');
 
-      // iOS Safari hardening (kept but now on a clean button)
-      actionBtn.style.display = 'block';
-      actionBtn.style.opacity = '0';
-      actionBtn.style.position = 'absolute';  // Be explicit
-
-      void actionBtn.offsetHeight;
-      void grid.offsetHeight;
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const gridRect = grid.getBoundingClientRect();
-          const cellRect = cell.getBoundingClientRect();
-          const btnRect = actionBtn.getBoundingClientRect();
-
-          const gapPx = (5.2 / 100) * gridRect.width;
-          const relativeCellTop = cellRect.top - gridRect.top;
-          const topOffset = relativeCellTop + (cellRect.height / 2) - (btnRect.height / 2);
-
-          let leftOffset;
-          const cellIndex = Array.from(grid.querySelectorAll('.doodle-cell')).indexOf(cell);
-          if ((cellIndex % 6) + 1 <= 3) {
-            leftOffset = (cellRect.right - gridRect.left) + gapPx;
-          } else {
-            leftOffset = (cellRect.left - gridRect.left) - btnRect.width - gapPx;
+          if (actionBtn.parentNode !== grid) {
+            if (actionBtn.parentNode) {
+              actionBtn.parentNode.removeChild(actionBtn);
+            }
+            grid.appendChild(actionBtn);
           }
 
-          actionBtn.style.top = `${topOffset}px`;
-          actionBtn.style.left = `${leftOffset}px`;
-          actionBtn.style.opacity = '1';
-          actionBtn.classList.add('pulsing');
-        });
-      });
-    }
-  } else {
-    hideTooltip();
-    if (modalType === 'learn' || modalType === 'portfolio') {
-        actionBtn.style.cssText = '';
-        actionBtn.style.position = '';
-        actionBtn.style.top = '';
-        actionBtn.style.left = '';
-        actionBtn.style.transform = '';
-        actionBtn.classList.remove('pulsing');
+          // iOS Safari hardening (kept but now on a clean button)
+          actionBtn.style.display = 'block';
+          actionBtn.style.opacity = '0';
+          actionBtn.style.position = 'absolute';  // Be explicit
 
-        const modal = document.getElementById(modalType + '-modal');
-        const buttonsDiv = modal.querySelector('.buttons');
-        if (buttonsDiv && !buttonsDiv.contains(actionBtn)) {
-            buttonsDiv.appendChild(actionBtn);
+          void actionBtn.offsetHeight;
+          void grid.offsetHeight;
+
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              const gridRect = grid.getBoundingClientRect();
+              const cellRect = cell.getBoundingClientRect();
+              const btnRect = actionBtn.getBoundingClientRect();
+
+              const gapPx = (5.2 / 100) * gridRect.width;
+              const relativeCellTop = cellRect.top - gridRect.top;
+              const topOffset = relativeCellTop + (cellRect.height / 2) - (btnRect.height / 2);
+
+              let leftOffset;
+              const cellIndex = Array.from(grid.querySelectorAll('.doodle-cell')).indexOf(cell);
+              if ((cellIndex % 6) + 1 <= 3) {
+                leftOffset = (cellRect.right - gridRect.left) + gapPx;
+              } else {
+                leftOffset = (cellRect.left - gridRect.left) - btnRect.width - gapPx;
+              }
+
+              actionBtn.style.top = `${topOffset}px`;
+              actionBtn.style.left = `${leftOffset}px`;
+              actionBtn.style.opacity = '1';
+              actionBtn.classList.add('pulsing');
+            });
+          });
         }
+      } else {
+        hideTooltip();
+        if (modalType === 'learn' || modalType === 'portfolio') {
+          resetActionButton(actionBtn);
+          actionBtn.style.cssText = '';
+          actionBtn.style.position = '';
+          actionBtn.style.top = '';
+          actionBtn.style.left = '';
+          actionBtn.style.transform = '';
+          actionBtn.classList.remove('pulsing');
+
+          const modal = document.getElementById(modalType + '-modal');
+          const buttonsDiv = modal.querySelector('.buttons');
+          if (buttonsDiv && actionBtn.parentNode !== buttonsDiv) {
+            if (actionBtn.parentNode) {
+              actionBtn.parentNode.removeChild(actionBtn);
+            }
+            buttonsDiv.appendChild(actionBtn);
+          }
+        }
+      }
     }
-}
-}
 
     document.getElementById('modal-learn-btn').addEventListener('click', () => {
       playSound('selectbutton');  // ← NEW
@@ -7182,34 +7214,30 @@ function updateMusicVolume(newVol) {
           saveGameState();
           selected.classList.add('animate-remove');
           setTimeout(() => {
-    selected.style.opacity = '0';
-    selected.style.pointerEvents = 'none';
-    selected.classList.remove('selected');
-    btn.classList.remove('animate-shrink');
+            selected.style.opacity = '0';
+            selected.style.pointerEvents = 'none';
+            selected.classList.remove('selected');
+            btn.classList.remove('animate-shrink');
 
-    hideTooltip();
+            hideTooltip();
 
-    // === STRONGER iOS RESET ===
-    btn.style.cssText = '';
-    btn.style.position = 'static';     // Force it out of absolute positioning
-    btn.style.top = '';
-    btn.style.left = '';
-    btn.style.transform = '';
-    btn.style.opacity = '';
-    btn.style.display = '';
+            // === STRONGER iOS RESET ===
+            resetActionButton(btn);                    // ← NEW: Use centralized reset (more reliable on iOS)
+            btn.style.position = 'static';             // Keep this explicit reset after the helper
 
-    // Move button back safely
-    const modal = document.getElementById('portfolio-modal');
-    const buttonsDiv = modal.querySelector('.buttons');
-    if (buttonsDiv && !buttonsDiv.contains(btn)) {
-        buttonsDiv.appendChild(btn);
-    }
+            // Move button back safely
+            const modal = document.getElementById('portfolio-modal');
+            const buttonsDiv = modal.querySelector('.buttons');
+            if (buttonsDiv && !buttonsDiv.contains(btn)) {
+              buttonsDiv.appendChild(btn);
+            }
 
-    // Force reflow before repopulating
-    void modal.offsetHeight;
+            // Force reflow before repopulating
+            void modal.offsetHeight;
 
-    populatePortfolioGrid();
-}, 600);
+            populatePortfolioGrid();
+            resetActionButton(btn);
+          }, 600);
         }
       }
     });
@@ -7325,28 +7353,28 @@ function updateMusicVolume(newVol) {
     const LOW_CONFIDENCE_THRESHOLD = 0.75;
     const playableCols = [0, 1, 2, 3, 4, 6, 7, 8, 9, 10];
     function scoreLog(text) { document.getElementById('score-console-log').textContent += text + "\n"; }
-    
+
     async function scoreLoadModel() {
-  scoreLog("Loading ML model...");
-  try {
-    // Try to load from cache first (works offline)
-    scoreModel = await tf.loadLayersModel('models/doodle/model.json');
-    const metadata = await fetch('models/doodle/metadata.json');
-    const meta = await metadata.json();
-    scoreClassNames = meta.labels || meta.classNames || [];
-    scoreLog(`✅ Model loaded! ${scoreClassNames.length} classes`);
-    return true;
-  } catch (e) {
-    scoreLog("❌ Model failed to load: " + e.message);
-    console.error("Model load error:", e);
-    // Optional: show a user-friendly message
-    const toast = document.getElementById('toast');
-    toast.textContent = "Working offline — some scoring features limited";
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
-    return false;
-  }
-}
+      scoreLog("Loading ML model...");
+      try {
+        // Try to load from cache first (works offline)
+        scoreModel = await tf.loadLayersModel('models/doodle/model.json');
+        const metadata = await fetch('models/doodle/metadata.json');
+        const meta = await metadata.json();
+        scoreClassNames = meta.labels || meta.classNames || [];
+        scoreLog(`✅ Model loaded! ${scoreClassNames.length} classes`);
+        return true;
+      } catch (e) {
+        scoreLog("❌ Model failed to load: " + e.message);
+        console.error("Model load error:", e);
+        // Optional: show a user-friendly message
+        const toast = document.getElementById('toast');
+        toast.textContent = "Working offline — some scoring features limited";
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+        return false;
+      }
+    }
     function addWarpedGridOverlay() {
       const warpedImg = document.getElementById('score-warped-preview');
       let overlay = document.getElementById('score-warped-grid-overlay');
@@ -8246,38 +8274,38 @@ function updateMusicVolume(newVol) {
     }
 
     function resetNumberlineAnimation() {
-  const scoreLine = document.getElementById('score-line');
-  if (!scoreLine) return;
+      const scoreLine = document.getElementById('score-line');
+      if (!scoreLine) return;
 
-  const squiggle = document.getElementById('score-squiggle');
-  const marker = document.getElementById('score-marker');
-  const numberDivs = scoreLine.querySelectorAll('.score-numbers > div');
+      const squiggle = document.getElementById('score-squiggle');
+      const marker = document.getElementById('score-marker');
+      const numberDivs = scoreLine.querySelectorAll('.score-numbers > div');
 
-  // Force hide
-  scoreLine.style.display = 'none';
+      // Force hide
+      scoreLine.style.display = 'none';
 
-  // Reset squiggle
-  if (squiggle) {
-    squiggle.style.transition = 'none';
-    squiggle.style.clipPath = 'inset(0 100% 0 0)';
-  }
+      // Reset squiggle
+      if (squiggle) {
+        squiggle.style.transition = 'none';
+        squiggle.style.clipPath = 'inset(0 100% 0 0)';
+      }
 
-  // Reset marker completely
-  if (marker) {
-    marker.style.transition = 'none';
-    marker.style.left = '0%';
-    marker.style.transform = 'translate(-50%, -50%) rotate(0deg)';
-    // Clear any leftover transform from the wiggle animation
-    marker.style.removeProperty('transform');
-  }
+      // Reset marker completely
+      if (marker) {
+        marker.style.transition = 'none';
+        marker.style.left = '0%';
+        marker.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+        // Clear any leftover transform from the wiggle animation
+        marker.style.removeProperty('transform');
+      }
 
-  // Remove all .lit classes from the numbers
-  numberDivs.forEach(div => {
-    div.classList.remove('lit');
-  });
+      // Remove all .lit classes from the numbers
+      numberDivs.forEach(div => {
+        div.classList.remove('lit');
+      });
 
-  console.log('%c✅ Numberline animation state fully reset', 'color:#0f0');
-}
+      console.log('%c✅ Numberline animation state fully reset', 'color:#0f0');
+    }
 
     function resetScoreModal() {
       console.log('%c🔄 [resetScoreModal] FULL DEEP CLEANUP — ready for next scan', 'color:#0f0; font-weight:bold');
@@ -8311,23 +8339,23 @@ function updateMusicVolume(newVol) {
 
       // 4. CRITICAL: Clear ALL dynamic results content (this was the main cause of second-scan crash)
 
-// === AGGRESSIVE NUMBERLINE + TALLY RESET ===
-const tally = document.getElementById('score-tally');
-const scoreLine = document.getElementById('score-line');
+      // === AGGRESSIVE NUMBERLINE + TALLY RESET ===
+      const tally = document.getElementById('score-tally');
+      const scoreLine = document.getElementById('score-line');
 
-// Rescue the numberline if it got moved into the tally
-if (scoreLine && tally && tally.contains(scoreLine)) {
-  const scoreContent = document.getElementById('score-content');
-  if (scoreContent) scoreContent.appendChild(scoreLine);
-}
+      // Rescue the numberline if it got moved into the tally
+      if (scoreLine && tally && tally.contains(scoreLine)) {
+        const scoreContent = document.getElementById('score-content');
+        if (scoreContent) scoreContent.appendChild(scoreLine);
+      }
 
-if (tally) {
-  tally.style.display = 'none';
-  tally.innerHTML = '';
-}
+      if (tally) {
+        tally.style.display = 'none';
+        tally.innerHTML = '';
+      }
 
-// Call the dedicated reset function (this is the important part)
-resetNumberlineAnimation();
+      // Call the dedicated reset function (this is the important part)
+      resetNumberlineAnimation();
 
       const review = document.getElementById('score-review-container');
       if (review) {
@@ -8381,8 +8409,8 @@ resetNumberlineAnimation();
       if (tweakEl) tweakEl.style.display = 'none';
       console.log('%c✅ Score modal is now completely clean', 'color:lime');
     }
-    
-    
+
+
     function resetShuffleZone() {
       const doodleIds = ['doodle-l1', 'doodle-l2', 'doodle-l3', 'doodle-r1', 'doodle-r2', 'doodle-r3'];
       doodleIds.forEach(id => {
@@ -8516,36 +8544,36 @@ resetNumberlineAnimation();
       }
     }
 
-// ====================== AUDIO SETTINGS PERSISTENCE ======================
-function saveAudioSettings() {
-  const settings = {
-    sfxVolume: sfxVolume,
-    musicVolume: musicVolume
-  };
-  localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(settings));
-}
-
-function loadAudioSettings() {
-  const saved = localStorage.getItem(AUDIO_SETTINGS_KEY);
-  if (!saved) return false;
-
-  try {
-    const settings = JSON.parse(saved);
-    
-    if (settings.sfxVolume !== undefined) {
-      sfxVolume = settings.sfxVolume;
-    }
-    if (settings.musicVolume !== undefined) {
-      musicVolume = settings.musicVolume;
+    // ====================== AUDIO SETTINGS PERSISTENCE ======================
+    function saveAudioSettings() {
+      const settings = {
+        sfxVolume: sfxVolume,
+        musicVolume: musicVolume
+      };
+      localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(settings));
     }
 
-    console.log('🔊 Audio settings loaded:', settings);
-    return true;
-  } catch (e) {
-    console.error('Failed to load audio settings:', e);
-    return false;
-  }
-}
+    function loadAudioSettings() {
+      const saved = localStorage.getItem(AUDIO_SETTINGS_KEY);
+      if (!saved) return false;
+
+      try {
+        const settings = JSON.parse(saved);
+
+        if (settings.sfxVolume !== undefined) {
+          sfxVolume = settings.sfxVolume;
+        }
+        if (settings.musicVolume !== undefined) {
+          musicVolume = settings.musicVolume;
+        }
+
+        console.log('🔊 Audio settings loaded:', settings);
+        return true;
+      } catch (e) {
+        console.error('Failed to load audio settings:', e);
+        return false;
+      }
+    }
 
     function restoreCurrentVisualState() {
       const saved = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
@@ -8851,18 +8879,18 @@ function loadAudioSettings() {
     }
 
     function calculateSmiley() {
-  let total = 0, perCellList = [];
-  for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
-    if (scoreBoard[r][c] === 'smiley') {
-      let count = getSurrounding(r, c).filter(s => ['pizza', 'mug', 'icecream'].includes(s.doodle)).length;
-      let pts = 1 + count * 2; // 1 base + 2 per surrounding pizza/mug/icecream
-      total += pts;
-      perCellList.push({ r, c, pts });
-      scorePerCellScore[r][c] += pts;
+      let total = 0, perCellList = [];
+      for (let r = 0; r < 7; r++) for (let c = 0; c < 11; c++) {
+        if (scoreBoard[r][c] === 'smiley') {
+          let count = getSurrounding(r, c).filter(s => ['pizza', 'mug', 'icecream'].includes(s.doodle)).length;
+          let pts = 1 + count * 2; // 1 base + 2 per surrounding pizza/mug/icecream
+          total += pts;
+          perCellList.push({ r, c, pts });
+          scorePerCellScore[r][c] += pts;
+        }
+      }
+      return { total, perCellList };
     }
-  }
-  return { total, perCellList };
-}
 
     function calculateSword() {
       let total = 0, perCellList = [];
@@ -9193,85 +9221,85 @@ function loadAudioSettings() {
       }
       return { total, perCellList };
     }
-    
+
     function calculateFocalPointsBonus(nonZeroResults) {
-  if (!activeCampaign || activeCampaign.code !== "centerx2") return;
+      if (!activeCampaign || activeCampaign.code !== "centerx2") return;
 
-  console.log("%c🔍 [centerx2] Starting center doubling check...", "color:#0f0; font-weight:bold");
+      console.log("%c🔍 [centerx2] Starting center doubling check...", "color:#0f0; font-weight:bold");
 
-  const centers = [
-    { r: 3, c: 2 },
-    { r: 3, c: 8 }
-  ];
+      const centers = [
+        { r: 3, c: 2 },
+        { r: 3, c: 8 }
+      ];
 
-  const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+      const dirs = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
 
-  for (let { r, c } of centers) {
-    const doodle = scoreBoard[r]?.[c];
-    if (!doodle || doodle === 'unknown') continue;
+      for (let { r, c } of centers) {
+        const doodle = scoreBoard[r]?.[c];
+        if (!doodle || doodle === 'unknown') continue;
 
-    const currentValue = scorePerCellScore[r][c] || 0;
-    if (currentValue <= 0) continue;
+        const currentValue = scorePerCellScore[r][c] || 0;
+        if (currentValue <= 0) continue;
 
-    const extra = currentValue;
-    const newValue = currentValue * 2;
+        const extra = currentValue;
+        const newValue = currentValue * 2;
 
-    // Double the center cell
-    scorePerCellScore[r][c] = newValue;
+        // Double the center cell
+        scorePerCellScore[r][c] = newValue;
 
-    const entry = nonZeroResults.find(e => e.rule && e.rule.type === doodle);
-    if (!entry || !entry.result?.perCellList) continue;
+        const entry = nonZeroResults.find(e => e.rule && e.rule.type === doodle);
+        if (!entry || !entry.result?.perCellList) continue;
 
-    const cellEntry = entry.result.perCellList.find(p => p && p.r === r && p.c === c);
-    if (cellEntry) {
-      cellEntry.pts = newValue;
-    }
-    if (typeof entry.subtotal === 'number') {
-      entry.subtotal += extra;
-    }
-
-    console.log(`   ✅ Doubled center [${r},${c}] ${doodle}: ${currentValue} → ${newValue}`);
-
-    // === NEW: Update any adjacent Die that should now copy the doubled value ===
-    for (let [dr, dc] of dirs) {
-      const nr = r + dr;
-      const nc = c + dc;
-
-      if (nr < 0 || nr >= 7 || nc < 0 || nc >= 11) continue;
-      if (scoreBoard[nr][nc] !== 'die') continue;
-
-      // Re-calculate what this die should copy now (using the updated scorePerCellScore)
-      let maxNeighbor = 0;
-      const neighbors = getSurrounding(nr, nc);
-
-      for (let n of neighbors) {
-        if (n.doodle === 'die') continue;
-        if (['cube', 'cylinder', 'pyramid'].includes(n.doodle)) continue;
-
-        maxNeighbor = Math.max(maxNeighbor, scorePerCellScore[n.r][n.c]);
-      }
-
-      const oldDieValue = scorePerCellScore[nr][nc];
-      if (maxNeighbor > oldDieValue) {
-        scorePerCellScore[nr][nc] = maxNeighbor;
-
-        // Update the die's entry in nonZeroResults
-        const dieEntry = nonZeroResults.find(e => e.rule && e.rule.type === 'die');
-        if (dieEntry && dieEntry.result?.perCellList) {
-          const dieCell = dieEntry.result.perCellList.find(p => p && p.r === nr && p.c === nc);
-          if (dieCell) {
-            dieCell.pts = maxNeighbor;
-          }
-          if (typeof dieEntry.subtotal === 'number') {
-            dieEntry.subtotal += (maxNeighbor - oldDieValue);
-          }
+        const cellEntry = entry.result.perCellList.find(p => p && p.r === r && p.c === c);
+        if (cellEntry) {
+          cellEntry.pts = newValue;
+        }
+        if (typeof entry.subtotal === 'number') {
+          entry.subtotal += extra;
         }
 
-        console.log(`   → Updated adjacent Die at [${nr},${nc}] to copy doubled value: ${maxNeighbor}`);
+        console.log(`   ✅ Doubled center [${r},${c}] ${doodle}: ${currentValue} → ${newValue}`);
+
+        // === NEW: Update any adjacent Die that should now copy the doubled value ===
+        for (let [dr, dc] of dirs) {
+          const nr = r + dr;
+          const nc = c + dc;
+
+          if (nr < 0 || nr >= 7 || nc < 0 || nc >= 11) continue;
+          if (scoreBoard[nr][nc] !== 'die') continue;
+
+          // Re-calculate what this die should copy now (using the updated scorePerCellScore)
+          let maxNeighbor = 0;
+          const neighbors = getSurrounding(nr, nc);
+
+          for (let n of neighbors) {
+            if (n.doodle === 'die') continue;
+            if (['cube', 'cylinder', 'pyramid'].includes(n.doodle)) continue;
+
+            maxNeighbor = Math.max(maxNeighbor, scorePerCellScore[n.r][n.c]);
+          }
+
+          const oldDieValue = scorePerCellScore[nr][nc];
+          if (maxNeighbor > oldDieValue) {
+            scorePerCellScore[nr][nc] = maxNeighbor;
+
+            // Update the die's entry in nonZeroResults
+            const dieEntry = nonZeroResults.find(e => e.rule && e.rule.type === 'die');
+            if (dieEntry && dieEntry.result?.perCellList) {
+              const dieCell = dieEntry.result.perCellList.find(p => p && p.r === nr && p.c === nc);
+              if (dieCell) {
+                dieCell.pts = maxNeighbor;
+              }
+              if (typeof dieEntry.subtotal === 'number') {
+                dieEntry.subtotal += (maxNeighbor - oldDieValue);
+              }
+            }
+
+            console.log(`   → Updated adjacent Die at [${nr},${nc}] to copy doubled value: ${maxNeighbor}`);
+          }
+        }
       }
     }
-  }
-}
 
     function calculateDie() {
       let total = 0, perCellList = [];
@@ -9573,7 +9601,7 @@ function loadAudioSettings() {
           total += subtotal;
         }
 
-        
+
 
         console.log(`✅ Main scoring loop FINISHED. Non-zero rules: ${nonZeroResults.length}`);
 
@@ -9608,9 +9636,9 @@ function loadAudioSettings() {
           }
         }
         // Apply centerx2 doubling
-if (activeCampaign && activeCampaign.code === "centerx2") {
-  calculateFocalPointsBonus(nonZeroResults);   // ← pass the variable
-}
+        if (activeCampaign && activeCampaign.code === "centerx2") {
+          calculateFocalPointsBonus(nonZeroResults);   // ← pass the variable
+        }
 
         // === Animate individual doodle rows ===
         for (let entry of nonZeroResults) {
@@ -9679,7 +9707,7 @@ if (activeCampaign && activeCampaign.code === "centerx2") {
           await new Promise(r => setTimeout(r, 1900));
         }
 
-                if (scoringCancelled) {
+        if (scoringCancelled) {
           console.log("🛑 Scoring was cancelled — aborting animation");
           return;
         }
@@ -9837,7 +9865,7 @@ if (activeCampaign && activeCampaign.code === "centerx2") {
       }
     }
 
-        function showAssessmentMessage(totalScore) {
+    function showAssessmentMessage(totalScore) {
       if (scoringCancelled) return;   // ← Prevents duplicate Main Menu button
 
       const tally = document.getElementById('score-tally');
@@ -9895,10 +9923,10 @@ if (activeCampaign && activeCampaign.code === "centerx2") {
           mainMenuBtn.onclick = () => {
             playSound('button');
             // === GAME IS NOW COMPLETE — CLEAR SAVE STATE ===
-  clearSavedGameState();
-  hasGameInProgress = false;
-  tutorialInProgress = false;
-  tutorialStep = 0;
+            clearSavedGameState();
+            hasGameInProgress = false;
+            tutorialInProgress = false;
+            tutorialStep = 0;
             closeModal('score-modal');
             resetScoreModal();
 
@@ -9934,12 +9962,12 @@ if (activeCampaign && activeCampaign.code === "centerx2") {
       scoringCancelled = false;
       playSound('score');
       // === GAME IS NOW COMPLETE — CLEAR SAVE STATE ===
-  clearSavedGameState();
-  hasGameInProgress = false;
-  tutorialInProgress = false;        // safety
-  tutorialStep = 0;
+      clearSavedGameState();
+      hasGameInProgress = false;
+      tutorialInProgress = false;        // safety
+      tutorialStep = 0;
 
-  console.log("✅ Game completed via Score Sheet — save state cleared");
+      console.log("✅ Game completed via Score Sheet — save state cleared");
       document.getElementById('score-tweak-prompt').style.display = 'none';
       stopLiveSquareDetection();
       console.log("SCORE SHEET clicked — hiding buttons + starting animation");
@@ -9974,95 +10002,95 @@ if (activeCampaign && activeCampaign.code === "centerx2") {
     // ====================== SMART TOOLTIP ON SELECT ======================
 
     function showTooltipForDoodle(doodle, element) {
-  const tooltip = document.getElementById('tooltip');
-  const desc = document.getElementById('tooltip-desc');
+      const tooltip = document.getElementById('tooltip');
+      const desc = document.getElementById('tooltip-desc');
 
-  if (!doodleDescriptions[doodle]) return;
+      if (!doodleDescriptions[doodle]) return;
 
-  desc.innerHTML = renderDescription(getDoodleDescription(doodle));
+      desc.innerHTML = renderDescription(getDoodleDescription(doodle));
 
-  // Make inline doodle images clickable
-  const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
-  inlineDoodles.forEach(img => {
-    img.addEventListener('click', (e) => {
-      playSound('selectbutton');
-      e.stopImmediatePropagation();
-      const targetDoodle = img.dataset.doodle;
-      handleInlineDoodleClick(targetDoodle);
-    });
-  });
+      // Make inline doodle images clickable
+      const inlineDoodles = desc.querySelectorAll('.inline-doodle[data-doodle]');
+      inlineDoodles.forEach(img => {
+        img.addEventListener('click', (e) => {
+          playSound('selectbutton');
+          e.stopImmediatePropagation();
+          const targetDoodle = img.dataset.doodle;
+          handleInlineDoodleClick(targetDoodle);
+        });
+      });
 
-  const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
-  if (oldBtn) oldBtn.remove();
+      const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
+      if (oldBtn) oldBtn.remove();
 
-  // === CRITICAL FIX: reset any styles left by the mission-detail tooltip ===
-  tooltip.style.width = '75cqi';
-  tooltip.style.maxWidth = '75cqi';
-  tooltip.style.bottom = 'auto';
-  tooltip.style.top = 'auto';
-  tooltip.style.zIndex = '250';
-  tooltip.style.transform = '';
+      // === CRITICAL FIX: reset any styles left by the mission-detail tooltip ===
+      tooltip.style.width = '75cqi';
+      tooltip.style.maxWidth = '75cqi';
+      tooltip.style.bottom = 'auto';
+      tooltip.style.top = 'auto';
+      tooltip.style.zIndex = '250';
+      tooltip.style.transform = '';
 
-  const container = document.getElementById('game-container');
-  const containerRect = container.getBoundingClientRect();
-  const doodleRect = element.getBoundingClientRect();
+      const container = document.getElementById('game-container');
+      const containerRect = container.getBoundingClientRect();
+      const doodleRect = element.getBoundingClientRect();
 
-  tooltip.style.visibility = 'hidden';
-  tooltip.classList.add('show');
+      tooltip.style.visibility = 'hidden';
+      tooltip.classList.add('show');
 
-  // Tiny delay so browser finishes laying out dynamic content
-  requestAnimationFrame(() => {
-    const tooltipHeightPx = tooltip.offsetHeight;
+      // Tiny delay so browser finishes laying out dynamic content
+      requestAnimationFrame(() => {
+        const tooltipHeightPx = tooltip.offsetHeight;
 
-    tooltip.classList.remove('show');
-    tooltip.style.visibility = 'visible';
-    tooltip.style.left = '50%';
-    tooltip.style.transform = 'translateX(-50%)';
+        tooltip.classList.remove('show');
+        tooltip.style.visibility = 'visible';
+        tooltip.style.left = '50%';
+        tooltip.style.transform = 'translateX(-50%)';
 
-    const normalGapCqi = 2;
-    const safetyPx = 28;
-    const containerWidthPx = containerRect.width;
-    const normalGapPx = (normalGapCqi / 100) * containerWidthPx;
-    const relDoodleTop = doodleRect.top - containerRect.top;
-    const doodleCenterPx = relDoodleTop + (doodleRect.height / 2);
-    const relDoodleBottom = relDoodleTop + doodleRect.height;
-    const spaceBelowPx = containerRect.height - relDoodleBottom;
+        const normalGapCqi = 2;
+        const safetyPx = 28;
+        const containerWidthPx = containerRect.width;
+        const normalGapPx = (normalGapCqi / 100) * containerWidthPx;
+        const relDoodleTop = doodleRect.top - containerRect.top;
+        const doodleCenterPx = relDoodleTop + (doodleRect.height / 2);
+        const relDoodleBottom = relDoodleTop + doodleRect.height;
+        const spaceBelowPx = containerRect.height - relDoodleBottom;
 
-    let proposedTopPx;
-    if (spaceBelowPx >= tooltipHeightPx + normalGapPx + safetyPx) {
-      const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
-      proposedTopPx = doodleCenterPx + offsetFromCenterPx;
-    } else {
-      const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
-      const extraAboveClearancePx = doodleRect.height * 0.7;
-      const totalOffsetAbovePx = offsetFromCenterPx + extraAboveClearancePx;
-      const tooltipBottomPx = doodleCenterPx - totalOffsetAbovePx;
-      proposedTopPx = tooltipBottomPx - tooltipHeightPx;
+        let proposedTopPx;
+        if (spaceBelowPx >= tooltipHeightPx + normalGapPx + safetyPx) {
+          const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
+          proposedTopPx = doodleCenterPx + offsetFromCenterPx;
+        } else {
+          const offsetFromCenterPx = (doodleRect.height / 2) + normalGapPx;
+          const extraAboveClearancePx = doodleRect.height * 0.7;
+          const totalOffsetAbovePx = offsetFromCenterPx + extraAboveClearancePx;
+          const tooltipBottomPx = doodleCenterPx - totalOffsetAbovePx;
+          proposedTopPx = tooltipBottomPx - tooltipHeightPx;
+        }
+
+        proposedTopPx = Math.max(18, Math.min(proposedTopPx, containerRect.height - tooltipHeightPx - 18));
+        const proposedTopCqi = (proposedTopPx / containerWidthPx) * 100;
+        tooltip.style.top = `${proposedTopCqi.toFixed(2)}cqi`;
+
+        // === NEW: Only show "See in Guide" button if we're NOT in a Getting Started mission detail ===
+        if (!suppressGuideButtonInMissionDetail) {
+          const guideBtn = document.createElement('button');
+          guideBtn.className = 'tooltip-guide-btn';
+          guideBtn.textContent = 'See in Guide';
+          guideBtn.onclick = () => {
+            playSound('selectbutton');
+            hideTooltip();
+            renderGuide(doodle);
+            openModal('guide-modal');
+          };
+          tooltip.appendChild(guideBtn);
+        }
+
+        tooltip.classList.add('show');
+      });
     }
 
-    proposedTopPx = Math.max(18, Math.min(proposedTopPx, containerRect.height - tooltipHeightPx - 18));
-    const proposedTopCqi = (proposedTopPx / containerWidthPx) * 100;
-    tooltip.style.top = `${proposedTopCqi.toFixed(2)}cqi`;
-
-    // === NEW: Only show "See in Guide" button if we're NOT in a Getting Started mission detail ===
-    if (!suppressGuideButtonInMissionDetail) {
-      const guideBtn = document.createElement('button');
-      guideBtn.className = 'tooltip-guide-btn';
-      guideBtn.textContent = 'See in Guide';
-      guideBtn.onclick = () => {
-        playSound('selectbutton');
-        hideTooltip();
-        renderGuide(doodle);
-        openModal('guide-modal');
-      };
-      tooltip.appendChild(guideBtn);
-    }
-
-    tooltip.classList.add('show');
-  });
-}
-
-function hideTooltip() {
+    function hideTooltip() {
       const tooltip = document.getElementById('tooltip');
       const oldBtn = tooltip.querySelector('.tooltip-guide-btn');
       if (oldBtn) oldBtn.remove();
@@ -10070,72 +10098,72 @@ function hideTooltip() {
       tooltip.style.zIndex = '';
       tooltip.style.transform = '';
     }
-    
-    
+
+
     function handleInlineDoodleClick(targetDoodle) {
-  const tooltip = document.getElementById('tooltip');
-  const learnModal = document.getElementById('learn-modal');
-  const portfolioModal = document.getElementById('portfolio-modal');
+      const tooltip = document.getElementById('tooltip');
+      const learnModal = document.getElementById('learn-modal');
+      const portfolioModal = document.getElementById('portfolio-modal');
 
-  const isLearnOpen = learnModal && learnModal.classList.contains('active');
-  const isPortfolioOpen = portfolioModal && portfolioModal.classList.contains('active');
-  const isInPortfolio = isPortfolioOpen;
-  const isInMissionMenu = suppressGuideButtonInMissionDetail;
+      const isLearnOpen = learnModal && learnModal.classList.contains('active');
+      const isPortfolioOpen = portfolioModal && portfolioModal.classList.contains('active');
+      const isInPortfolio = isPortfolioOpen;
+      const isInMissionMenu = suppressGuideButtonInMissionDetail;
 
-  hideTooltip();
+      hideTooltip();
 
-  // === Handle not-yet-unlocked doodles in Learn, Portfolio, and Mission Detail menus ===
-  if ((isLearnOpen || isPortfolioOpen || isInMissionMenu) && currentMission && currentMission <= 5) {
-    const allowed = getAllowedDoodles(currentMission);
-    if (!allowed.includes(targetDoodle)) {
-      const desc = document.getElementById('tooltip-desc');
-      desc.innerHTML = `
+      // === Handle not-yet-unlocked doodles in Learn, Portfolio, and Mission Detail menus ===
+      if ((isLearnOpen || isPortfolioOpen || isInMissionMenu) && currentMission && currentMission <= 5) {
+        const allowed = getAllowedDoodles(currentMission);
+        if (!allowed.includes(targetDoodle)) {
+          const desc = document.getElementById('tooltip-desc');
+          desc.innerHTML = `
         The <img src="images/${targetDoodle}.png" class="inline-doodle" style="vertical-align: middle; height: 1.15em; width: auto;"> 
         doodle has not been unlocked yet.
       `;
-      tooltip.style.left = '50%';
-      tooltip.style.transform = 'translateX(-50%)';
-      tooltip.style.bottom = '28cqi';
-      tooltip.style.top = 'auto';
-      tooltip.classList.add('show');
-      return;
-    }
-  }
+          tooltip.style.left = '50%';
+          tooltip.style.transform = 'translateX(-50%)';
+          tooltip.style.bottom = '28cqi';
+          tooltip.style.top = 'auto';
+          tooltip.classList.add('show');
+          return;
+        }
+      }
 
-  // === Portfolio or Mission Menu context: keep tooltip position stable ===
-  if (isInPortfolio || isInMissionMenu) {
-    const referenceEl = tooltip || document.getElementById('game-container');
-    showTooltipForDoodle(targetDoodle, referenceEl);
-    return;
-  }
-
-  // === Default behavior for Learn modal grid + main game view ===
-  if (isLearnOpen) {
-    const grid = document.getElementById('learn-grid');
-    if (grid) {
-      const cell = grid.querySelector(`.doodle-cell[data-doodle="${targetDoodle}"]`);
-      if (cell) {
-        toggleSelection(cell, grid, 'learn');
+      // === Portfolio or Mission Menu context: keep tooltip position stable ===
+      if (isInPortfolio || isInMissionMenu) {
+        const referenceEl = tooltip || document.getElementById('game-container');
+        showTooltipForDoodle(targetDoodle, referenceEl);
         return;
       }
-    }
-  }
 
-  // Fallback: open Learn modal
-  if (!isLearnOpen && !isPortfolioOpen) {
-    populateLearnGrid();
-    openModal('learn-modal');
-
-    setTimeout(() => {
-      const grid = document.getElementById('learn-grid');
-      const cell = grid?.querySelector(`.doodle-cell[data-doodle="${targetDoodle}"]`);
-      if (cell) {
-        toggleSelection(cell, grid, 'learn');
+      // === Default behavior for Learn modal grid + main game view ===
+      if (isLearnOpen) {
+        const grid = document.getElementById('learn-grid');
+        if (grid) {
+          const cell = grid.querySelector(`.doodle-cell[data-doodle="${targetDoodle}"]`);
+          if (cell) {
+            toggleSelection(cell, grid, 'learn');
+            return;
+          }
+        }
       }
-    }, 60);
-  }
-}
-function handleGuideInlineClick(targetDoodle) {
+
+      // Fallback: open Learn modal
+      if (!isLearnOpen && !isPortfolioOpen) {
+        populateLearnGrid();
+        openModal('learn-modal');
+
+        setTimeout(() => {
+          const grid = document.getElementById('learn-grid');
+          const cell = grid?.querySelector(`.doodle-cell[data-doodle="${targetDoodle}"]`);
+          if (cell) {
+            toggleSelection(cell, grid, 'learn');
+          }
+        }, 60);
+      }
+    }
+    function handleGuideInlineClick(targetDoodle) {
       renderGuide(targetDoodle); // re-filter the guide + show new tooltip at bottom
     }
     // GLOBAL TOOLTIP CLOSE HANDLER — protects mission-detail button + Learn/Portfolio doodles
@@ -10204,10 +10232,10 @@ function handleGuideInlineClick(targetDoodle) {
     let bgmPlaying = false;
 
     function startBGM() {
-  if (bgmPlaylistStarted) return;
-  startBgmPlaylist();
-}
-    
+      if (bgmPlaylistStarted) return;
+      startBgmPlaylist();
+    }
+
     // Trigger BGM on FIRST user gesture (click/tap anywhere)
     document.addEventListener('click', startBGM, { once: true });
     document.addEventListener('touchstart', startBGM, { once: true }); // For mobile
@@ -10230,49 +10258,49 @@ function handleGuideInlineClick(targetDoodle) {
     // Comprehensive list of ALL images used (from static HTML + JS arrays like allPossibleDoodles/customImages + points/missions/etc.)
     // I extracted this from your code – it's unique/ deduped to avoid waste.
     const imagePaths = [
-  'images/10pt.png', 'images/1pt.png', 'images/2pt.png', 'images/3pt.png', 'images/4pt.png',
-  'images/5pt.png', 'images/6pt.png', 'images/7pt.png', 'images/audio.png', 'images/black1pt.png',
-  'images/blackpointbubble.png', 'images/boat.png', 'images/butterfly.png', 'images/cat.png',
-  'images/checkboxleft.png', 'images/checkboxright.png', 'images/chest.png', 'images/circle.png',
-  'images/close.png', 'images/closewhite.png', 'images/cloud.png', 'images/coin.png', 'images/crown.png',
-  'images/cube.png', 'images/cylinder.png', 'images/diamond.png', 'images/die.png', 'images/doodlebashlogo.png',
-  'images/dot.png', 'images/drop.png', 'images/fish.png', 'images/flower.png', 'images/gear1.png',
-  'images/gear2.png', 'images/gettingstarted1ptgoal.png', 'images/gettingstarted2ptgoal.png',
-  'images/gettingstarted3ptgoal.png', 'images/gettingstarted4ptgoal.png', 'images/gettingstarted5ptgoal.png',
-  'images/greyheader.png', 'images/guidebutton.png', 'images/halfcircle.png', 'images/heart.png',
-  'images/house.png', 'images/icecream.png', 'images/learnbutton.png', 'images/lens.png',
-  'images/letter.png', 'images/line.png', 'images/lock.png', 'images/logoblueback1.png',
-  'images/logoblueback2.png', 'images/logocat.png', 'images/logod1.png', 'images/logod2.png',
-  'images/logoe.png', 'images/logolpen.png', 'images/logomusic.png', 'images/logoo1.png',
-  'images/logoo2.png', 'images/logopizza.png', 'images/logosubtitle.png', 'images/logounderline.png',
-  'images/menu.png', 'images/minus2pt.png', 'images/mission1header.png', 'images/mission2header.png',
-  'images/mission3header.png', 'images/mission4header.png', 'images/mission5header.png',
-  'images/missionbonus.png', 'images/missiondetails.png', 'images/mug.png', 'images/music.png',
-  'images/new.png', 'images/note1.png', 'images/note2.png', 'images/note3.png', 'images/notebook.png',
-  'images/notebookscanguide.png', 'images/numberline.png', 'images/piano.png', 'images/pizza.png',
-  'images/planet.png', 'images/portfoliobutton.png', 'images/present.png', 'images/purplepointbubble.png',
-  'images/pyramid.png', 'images/rawboat.png', 'images/rawbutterfly.png', 'images/rawcat.png',
-  'images/rawchest.png', 'images/rawcircle.png', 'images/rawcloud.png', 'images/rawcoin.png',
-  'images/rawcrown.png', 'images/rawcube.png', 'images/rawcylinder.png', 'images/rawdiamond.png',
-  'images/rawdie.png', 'images/rawdot.png', 'images/rawdrop.png', 'images/rawfish.png',
-  'images/rawflower.png', 'images/rawhalfcircle.png', 'images/rawheart.png', 'images/rawhouse.png',
-  'images/rawicecream.png', 'images/rawlens.png', 'images/rawletter.png', 'images/rawline.png',
-  'images/rawmug.png', 'images/rawmusic.png', 'images/rawpiano.png', 'images/rawpizza.png',
-  'images/rawplanet.png', 'images/rawpresent.png', 'images/rawpyramid.png', 'images/rawrocket.png',
-  'images/rawsmiley.png', 'images/rawsquare.png', 'images/rawstar.png', 'images/rawsword.png',
-  'images/rawteeth.png', 'images/rawtoiletpaper.png', 'images/rawtriangle.png', 'images/rawturd.png',
-  'images/rawumbrella.png', 'images/rawwireless.png', 'images/rocket.png', 'images/scorebutton.png',
-  'images/scoremarker.png', 'images/scorepin.png', 'images/scoresquiggle.png', 'images/shufflebutton.png',
-  'images/shufflebuttonoutline.png', 'images/smiley.png', 'images/square.png', 'images/star.png',
-  'images/sword.png', 'images/teeth.png', 'images/toiletpaper.png', 'images/triangle.png',
-  'images/turd.png', 'images/tutimage1.png', 'images/tutimage10.png', 'images/tutimage11.png',
-  'images/tutimage12.png', 'images/tutimage13.png', 'images/tutimage14.png', 'images/tutimage15.png',
-  'images/tutimage16.png', 'images/tutimage17.png', 'images/tutimage18.png', 'images/tutimage19.png',
-  'images/tutimage2.png', 'images/tutimage3.png', 'images/tutimage4.png', 'images/tutimage5.png',
-  'images/tutimage6.png', 'images/tutimage7.png', 'images/tutimage8.png', 'images/tutimage9.png',
-  'images/umbrella.png', 'images/varietybonus.png', 'images/varietybonusgrid.png', 'images/wireless.png',
-  'images/yellowfooter.png'
-];
+      'images/10pt.png', 'images/1pt.png', 'images/2pt.png', 'images/3pt.png', 'images/4pt.png',
+      'images/5pt.png', 'images/6pt.png', 'images/7pt.png', 'images/audio.png', 'images/black1pt.png',
+      'images/blackpointbubble.png', 'images/boat.png', 'images/butterfly.png', 'images/cat.png',
+      'images/checkboxleft.png', 'images/checkboxright.png', 'images/chest.png', 'images/circle.png',
+      'images/close.png', 'images/closewhite.png', 'images/cloud.png', 'images/coin.png', 'images/crown.png',
+      'images/cube.png', 'images/cylinder.png', 'images/diamond.png', 'images/die.png', 'images/doodlebashlogo.png',
+      'images/dot.png', 'images/drop.png', 'images/fish.png', 'images/flower.png', 'images/gear1.png',
+      'images/gear2.png', 'images/gettingstarted1ptgoal.png', 'images/gettingstarted2ptgoal.png',
+      'images/gettingstarted3ptgoal.png', 'images/gettingstarted4ptgoal.png', 'images/gettingstarted5ptgoal.png',
+      'images/greyheader.png', 'images/guidebutton.png', 'images/halfcircle.png', 'images/heart.png',
+      'images/house.png', 'images/icecream.png', 'images/learnbutton.png', 'images/lens.png',
+      'images/letter.png', 'images/line.png', 'images/lock.png', 'images/logoblueback1.png',
+      'images/logoblueback2.png', 'images/logocat.png', 'images/logod1.png', 'images/logod2.png',
+      'images/logoe.png', 'images/logolpen.png', 'images/logomusic.png', 'images/logoo1.png',
+      'images/logoo2.png', 'images/logopizza.png', 'images/logosubtitle.png', 'images/logounderline.png',
+      'images/menu.png', 'images/minus2pt.png', 'images/mission1header.png', 'images/mission2header.png',
+      'images/mission3header.png', 'images/mission4header.png', 'images/mission5header.png',
+      'images/missionbonus.png', 'images/missiondetails.png', 'images/mug.png', 'images/music.png',
+      'images/new.png', 'images/note1.png', 'images/note2.png', 'images/note3.png', 'images/notebook.png',
+      'images/notebookscanguide.png', 'images/numberline.png', 'images/piano.png', 'images/pizza.png',
+      'images/planet.png', 'images/portfoliobutton.png', 'images/present.png', 'images/purplepointbubble.png',
+      'images/pyramid.png', 'images/rawboat.png', 'images/rawbutterfly.png', 'images/rawcat.png',
+      'images/rawchest.png', 'images/rawcircle.png', 'images/rawcloud.png', 'images/rawcoin.png',
+      'images/rawcrown.png', 'images/rawcube.png', 'images/rawcylinder.png', 'images/rawdiamond.png',
+      'images/rawdie.png', 'images/rawdot.png', 'images/rawdrop.png', 'images/rawfish.png',
+      'images/rawflower.png', 'images/rawhalfcircle.png', 'images/rawheart.png', 'images/rawhouse.png',
+      'images/rawicecream.png', 'images/rawlens.png', 'images/rawletter.png', 'images/rawline.png',
+      'images/rawmug.png', 'images/rawmusic.png', 'images/rawpiano.png', 'images/rawpizza.png',
+      'images/rawplanet.png', 'images/rawpresent.png', 'images/rawpyramid.png', 'images/rawrocket.png',
+      'images/rawsmiley.png', 'images/rawsquare.png', 'images/rawstar.png', 'images/rawsword.png',
+      'images/rawteeth.png', 'images/rawtoiletpaper.png', 'images/rawtriangle.png', 'images/rawturd.png',
+      'images/rawumbrella.png', 'images/rawwireless.png', 'images/rocket.png', 'images/scorebutton.png',
+      'images/scoremarker.png', 'images/scorepin.png', 'images/scoresquiggle.png', 'images/shufflebutton.png',
+      'images/shufflebuttonoutline.png', 'images/smiley.png', 'images/square.png', 'images/star.png',
+      'images/sword.png', 'images/teeth.png', 'images/toiletpaper.png', 'images/triangle.png',
+      'images/turd.png', 'images/tutimage1.png', 'images/tutimage10.png', 'images/tutimage11.png',
+      'images/tutimage12.png', 'images/tutimage13.png', 'images/tutimage14.png', 'images/tutimage15.png',
+      'images/tutimage16.png', 'images/tutimage17.png', 'images/tutimage18.png', 'images/tutimage19.png',
+      'images/tutimage2.png', 'images/tutimage3.png', 'images/tutimage4.png', 'images/tutimage5.png',
+      'images/tutimage6.png', 'images/tutimage7.png', 'images/tutimage8.png', 'images/tutimage9.png',
+      'images/umbrella.png', 'images/varietybonus.png', 'images/varietybonusgrid.png', 'images/wireless.png',
+      'images/yellowfooter.png'
+    ];
 
     function preloadImages() {
       return Promise.all(imagePaths.map(path => {
@@ -10289,44 +10317,44 @@ function handleGuideInlineClick(targetDoodle) {
     }
 
     async function initApp() {
-  const startTime = Date.now();
+      const startTime = Date.now();
 
-  // Load saved audio settings very early (before any sound can play)
-  loadAudioSettings();
+      // Load saved audio settings very early (before any sound can play)
+      loadAudioSettings();
 
-  try {
-    await preloadImages();
-    await preloadAudio();                    // ← Added this line
+      try {
+        await preloadImages();
+        await preloadAudio();                    // ← Added this line
 
-    // Apply the user's saved volume levels
-    updateSFXVolume(sfxVolume);
-    updateMusicVolume(musicVolume);
+        // Apply the user's saved volume levels
+        updateSFXVolume(sfxVolume);
+        updateMusicVolume(musicVolume);
 
-    const elapsed = Date.now() - startTime;
-    const minTime = 2800; // keeps your logo animation perfect
-    if (elapsed < minTime) {
-      await new Promise(resolve => setTimeout(resolve, minTime - elapsed));
+        const elapsed = Date.now() - startTime;
+        const minTime = 2800; // keeps your logo animation perfect
+        if (elapsed < minTime) {
+          await new Promise(resolve => setTimeout(resolve, minTime - elapsed));
+        }
+
+        // Load game state (unchanged)
+        const hadSavedGame = loadGameState();
+        if (hadSavedGame) {
+          console.log('🎮 Previous game restored — Resume button is now available');
+        }
+
+        showMainMenu();
+
+        // Fade out loading screen
+        const loadingScreen = document.getElementById('loading-screen');
+        loadingScreen.style.opacity = '0';
+        await new Promise(resolve => setTimeout(resolve, 600));
+        loadingScreen.style.display = 'none';
+
+      } catch (e) {
+        console.error('Preload error:', e);
+        document.getElementById('loading-screen').textContent = 'Error loading assets – please refresh';
+      }
     }
-
-    // Load game state (unchanged)
-    const hadSavedGame = loadGameState();
-    if (hadSavedGame) {
-      console.log('🎮 Previous game restored — Resume button is now available');
-    }
-
-    showMainMenu();
-
-    // Fade out loading screen
-    const loadingScreen = document.getElementById('loading-screen');
-    loadingScreen.style.opacity = '0';
-    await new Promise(resolve => setTimeout(resolve, 600));
-    loadingScreen.style.display = 'none';
-
-  } catch (e) {
-    console.error('Preload error:', e);
-    document.getElementById('loading-screen').textContent = 'Error loading assets – please refresh';
-  }
-}
 
     // Campaign close buttons
     document.getElementById('campaign-close-btn').addEventListener('click', () => {
@@ -10494,119 +10522,119 @@ function handleGuideInlineClick(targetDoodle) {
 
 
     <!-- ====================== PWA UPDATE SYSTEM — DIAGNOSTIC ====================== -->
-let swRegistration = null;
-async function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) return;
+    let swRegistration = null;
+    async function registerServiceWorker() {
+      if (!('serviceWorker' in navigator)) return;
 
-  try {
-    // This is the key fix — we register the versioned filename directly
-    const swFile = `/sw-v5.66.js`;   // ← must match the filename you just created
-    console.log(`[PWA] Registering ${swFile}`);
+      try {
+        // This is the key fix — we register the versioned filename directly
+        const swFile = `/sw-v5.67.js`;   // ← must match the filename you just created
+        console.log(`[PWA] Registering ${swFile}`);
 
-    swRegistration = await navigator.serviceWorker.register(swFile);
+        swRegistration = await navigator.serviceWorker.register(swFile);
 
-    console.log('✅ Service Worker registered');
+        console.log('✅ Service Worker registered');
 
-    checkForUpdate();
-    setInterval(checkForUpdate, 15000);
+        checkForUpdate();
+        setInterval(checkForUpdate, 15000);
 
-    swRegistration.addEventListener('updatefound', () => {
-      console.log('[PWA] New service worker found');
-      const newWorker = swRegistration.installing;
-      if (newWorker) {
-        newWorker.addEventListener('statechange', () => {
-          console.log(`[PWA] New SW state: ${newWorker.state}`);
-          if (newWorker.state === 'installed') showUpdatePrompt();
+        swRegistration.addEventListener('updatefound', () => {
+          console.log('[PWA] New service worker found');
+          const newWorker = swRegistration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              console.log(`[PWA] New SW state: ${newWorker.state}`);
+              if (newWorker.state === 'installed') showUpdatePrompt();
+            });
+          }
         });
+      } catch (err) {
+        console.error('[PWA] Registration failed:', err);
       }
+    }
+    async function checkForUpdate() {
+      if (swRegistration) {
+        console.log('[PWA] 🔄 Checking for update...');
+        await swRegistration.update();
+      }
+    }
+
+    function showUpdatePrompt() {
+      console.log('[PWA] Showing update prompt');
+      const prompt = document.getElementById('update-prompt');
+      if (!prompt) return;
+
+      document.getElementById('update-yes').onclick = () => {
+        playSound('selectbutton');
+        applyUpdate();
+      };
+      document.getElementById('update-no').onclick = () => {
+        playSound('selectbutton');
+        prompt.classList.remove('active');
+      };
+      document.getElementById('update-close-btn').onclick = () => {
+        playSound('selectbutton');
+        prompt.classList.remove('active');
+      };
+
+      prompt.classList.add('active');
+    }
+
+    window.applyUpdate = function () {
+      console.log('[PWA] User clicked Update Now');
+      if (swRegistration?.waiting) {
+        swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      } else {
+        window.location.reload();
+      }
+    };
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      console.log('[PWA] 🔄 Controller changed — reloading with new version');
+      window.location.reload();
     });
-  } catch (err) {
-    console.error('[PWA] Registration failed:', err);
-  }
-}
-async function checkForUpdate() {
-  if (swRegistration) {
-    console.log('[PWA] 🔄 Checking for update...');
-    await swRegistration.update();
-  }
-}
 
-function showUpdatePrompt() {
-  console.log('[PWA] Showing update prompt');
-  const prompt = document.getElementById('update-prompt');
-  if (!prompt) return;
-
-  document.getElementById('update-yes').onclick = () => {
-    playSound('selectbutton');
-    applyUpdate();
-  };
-  document.getElementById('update-no').onclick = () => {
-    playSound('selectbutton');
-    prompt.classList.remove('active');
-  };
-  document.getElementById('update-close-btn').onclick = () => {
-    playSound('selectbutton');
-    prompt.classList.remove('active');
-  };
-
-  prompt.classList.add('active');
-}
-
-window.applyUpdate = function() {
-  console.log('[PWA] User clicked Update Now');
-  if (swRegistration?.waiting) {
-    swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
-  } else {
-    window.location.reload();
-  }
-};
-
-navigator.serviceWorker.addEventListener('controllerchange', () => {
-  console.log('[PWA] 🔄 Controller changed — reloading with new version');
-  window.location.reload();
-});
-
-window.addEventListener('load', () => {
-  registerServiceWorker();
-});
+    window.addEventListener('load', () => {
+      registerServiceWorker();
+    });
 
 
-    
+
 
 
 
     initApp();
-const audioControls = document.getElementById('audio-controls');
+    const audioControls = document.getElementById('audio-controls');
 
-// SFX Slider
-const sfxLabel = document.createElement('div');
-sfxLabel.className = 'audio-label';
-sfxLabel.textContent = 'SFX Volume';
-const sfxSlider = document.createElement('input');
-sfxSlider.type = 'range';
-sfxSlider.className = 'audio-slider';
-sfxSlider.min = 0;
-sfxSlider.max = 1;
-sfxSlider.step = 0.1;
-sfxSlider.value = sfxVolume;                    // ← Use loaded value
-sfxSlider.addEventListener('input', (e) => updateSFXVolume(parseFloat(e.target.value)));
-audioControls.appendChild(sfxLabel);
-audioControls.appendChild(sfxSlider);
+    // SFX Slider
+    const sfxLabel = document.createElement('div');
+    sfxLabel.className = 'audio-label';
+    sfxLabel.textContent = 'SFX Volume';
+    const sfxSlider = document.createElement('input');
+    sfxSlider.type = 'range';
+    sfxSlider.className = 'audio-slider';
+    sfxSlider.min = 0;
+    sfxSlider.max = 1;
+    sfxSlider.step = 0.1;
+    sfxSlider.value = sfxVolume;                    // ← Use loaded value
+    sfxSlider.addEventListener('input', (e) => updateSFXVolume(parseFloat(e.target.value)));
+    audioControls.appendChild(sfxLabel);
+    audioControls.appendChild(sfxSlider);
 
-// Music Slider
-const musicLabel = document.createElement('div');
-musicLabel.className = 'audio-label';
-musicLabel.textContent = 'Music Volume';
-const musicSlider = document.createElement('input');
-musicSlider.type = 'range';
-musicSlider.className = 'audio-slider';
-musicSlider.min = 0;
-musicSlider.max = 1;
-musicSlider.step = 0.1;
-musicSlider.value = musicVolume;                // ← Use loaded value
-musicSlider.addEventListener('input', (e) => updateMusicVolume(parseFloat(e.target.value)));
-audioControls.appendChild(musicLabel);
-audioControls.appendChild(musicSlider);
+    // Music Slider
+    const musicLabel = document.createElement('div');
+    musicLabel.className = 'audio-label';
+    musicLabel.textContent = 'Music Volume';
+    const musicSlider = document.createElement('input');
+    musicSlider.type = 'range';
+    musicSlider.className = 'audio-slider';
+    musicSlider.min = 0;
+    musicSlider.max = 1;
+    musicSlider.step = 0.1;
+    musicSlider.value = musicVolume;                // ← Use loaded value
+    musicSlider.addEventListener('input', (e) => updateMusicVolume(parseFloat(e.target.value)));
+    audioControls.appendChild(musicLabel);
+    audioControls.appendChild(musicSlider);
 
     // Optional: Close on outside click
     document.addEventListener('click', (e) => {
