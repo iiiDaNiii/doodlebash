@@ -7636,106 +7636,138 @@
       return [gridTL, gridTR, gridBR, gridBL]; // already in TL→TR→BR→BL order
     }
 
-    function detectNotebookRectangle(mat) {
-      console.log("%c🔍 [RELATIVE RECT DETECT] Running on cropped view", "color:#0f0;font-weight:bold");
-      try {
-        let gray = new cv.Mat();
-        cv.cvtColor(mat, gray, cv.COLOR_RGBA2GRAY);
+function detectNotebookRectangle(mat) {
+  console.log("%c🔍 [RELATIVE RECT DETECT] Running on cropped view", "color:#0f0;font-weight:bold");
+  try {
+    let gray = new cv.Mat();
+    cv.cvtColor(mat, gray, cv.COLOR_RGBA2GRAY);
 
-        let blurMat = new cv.Mat();
-        cv.GaussianBlur(gray, blurMat, new cv.Size(7, 7), 0, 0, cv.BORDER_DEFAULT);
+    let blurMat = new cv.Mat();
+    cv.GaussianBlur(gray, blurMat, new cv.Size(7, 7), 0, 0, cv.BORDER_DEFAULT);
 
-        let edges = new cv.Mat();
-        cv.Canny(blurMat, edges, 20, 140, 3, false);
+    let edges = new cv.Mat();
+    // Slightly higher low threshold helps ignore weak outer paper edges
+    cv.Canny(blurMat, edges, 35, 140, 3, false);
 
-        const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(9, 9));
-        cv.morphologyEx(edges, edges, cv.MORPH_CLOSE, kernel, new cv.Point(-1, -1), 2);
+    const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(9, 9));
+    cv.morphologyEx(edges, edges, cv.MORPH_CLOSE, kernel, new cv.Point(-1, -1), 2);
 
-        let contours = new cv.MatVector();
-        let hierarchy = new cv.Mat();
-        cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+    let contours = new cv.MatVector();
+    let hierarchy = new cv.Mat();
+    cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
 
-        let bestArea = 0;
-        let bestApprox = null;
-        const imageArea = mat.cols * mat.rows;
+    const imageArea = mat.cols * mat.rows;
+    const TARGET_ASPECT = 1.70;          // your binder ratio
+    const ASPECT_TOLERANCE = 0.22;       // allow 1.48 – 1.92
 
-        for (let i = 0; i < contours.size(); ++i) {
-          const cnt = contours.get(i);
-          const area = cv.contourArea(cnt);
+    let candidates = [];
 
-          if (area > imageArea * 0.08) {   // ← relaxed from 0.12 to 0.08 for mobile
-            const peri = cv.arcLength(cnt, true);
-            const approx = new cv.Mat();
-            cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
+    for (let i = 0; i < contours.size(); ++i) {
+      const cnt = contours.get(i);
+      const area = cv.contourArea(cnt);
 
-            if (approx.rows === 4 && isGoodRectangle(approx, area)) {
-              if (area > bestArea) {
-                bestArea = area;
-                if (bestApprox) bestApprox.delete();
-                bestApprox = approx.clone();
-              }
-            }
-            approx.delete();
-          }
-        }
-
-        let corners = null;
-        if (bestApprox) {
-          console.log(`%c✅ Found binder (relative area ${(bestArea / imageArea * 100).toFixed(1)}%)`, "color:#0f0");
-          corners = [];
-          for (let i = 0; i < 4; i++) {
-            corners.push({
-              x: bestApprox.data32S[i * 2],
-              y: bestApprox.data32S[i * 2 + 1]
-            });
-          }
-          bestApprox.delete();
-        } else {
-          console.log(`%c⚠️ No good rectangle this frame (largest area was too small)`, "color:#f80");
-        }
-
-        contours.delete();
-        hierarchy.delete();
-        edges.delete();
-        blurMat.delete();
-        gray.delete();
-
-        if (corners) {
-          return computeGridCorners(sortCorners(corners));
-        }
-        return null;
-      } catch (e) {
-        console.error("🚨 CRASH in detectNotebookRectangle:", e.message);
-        return null;
+      // Reject tiny ones and ones that are basically the whole frame
+      if (area < imageArea * 0.07 || area > imageArea * 0.58) {
+        cnt.delete();
+        continue;
       }
-    }
-    function isGoodRectangle(approx, area) {
-      if (!cv.isContourConvex(approx)) return false;
 
-      const pts = [];
-      for (let i = 0; i < 4; i++) {
-        pts.push({
-          x: approx.data32S[i * 2],
-          y: approx.data32S[i * 2 + 1]
+      const peri = cv.arcLength(cnt, true);
+      const approx = new cv.Mat();
+      cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
+
+      if (approx.rows === 4 && isGoodRectangle(approx, area)) {
+        // Calculate aspect ratio of this candidate
+        const pts = [];
+        for (let j = 0; j < 4; j++) {
+          pts.push({
+            x: approx.data32S[j * 2],
+            y: approx.data32S[j * 2 + 1]
+          });
+        }
+        const sorted = sortCorners(pts);
+        const width = Math.hypot(sorted[1].x - sorted[0].x, sorted[1].y - sorted[0].y);
+        const height = Math.hypot(sorted[3].x - sorted[0].x, sorted[3].y - sorted[0].y);
+        const aspect = width / height;
+
+        const aspectScore = 1 - Math.min(Math.abs(aspect - TARGET_ASPECT) / ASPECT_TOLERANCE, 1);
+        const areaScore = area / imageArea;          // larger is still somewhat preferred
+        const score = (aspectScore * 0.65) + (areaScore * 0.35);
+
+        candidates.push({
+          approx: approx.clone(),
+          area,
+          aspect,
+          score
         });
       }
-
-      // All four corner angles must be close to 90° (±35° tolerance)
-      for (let i = 0; i < 4; i++) {
-        const p1 = pts[i];
-        const p2 = pts[(i + 1) % 4];
-        const p3 = pts[(i + 2) % 4];
-        const angle = getAngle(p1, p2, p3);
-        if (angle < 48 || angle > 125) return false;
-      }
-
-      // Must fill at least 68% of its bounding box
-      const rect = cv.boundingRect(approx);
-      const boundingArea = rect.width * rect.height;
-      if (area / boundingArea < 0.68) return false;
-
-      return true;
+      approx.delete();
+      cnt.delete();
     }
+
+    // Pick the highest-scoring candidate
+    let best = null;
+    if (candidates.length > 0) {
+      candidates.sort((a, b) => b.score - a.score);
+      best = candidates[0];
+      console.log(`%c✅ Best candidate  aspect=${best.aspect.toFixed(2)}  relArea=${(best.area/imageArea*100).toFixed(1)}%  score=${best.score.toFixed(3)}`, "color:#0f0");
+    } else {
+      console.log(`%c⚠️ No good rectangle this frame`, "color:#f80");
+    }
+
+    // Clean up
+    candidates.forEach(c => { if (c !== best) c.approx.delete(); });
+    contours.delete();
+    hierarchy.delete();
+    edges.delete();
+    blurMat.delete();
+    gray.delete();
+
+    if (best) {
+      const corners = [];
+      for (let i = 0; i < 4; i++) {
+        corners.push({
+          x: best.approx.data32S[i * 2],
+          y: best.approx.data32S[i * 2 + 1]
+        });
+      }
+      best.approx.delete();
+      return computeGridCorners(sortCorners(corners));
+    }
+    return null;
+  } catch (e) {
+    console.error("🚨 CRASH in detectNotebookRectangle:", e.message);
+    return null;
+  }
+}
+
+function isGoodRectangle(approx, area) {
+  if (!cv.isContourConvex(approx)) return false;
+
+  const pts = [];
+  for (let i = 0; i < 4; i++) {
+    pts.push({
+      x: approx.data32S[i * 2],
+      y: approx.data32S[i * 2 + 1]
+    });
+  }
+
+  // Angle check (same as before)
+  for (let i = 0; i < 4; i++) {
+    const p1 = pts[i];
+    const p2 = pts[(i + 1) % 4];
+    const p3 = pts[(i + 2) % 4];
+    const angle = getAngle(p1, p2, p3);
+    if (angle < 48 || angle > 125) return false;
+  }
+
+  // Fill ratio
+  const rect = cv.boundingRect(approx);
+  const boundingArea = rect.width * rect.height;
+  if (area / boundingArea < 0.68) return false;
+
+  return true;
+}
 
     function getAngle(p1, p2, p3) {
       const v1 = { x: p1.x - p2.x, y: p1.y - p2.y };
@@ -10528,7 +10560,7 @@
 
       try {
         // This is the key fix — we register the versioned filename directly
-        const swFile = `/sw-v5.67.js`;   // ← must match the filename you just created
+        const swFile = `/sw-v5.5.68.js`;   // ← must match the filename you just created
         console.log(`[PWA] Registering ${swFile}`);
 
         swRegistration = await navigator.serviceWorker.register(swFile);
