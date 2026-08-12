@@ -5619,22 +5619,27 @@
       }
 
       startBtn.onclick = async () => {
-        if (mission.code === "art101" && !selectedDoodle) return;
+  if (mission.code === "art101" && !selectedDoodle) return;
+  playSound('selectbutton');
+  hideMenuPanel('campaign-intro');
+  activeCampaign = mission;
+  currentMission = null;
+  clearSavedGameState();
 
-        playSound('selectbutton');
-        hideMenuPanel('campaign-intro');
-        activeCampaign = mission;
-        currentMission = null;
-        clearSavedGameState();
+  // === FORCE CLEAN PORTFOLIO ===
+  // Always reset before any campaign-specific modifications
+  deck = { ...defaultDeck };
+  shuffleCount = 0;
+  hasGameInProgress = false;
 
-        // Remember the chosen doodle for Art101 tooltip
-        if (mission.code === "art101" && selectedDoodle) {
-          art101SelectedDoodle = selectedDoodle;
-          await animateLearnDoodle(selectedDoodle);
-        }
+  // Remember the chosen doodle for Art101 tooltip
+  if (mission.code === "art101" && selectedDoodle) {
+    art101SelectedDoodle = selectedDoodle;
+    await animateLearnDoodle(selectedDoodle);   // this adds the chosen doodle on top of the clean deck
+  }
 
-        startGame();
-      };
+  startGame();
+};
 
       showMenuPanel('campaign-intro');
     }
@@ -10636,7 +10641,7 @@ function toggleSelection(cell, grid, modalType) {
 
       try {
         // This is the key fix — we register the versioned filename directly
-        const swFile = `/sw-v5.69.js`;   // ← must match the filename you just created
+        const swFile = `/sw-v5.70.js`;   // ← must match the filename you just created
         console.log(`[PWA] Registering ${swFile}`);
 
         swRegistration = await navigator.serviceWorker.register(swFile);
